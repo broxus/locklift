@@ -6,6 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "bin": {
+    "locklift": "./locklift/cli/index.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/broxus/locklift.git"
@@ -14,8 +17,7 @@
     "FreeTON",
     "TON",
     "blockchain",
-    "smart",
-    "contracts",
+    "smart-contracts",
     "javascript",
     "solidity",
     "dapps",
@@ -26,5 +28,19 @@
   "bugs": {
     "url": "https://github.com/broxus/locklift/issues"
   },
-  "homepage": "https://github.com/broxus/locklift#readme"
+  "homepage": "https://github.com/broxus/locklift#readme",
+  "devDependencies": {
+    "commander": "^7.2.0"
+  },
+  "dependencies": {
+    "@tonclient/core": "^1.11.1",
+    "@tonclient/lib-node": "^1.11.1",
+    "bignumber.js": "^9.0.1",
+    "directory-tree": "^2.2.7",
+    "execa": "^5.0.0",
+    "fs-extra": "^9.1.0",
+    "mocha": "^8.3.2",
+    "superstruct": "^0.14.2",
+    "ton-client-js": "^0.28.1"
+  }
 }
