@@ -12,13 +12,14 @@ Locklift is a development environment aiming to help you with FreeTON contracts 
 ## Install
 
 ```
-npm install locklift
+npm install -g locklift
 ```
 
 ## Initialize Locklift package
 
 ```
-locklift init
+$ locklift init --path amazing-locklift-project
+New Locklift project initialized in amazing-locklift-project
 ```
 
 This command initialize new Locklift project, filled with samples:
