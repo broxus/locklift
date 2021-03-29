@@ -1,5 +1,4 @@
 const fs = require('fs');
-const commander = require('commander');
 
 
 function checkDirEmpty(dir) {
@@ -7,13 +6,7 @@ function checkDirEmpty(dir) {
     return dir;
   }
 
-  const isEmpty = fs.readdirSync(dir).length === 0;
-  
-  if (!isEmpty) {
-    throw new commander.InvalidOptionArgumentError(`Directory at ${dir} should be empty!`);
-  }
-  
-  return dir;
+  return fs.readdirSync(dir).length === 0;
 }
 
 

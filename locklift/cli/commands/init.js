@@ -12,9 +12,21 @@ program
   .requiredOption(
     '-p, --path <path>',
     'Path to the project folder',
-    (path_) => utils.checkDirEmpty(path_),
+    '.'
+  )
+  .option(
+    '-f, --force',
+    'Ignore non-empty path',
+    false,
   )
   .action((options) => {
+    const pathEmpty = utils.checkDirEmpty(options.path);
+    
+    if (!pathEmpty && options.force === false) {
+      console.error(`Directory at ${options.path} should be empty!`);
+      return;
+    }
+    
     const sampleProjectPath = path.resolve(__dirname, './../../../sample-project');
     
     fs.copy(sampleProjectPath, options.path, (err) => {
