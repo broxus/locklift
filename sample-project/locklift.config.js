@@ -25,7 +25,7 @@ module.exports = {
       // Use tonos-cli to generate your phrase
       // !!! Never commit it in your repos !!!
       keys: {
-        phrase: process.env.PHRASE,
+        phrase: '...',
         amount: 20,
       }
     },

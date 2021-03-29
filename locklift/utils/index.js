@@ -17,6 +17,8 @@ const convertCrystal = (amount, dimension) => {
   
   if (dimension === 'nano') {
     return crystalBN.times(10**9).toFixed(0);
+  } else if (dimension === 'ton') {
+    return crystalBN.div(new BigNumber(10).pow(9));
   }
 };
 

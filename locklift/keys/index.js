@@ -1,12 +1,25 @@
+/**
+ * Simple keys manager. Initialize keys from the
+ */
 class Keys {
   constructor(locklift) {
     this.locklift = locklift;
+    this.keyPairs = [];
   }
-
+  
+  /**
+   * Returns key pairs.
+   * @returns {Promise<[]|Array>}
+   */
   async getKeyPairs() {
     return this.keyPairs;
   }
   
+  /**
+   * Derives specific amount of keys from the specified mnemonic phrase and HD path.
+   * Phrase, amount and path should be specified in the keys config section
+   * @returns {Promise<void>}
+   */
   async setup() {
     const keysHDPaths = [...Array(this.locklift.networkConfig.keys.amount).keys()]
       .map(i => this.locklift.networkConfig.keys.path.replace('INDEX', i));
