@@ -15,6 +15,12 @@ Locklift is a development environment aiming to help you with FreeTON contracts 
 npm install -g locklift
 ```
 
+## Get version
+
+```
+locklift --version
+```
+
 ## CLI docs
 
 This section describes the set of commands, supported by the `locklift` package.
