@@ -14,8 +14,9 @@ class Contract {
    * @param name Contract name
    * @param address Contract address
    * @param keyPair Default keyPair to use for interacting with smart contract
+   * @param [autoAnswerIdOnCall=true] Boolean, specify dummy answer_id automatically
    */
-  constructor({ locklift, abi, base64, code, name, address, keyPair }) {
+  constructor({ locklift, abi, base64, code, name, address, keyPair, autoAnswerIdOnCall }) {
     this.locklift = locklift;
     this.abi = abi;
     this.base64 = base64;
@@ -23,6 +24,8 @@ class Contract {
     this.name = name;
     this.address = address;
     this.keyPair = keyPair;
+    
+    this.autoAnswerIdOnCall = autoAnswerIdOnCall === undefined ? true : autoAnswerIdOnCall;
   }
   
   /**
@@ -62,18 +65,27 @@ class Contract {
   /**
    * Call smart contract method. Uses runLocal to run TVM code locally and decodes result
    * according to the ABI.
+   * @dev Specify _answer_id if necessary in case this.autoAnswerIdOnCall is true
    * @param method Method name
-   * @param params Method params
+   * @param [params={}] Method params
    * @param [keyPair=this.keyPair] Keypair to use
    * @returns {Promise<void>} Decoded output
    */
   async call({ method, params, keyPair }) {
+    const extendedParams = params === undefined ? {} : params;
+    
+    if (this.autoAnswerIdOnCall) {
+      if (this.abi.functions.find(e => e.name === method).inputs.find(e => e.name === '_answer_id')) {
+        extendedParams._answer_id = extendedParams._answer_id === undefined ? 1 : extendedParams._answer_id;
+      }
+    }
+    
     const {
       message
     } = await this.locklift.ton.createRunMessage({
       contract: this,
       method,
-      params: params === undefined ? {} : params,
+      params: extendedParams,
       keyPair: keyPair === undefined ? this.keyPair : keyPair,
     });
   
