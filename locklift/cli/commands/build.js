@@ -62,9 +62,9 @@ program
         
         console.debug(`Linked ${path}`);
       });
-    } catch (e) {
-    }
+    } catch (e) {}
   
+    process.exit(0);
   });
 
 

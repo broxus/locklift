@@ -74,7 +74,9 @@ async function loadConfig(configPath) {
   const client = new TonClient();
   
   config.networks = await Object.entries(config.networks)
-    .reduce(async (acc, [network, networkConfig]) => {
+    .reduce(async (accP, [network, networkConfig]) => {
+      const acc = await accP;
+
       if (networkConfig.keys.phrase === '') {
         const entropy = genHexString(32);
     
@@ -89,10 +91,10 @@ async function loadConfig(configPath) {
       }
       
       return {
-        ...acc,
+        ...(acc),
         [network]: networkConfig
       }
-    }, Object());
+    }, Promise.resolve({}));
   
   return config;
 }
