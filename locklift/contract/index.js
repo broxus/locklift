@@ -15,8 +15,19 @@ class Contract {
    * @param address Contract address
    * @param keyPair Default keyPair to use for interacting with smart contract
    * @param [autoAnswerIdOnCall=true] Boolean, specify dummy answer_id automatically
+   * @param afterRun After run hook, receives a run transaction.
    */
-  constructor({ locklift, abi, base64, code, name, address, keyPair, autoAnswerIdOnCall }) {
+  constructor({
+    locklift,
+    abi,
+    base64,
+    code,
+    name,
+    address,
+    keyPair,
+    autoAnswerIdOnCall,
+    afterRun,
+  }) {
     this.locklift = locklift;
     this.abi = abi;
     this.base64 = base64;
@@ -24,7 +35,8 @@ class Contract {
     this.name = name;
     this.address = address;
     this.keyPair = keyPair;
-    
+    this.afterRun = afterRun === undefined ? async () => {} : afterRun;
+  
     this.autoAnswerIdOnCall = autoAnswerIdOnCall === undefined ? true : autoAnswerIdOnCall;
   }
   
@@ -59,7 +71,11 @@ class Contract {
       keyPair: keyPair === undefined ? this.keyPair : keyPair,
     });
   
-    return this.locklift.ton.waitForRunTransaction({ message, abi: this.abi });
+    const tx = this.locklift.ton.waitForRunTransaction({ message, abi: this.abi });
+  
+    await this.afterRun(tx);
+    
+    return tx;
   }
   
   /**
