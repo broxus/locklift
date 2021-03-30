@@ -17,9 +17,11 @@ program
   .requiredOption(
     '--config <config>',
     'Path to the config file',
-    (config) => loadConfig(config),
+    async (config) => loadConfig(config),
   )
-  .action((options) => {
+  .action(async (options) => {
+    const config = await options.config;
+
     const contractsNestedTree = dirTree(
       options.contracts,
       { extensions: /\.sol/ }
@@ -40,7 +42,7 @@ program
       
         const [,contractFileName] = path.match(new RegExp('contracts/(.*).sol'));
       
-        const output = execSync(`cd ${options.build} && ${options.config.compiler.path} ./../${path}`);
+        const output = execSync(`cd ${options.build} && ${config.compiler.path} ./../${path}`);
   
         console.debug(`Compiled ${path}`);
   
@@ -51,7 +53,7 @@ program
         
         const contractNameNoFolderStructure = contractFileName.split('/')[contractFileName.split('/').length - 1];
       
-        const tvmLinkerLog = execSync(`cd ${options.build} && ${options.config.linker.path} compile "${contractNameNoFolderStructure}.code" -a "${contractNameNoFolderStructure}.abi.json"`);
+        const tvmLinkerLog = execSync(`cd ${options.build} && ${config.linker.path} compile "${contractNameNoFolderStructure}.code" -a "${contractNameNoFolderStructure}.abi.json"`);
 
         const [,tvcFile] = tvmLinkerLog.toString().match(new RegExp('Saved contract to file (.*)'));
         execSync(`cd ${options.build} && base64 < ${tvcFile} > ${contractNameNoFolderStructure}.base64`);

@@ -17,14 +17,16 @@ program
   .requiredOption(
     '--config <config>',
     'Path to the config file',
-    (config) => loadConfig(config),
+    async (config) => loadConfig(config),
   )
   .requiredOption(
     '-s, --script <script>',
     'Script to run'
   )
   .action(async (options) => {
-    if (options.config.networks[options.network] === undefined) {
+    const config = await options.config;
+
+    if (config.networks[options.network] === undefined) {
       console.error(`Can't find configuration for ${options.network} network!`);
     
       return;
@@ -32,7 +34,7 @@ program
     
     // Initialize Locklift
     const locklift = new Locklift(
-      options.config,
+      config,
       options.network
     );
   

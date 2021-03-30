@@ -11,6 +11,11 @@ const {
   record
 } = require('superstruct');
 
+const { TonClient } = require("@tonclient/core");
+const { libNode } = require("@tonclient/lib-node");
+TonClient.useBinaryLibrary(libNode);
+
+
 const Compiler = object({
   path: defaulted(string(), () => '/usr/bin/solc-ton'),
 });
@@ -48,16 +53,48 @@ const Config = object({
 });
 
 
-function loadConfig(configPath) {
+async function loadConfig(configPath) {
   const resolvedConfigPath = path.resolve(process.cwd(), configPath);
   
   if (!fs.existsSync(resolvedConfigPath)) {
     throw new commander.InvalidOptionArgumentError(`Config at ${configPath} not found!`);
   }
   
-  const config = require(resolvedConfigPath);
+  const configFile = require(resolvedConfigPath);
   
-  return create(config, Config);
+  const config = create(configFile, Config);
+  
+  // Ad hoc
+  // Since superstruct not allows async default value, default mnemonic phrases are generated bellow
+  function genHexString(len) {
+    const str = Math.floor(Math.random() * Math.pow(16, len)).toString(16);
+    return "0".repeat(len - str.length) + str;
+  }
+
+  const client = new TonClient();
+  
+  config.networks = await Object.entries(config.networks)
+    .reduce(async (acc, [network, networkConfig]) => {
+      if (networkConfig.keys.phrase === '') {
+        const entropy = genHexString(32);
+    
+        const {
+          phrase,
+        } = await client.crypto.mnemonic_from_entropy({
+          entropy,
+          word_count: 12,
+        });
+    
+        networkConfig.keys.phrase = phrase;
+      }
+      
+      return {
+        ...acc,
+        [network]: networkConfig
+      }
+    }, Object());
+  
+  return config;
 }
 
 

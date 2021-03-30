@@ -20,10 +20,12 @@ program
   .requiredOption(
     '--config <config>',
     'Path to the config file',
-    (config) => loadConfig(config),
+    async (config) => loadConfig(config),
   )
   .action(async (options) => {
-    if (options.config.networks[options.network] === undefined) {
+    const config = await options.config;
+    
+    if (config.networks[options.network] === undefined) {
       console.error(`Can't find configuration for ${options.network} network!`);
       
       return;
@@ -31,14 +33,14 @@ program
     
     // Initialize Locklift and pass it into tests context
     const locklift = new Locklift(
-      options.config,
+      config,
       options.network
     );
-
+    
     await locklift.setup();
     
     global.locklift = locklift;
-    
+  
     // Run mocha tests
     const resolvedTestPath = path.resolve(process.cwd(), options.test);
     
