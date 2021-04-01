@@ -1,4 +1,5 @@
 const OutputDecoder = require('./output-decoder');
+const { QMessageType } = require('ton-client-js');
 
 
 /**
@@ -142,6 +143,68 @@ class Contract {
     );
   
     return outputDecoder.decode();
+  }
+  
+  /**
+   * Decode list of messages according to the ABI
+   * @param messages
+   * @param is_internal
+   * @param messageDirection
+   * @returns {Promise<unknown[]>}
+   */
+  async decodeMessages(messages, is_internal, messageDirection) {
+    const decodedMessages = messages.map(async (message) => {
+      const decodedMessage = await this.locklift.ton.client.abi.decode_message_body({
+        abi: {
+          type: 'Contract',
+          value: this.abi
+        },
+        body: message.body,
+        is_internal,
+      });
+      
+      return {
+        ...decodedMessage,
+        messageId: message.id,
+        src: message.src,
+      };
+    });
+    
+    return Promise.all(decodedMessages);
+  }
+  
+  /**
+   * Get list of messages, sent from the contract
+   * @param messageType Message type
+   * @param internal Internal type
+   * @returns {Promise<unknown[]>} List of messages
+   */
+  async getSentMessages(messageType, internal) {
+    const {
+      result
+    } = (await this.locklift.ton.client.net.query_collection({
+        collection: 'messages',
+        filter: {
+          src: {eq: this.address},
+          msg_type: {eq: messageType}
+        },
+        result: 'body id src',
+      }
+    ));
+    
+    return this.decodeMessages(result, internal, 'output');
+  }
+  
+  /**
+   * Get solidity events, emitted by the contract.
+   * @dev Under the hood, events are extOut messages
+   * @param eventName Event name
+   * @returns {Promise<*>} List of emitted events
+   */
+  async getEvents(eventName) {
+    const sentMessages = await this.getSentMessages(QMessageType.extOut, false);
+    
+    return sentMessages.filter((message) => message.name === eventName);
   }
 }
 
