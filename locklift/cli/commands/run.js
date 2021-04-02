@@ -41,6 +41,7 @@ program
     await locklift.setup();
   
     global.locklift = locklift;
+    global.require = require;
     
     const scriptCode = fs.readFileSync(options.script);
     const script = new vm.Script(scriptCode.toString());
