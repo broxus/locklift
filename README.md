@@ -86,7 +86,7 @@ module.exports = {
 
 ### Set up mnemonic phrase
 
-For now, mnemonic phrase should be placed in configuration manually. Install [tonos-cli](https://github.com/tonlabs/tonos-cli) and use the following command to create new phrase:
+If you leave `phrase` field value empty - new random seed will be generated each time you're running locklift. If you specify it explicitly - fill the `phrase` field with mnemonic. Install [tonos-cli](https://github.com/tonlabs/tonos-cli) and use the following command to create new phrase:
 
 ```
 $ tonos-cli genphrase
