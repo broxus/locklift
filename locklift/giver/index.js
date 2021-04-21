@@ -48,7 +48,7 @@ class Giver {
         amount,
       }
     });
-  
+    
     // Wait for receiving grams
     await this.locklift.ton.client.net.wait_for_collection({
       collection: 'accounts',
@@ -81,6 +81,18 @@ class Giver {
       address: this.locklift.networkConfig.giver.address,
       name: 'Giver',
     });
+    
+    // Setup giver key in case of key-protected giver
+    if (this.locklift.networkConfig.giver.key) {
+      const keyPair = await this.locklift.ton.client.crypto.nacl_sign_keypair_from_secret_key({
+        secret: this.locklift.networkConfig.giver.key
+      });
+
+      // TODO: looks like bug in SDK, keypair.secret is extended with keypair.public
+      keyPair.secret = keyPair.secret.slice(0, 64);
+
+      this.giver.setKeyPair(keyPair);
+    }
   }
 }
 

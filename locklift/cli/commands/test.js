@@ -2,9 +2,11 @@ const { Command } = require('commander');
 const Mocha = require('mocha');
 const fs = require('fs');
 const path = require('path');
+const dirTree = require("directory-tree");
 
 const { loadConfig } = require('./../../config');
 const { Locklift } = require('./../../index');
+const utils = require('./../utils');
 
 const program = new Command();
 
@@ -42,15 +44,16 @@ program
     global.locklift = locklift;
   
     // Run mocha tests
-    const resolvedTestPath = path.resolve(process.cwd(), options.test);
-    
     const mocha = new Mocha();
   
-    fs.readdirSync(resolvedTestPath)
-      .filter((file) => file.substr(-3) === '.js')
-      .forEach((file) => {
-        mocha.addFile(path.join(resolvedTestPath, file));
-      });
+    const testNestedTree = dirTree(
+      path.resolve(process.cwd(), options.test),
+      { extensions: /\.js/ }
+    );
+  
+    const testTree = utils.flatDirTree(testNestedTree);
+  
+    testTree.forEach((file) => mocha.addFile(file.path));
     mocha.run((fail) => process.exit(fail ? 1 : 0));
   });
 
