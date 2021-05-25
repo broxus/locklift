@@ -50,6 +50,8 @@ class OutputDecoder {
         return encoded_value;
       case 'tuple':
         return this.decodeTuple(encoded_value, schema.components);
+      default:
+        return encoded_value;
     }
   }
   
