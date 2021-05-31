@@ -23,9 +23,12 @@ const convertCrystal = (amount, dimension) => {
 };
 
 
+const getRandomNonce = () => Math.random() * 64000 | 0;
+
 
 module.exports = {
   loadJSONFromFile,
   loadBase64FromFile,
   convertCrystal,
+  getRandomNonce,
 };

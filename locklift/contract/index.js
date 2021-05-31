@@ -16,6 +16,7 @@ class Contract {
    * @param address Contract address
    * @param keyPair Default keyPair to use for interacting with smart contract
    * @param [autoAnswerIdOnCall=true] Boolean, specify dummy answer_id automatically
+   * @param autoRandomNonce Automatically fill _randomNonce in init data if it discovered in ABI
    * @param afterRun After run hook, receives a run transaction.
    */
   constructor({
@@ -27,6 +28,7 @@ class Contract {
     address,
     keyPair,
     autoAnswerIdOnCall,
+    autoRandomNonce,
     afterRun,
   }) {
     this.locklift = locklift;
@@ -39,6 +41,7 @@ class Contract {
     this.afterRun = afterRun === undefined ? async () => {} : afterRun;
   
     this.autoAnswerIdOnCall = autoAnswerIdOnCall === undefined ? true : autoAnswerIdOnCall;
+    this.autoRandomNonce = autoRandomNonce === undefined ? true : autoRandomNonce;
   }
   
   /**

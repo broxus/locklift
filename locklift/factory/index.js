@@ -5,9 +5,6 @@ const Contract = require('./../contract');
 const Account = require('./../contract/account');
 
 
-const lockliftContractsBuild = path.resolve(__dirname, './../../contracts/build');
-
-
 /**
  * Factory object for generating initializing Contract objects.
  */
@@ -57,8 +54,10 @@ class Factory {
     return this.initializeContract(name, resolvedBuildPath);
   }
   
-  async getAccount() {
-    const contract = await this.initializeContract('Account', lockliftContractsBuild);
+  async getAccount(name='Account', build='build') {
+    const resolvedBuildPath = path.resolve(process.cwd(), build);
+
+    const contract = await this.initializeContract('Account', resolvedBuildPath);
     
     return new Account({
       locklift: this.locklift,

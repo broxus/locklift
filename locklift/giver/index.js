@@ -32,12 +32,23 @@ class Giver {
     },
     amount=this.locklift.utils.convertCrystal(10, 'nano')
   ) {
+    // Extend init params with random _randomNonce if it's found in ABI and autoRandomNonce is enabled
+    const extendedInitParams = initParams === undefined ? {} : initParams;
+    
+    if (contract.autoRandomNonce) {
+      if (contract.abi.data.find(e => e.name === '_randomNonce')) {
+        extendedInitParams._randomNonce = extendedInitParams._randomNonce === undefined
+          ? this.locklift.utils.getRandomNonce()
+          : extendedInitParams._randomNonce;
+      }
+    }
+    
     const {
       address,
     } = await this.locklift.ton.createDeployMessage({
       contract,
       constructorParams,
-      initParams,
+      initParams: extendedInitParams,
       keyPair,
     });
     
@@ -63,7 +74,7 @@ class Giver {
     const message = await this.locklift.ton.createDeployMessage({
       contract,
       constructorParams,
-      initParams,
+      initParams: extendedInitParams,
       keyPair,
     });
     
