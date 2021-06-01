@@ -57,7 +57,7 @@ class Factory {
   async getAccount(name='Account', build='build') {
     const resolvedBuildPath = path.resolve(process.cwd(), build);
 
-    const contract = await this.initializeContract('Account', resolvedBuildPath);
+    const contract = await this.initializeContract(name, resolvedBuildPath);
     
     return new Account({
       locklift: this.locklift,
