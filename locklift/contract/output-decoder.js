@@ -72,7 +72,7 @@ class OutputDecoder {
   }
   
   decodeIntArray(value) {
-    return value.map(hexInt => BigInt(hexInt));
+    return value.map(hexInt => this.decodeInt(hexInt));
   }
   
   decode() {
