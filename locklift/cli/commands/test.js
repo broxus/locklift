@@ -28,6 +28,7 @@ program
     '--tests [tests...]',
     'Set of tests to run, separated by comma',
   )
+  .allowUnknownOption()
   .action(async (options) => {
     const config = await options.config;
     

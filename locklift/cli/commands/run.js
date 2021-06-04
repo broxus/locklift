@@ -23,6 +23,7 @@ program
     '-s, --script <script>',
     'Script to run'
   )
+  .allowUnknownOption()
   .action(async (options) => {
     const config = await options.config;
 
