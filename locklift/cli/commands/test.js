@@ -24,6 +24,10 @@ program
     'Path to the config file',
     async (config) => loadConfig(config),
   )
+  .option(
+    '--tests [tests...]',
+    'Set of tests to run, separated by comma',
+  )
   .action(async (options) => {
     const config = await options.config;
     
@@ -45,15 +49,23 @@ program
   
     // Run mocha tests
     const mocha = new Mocha();
+
+    
+    // Run all .js files in tests or only specified tests
+    let testFiles;
+    
+    if (Array.isArray(options.tests)) {
+      testFiles = options.tests;
+    } else {
+      const testNestedTree = dirTree(
+        path.resolve(process.cwd(), options.test),
+        { extensions: /\.js/ }
+      );
   
-    const testNestedTree = dirTree(
-      path.resolve(process.cwd(), options.test),
-      { extensions: /\.js/ }
-    );
-  
-    const testTree = utils.flatDirTree(testNestedTree);
-  
-    testTree.forEach((file) => mocha.addFile(file.path));
+      testFiles = utils.flatDirTree(testNestedTree).map(t => t.path);
+    }
+    
+    testFiles.forEach((file) => mocha.addFile(file));
     mocha.run((fail) => process.exit(fail ? 1 : 0));
   });
 
