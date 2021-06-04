@@ -15,6 +15,10 @@ program
   .name('test')
   .description('Run mocha tests')
   .option('-t, --test <test>', 'Path to Mocha test folder', 'test')
+  .option('-c, --contracts <contracts>', 'Path to the contracts folder', 'contracts')
+  .option('-b, --build <build>', 'Path to the build folder', 'build')
+  .option('-a, --artifacts <artifacts>', 'Path to the artifacts folder', 'artifacts')
+  .option('-f, --force', 'Build contracts even if no changes found', false)
   .requiredOption(
     '-n, --network <network>',
     'Network to use, choose from configuration'
@@ -37,12 +41,16 @@ program
       
       return;
     }
-    
+  
+    // If necessary - rebuild contracts
+    const buildingContracts = await utils.updateContractsState(options);
+  
+    if (buildingContracts === true) {
+      utils.buildContracts(config, options);
+    }
+  
     // Initialize Locklift and pass it into tests context
-    const locklift = new Locklift(
-      config,
-      options.network
-    );
+    const locklift = new Locklift(config, options.network);
     
     await locklift.setup();
     
