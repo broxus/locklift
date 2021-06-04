@@ -41,7 +41,11 @@ program
       utils.buildContracts(config, options);
     }
   
-    process.exit(0);
+    const buildStatus = utils.buildContracts(config, options);
+  
+    if (buildStatus === false) {
+      process.exit(1);
+    }
   });
 
 

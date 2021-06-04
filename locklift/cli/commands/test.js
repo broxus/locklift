@@ -46,7 +46,11 @@ program
     const buildingContracts = await utils.updateContractsState(options);
   
     if (buildingContracts === true) {
-      utils.buildContracts(config, options);
+      const buildStatus = utils.buildContracts(config, options);
+      
+      if (buildStatus === false) {
+        process.exit(1);
+      }
     }
   
     // Initialize Locklift and pass it into tests context

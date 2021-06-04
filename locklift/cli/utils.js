@@ -93,7 +93,11 @@ function buildContracts(config, options) {
       
       console.debug(`Linked ${path}`);
     });
-  } catch (e) {}
+  } catch (e) {
+    return false;
+  }
+  
+  return true;
 }
 
 
