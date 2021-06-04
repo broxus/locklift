@@ -1,6 +1,6 @@
 {
   "name": "locklift",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "Node JS framework for working with FreeTON contracts. Inspired by Truffle and Hardhat. Helps you to build, test, run and maintain your smart contracts.",
   "main": "index.js",
   "scripts": {
