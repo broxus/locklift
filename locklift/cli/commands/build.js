@@ -37,14 +37,16 @@ program
     // No need to build contracts
     if (buildingContracts === false) {
       console.log(`Nothing to build`);
-    } else {
-      utils.buildContracts(config, options);
+
+      process.exit(1);
     }
   
     const buildStatus = utils.buildContracts(config, options);
   
     if (buildStatus === false) {
       process.exit(1);
+    } else {
+      process.exit(0);
     }
   });
 
