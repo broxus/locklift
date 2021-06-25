@@ -4,12 +4,17 @@ const { Command } = require('commander');
 
 const { loadConfig } = require('./../../config');
 const { Locklift } = require('./../../index');
+const utils = require('./../utils');
 
 const program = new Command();
 
 
 program
   .name('run')
+  .description('Run arbitrary locklift script')
+  .option('--disable-build', 'Disable automatic contracts build', false)
+  .option('-c, --contracts <contracts>', 'Path to the contracts folder', 'contracts')
+  .option('-b, --build <build>', 'Path to the build folder', 'build')
   .requiredOption(
     '-n, --network <network>',
     'Network to use, choose from configuration'
@@ -33,6 +38,14 @@ program
       return;
     }
     
+    if (options.disableBuild !== true) {
+      const buildStatus = utils.buildContracts(config, options);
+    
+      if (buildStatus === false) {
+        process.exit(1);
+      }
+    }
+  
     // Initialize Locklift
     const locklift = new Locklift(
       config,

@@ -14,11 +14,10 @@ const program = new Command();
 program
   .name('test')
   .description('Run mocha tests')
+  .option('--disable-build', 'Disable automatic contracts build', false)
   .option('-t, --test <test>', 'Path to Mocha test folder', 'test')
   .option('-c, --contracts <contracts>', 'Path to the contracts folder', 'contracts')
   .option('-b, --build <build>', 'Path to the build folder', 'build')
-  .option('-a, --artifacts <artifacts>', 'Path to the artifacts folder', 'artifacts')
-  .option('-f, --force', 'Build contracts even if no changes found', false)
   .requiredOption(
     '-n, --network <network>',
     'Network to use, choose from configuration'
@@ -41,13 +40,10 @@ program
       
       return;
     }
-  
-    // If necessary - rebuild contracts
-    const buildingContracts = await utils.updateContractsState(options);
-  
-    if (buildingContracts === true) {
+    
+    if (options.disableBuild !== true) {
       const buildStatus = utils.buildContracts(config, options);
-      
+  
       if (buildStatus === false) {
         process.exit(1);
       }
