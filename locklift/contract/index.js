@@ -170,6 +170,7 @@ class Contract {
         ...decodedMessage,
         messageId: message.id,
         src: message.src,
+        created_at: message.created_at
       };
     });
     
@@ -188,10 +189,14 @@ class Contract {
     } = (await this.locklift.ton.client.net.query_collection({
         collection: 'messages',
         filter: {
-          src: {eq: this.address},
-          msg_type: {eq: messageType}
+          src: {
+            eq: this.address
+          },
+          msg_type: {
+            eq: messageType
+          }
         },
-        result: 'body id src',
+        result: 'body id src created_at',
       }
     ));
     
