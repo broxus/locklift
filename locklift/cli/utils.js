@@ -1,5 +1,4 @@
 const fs = require('fs');
-const { hashElement } = require('folder-hash');
 const dirTree = require("directory-tree");
 const { execSync } = require('child_process');
 
@@ -26,34 +25,6 @@ function flatDirTree(tree) {
     
     return [...acc, ...flatChild];
   }, []);
-}
-
-
-async function updateContractsState(options) {
-  // Get the hash of the current options.contracts
-  // If different - --force required to rebuild the contracts
-  const {
-    hash: currentStateHash
-  } = await hashElement(options.contracts, {
-    files: {
-      include: ['*.sol']
-    }
-  });
-  
-  // - Get saved contracts hash
-  if (fs.existsSync(`${options.artifacts}/stateHash`)) {
-    const contractsStoredHash = fs.readFileSync(`${options.artifacts}/stateHash`).toString();
-    
-    if (currentStateHash === contractsStoredHash && options.force === false) {
-      return false;
-    } else {
-      fs.writeFileSync(`${options.artifacts}/stateHash`, currentStateHash);
-    }
-  } else {
-    fs.writeFileSync(`${options.artifacts}/stateHash`, currentStateHash);
-  }
-  
-  return true;
 }
 
 
@@ -104,6 +75,5 @@ function buildContracts(config, options) {
 module.exports = {
   checkDirEmpty,
   flatDirTree,
-  updateContractsState,
   buildContracts,
 };
