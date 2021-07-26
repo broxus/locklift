@@ -20,7 +20,15 @@ class Account extends Contract {
   async runTarget({ contract, method, params, value, keyPair }) {
     let body = '';
     
-    if (method !== undefined && params !== undefined) {
+    if (method !== undefined) {
+      const extendedParams = params === undefined ? {} : params;
+  
+      if (this.autoAnswerIdOnCall) {
+        if (contract.abi.functions.find(e => e.name === method).inputs.find(e => e.name === '_answer_id')) {
+          extendedParams._answer_id = extendedParams._answer_id === undefined ? 1 : extendedParams._answer_id;
+        }
+      }
+  
       const message = await this.locklift.ton.client.abi.encode_message_body({
         address: contract.address,
         abi: {
@@ -29,7 +37,7 @@ class Account extends Contract {
         },
         call_set: {
           function_name: method,
-          input: params,
+          input: extendedParams,
         },
         signer: {
           type: 'None',

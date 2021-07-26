@@ -34,16 +34,18 @@ program
 
     if (config.networks[options.network] === undefined) {
       console.error(`Can't find configuration for ${options.network} network!`);
-    
-      return;
+  
+      process.exit(1);
     }
     
     if (options.disableBuild !== true) {
-      const buildStatus = utils.buildContracts(config, options);
-    
-      if (buildStatus === false) {
-        process.exit(1);
-      }
+      utils.initializeDirIfNotExist(options.build);
+  
+      const builder = new utils.Builder(config, options);
+  
+      const status = builder.buildContracts();
+  
+      if (status === false) process.exit(1);
     }
   
     // Initialize Locklift

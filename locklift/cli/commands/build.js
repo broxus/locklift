@@ -20,18 +20,15 @@ program
   .action(async (options) => {
     const config = await options.config;
     
-    if (!fs.existsSync(options.build)) {
-      console.debug(`Initialized empty ${options.build}`);
-      fs.mkdirSync(options.build);
-    }
+    utils.initializeDirIfNotExist(options.build);
     
-    const buildStatus = utils.buildContracts(config, options);
+    const builder = new utils.Builder(config, options);
+    
+    const status = builder.buildContracts();
+    
+    if (status === false) process.exit(1);
   
-    if (buildStatus === false) {
-      process.exit(1);
-    } else {
-      process.exit(0);
-    }
+    process.exit(0);
   });
 
 

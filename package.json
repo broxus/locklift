@@ -38,10 +38,13 @@
     "@tonclient/lib-node": "^1.11.1",
     "bignumber.js": "^9.0.1",
     "directory-tree": "^2.2.7",
+    "ejs": "^3.1.6",
     "execa": "^5.0.0",
     "fs-extra": "^9.1.0",
     "mocha": "^8.3.2",
     "superstruct": "^0.14.2",
-    "ton-client-js": "^0.28.1"
+    "tablemark": "^2.0.0",
+    "ton-client-js": "^0.28.1",
+    "underscore": "^1.13.1"
   }
 }

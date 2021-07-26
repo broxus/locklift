@@ -1,0 +1,30 @@
+<% docs.forEach(function(contract) { %>
+    # <%= contract.name %>
+    **Path**: [<%= contract.path %>](./../<%= contract.path %>)
+
+    <%if (contract.doc.title) { %>
+        **Title**: <%= contract.doc.title %>
+    <% } %>
+
+    <%if (contract.doc.details) { %>
+        **Details**: <%= contract.doc.details %>
+    <% } %>
+
+    <%if (contract.doc.author) { %>
+        **Author**: <%= contract.doc.author %>
+    <% } %>
+
+    <% Object.entries(contract.doc.methods).forEach(function([name, method]) { %>
+        ## <%= name %>
+
+        <%if (method.details) { %>
+            **Details**: <%= method.details %>
+        <% } %>
+
+        <%= tablemark(Object.entries(method.params).map(([param, desc], i) => new Object({
+            'Index': i,
+            'Name': param,
+            'Description': desc
+        }))) %>
+    <% }); %>
+<% }); %>
