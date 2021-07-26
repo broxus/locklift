@@ -29,10 +29,8 @@
     "url": "https://github.com/broxus/ton-locklift/issues"
   },
   "homepage": "https://github.com/broxus/ton-locklift#readme",
-  "devDependencies": {
-    "commander": "^7.2.0"
-  },
   "dependencies": {
+    "commander": "^7.2.0",
     "@broxus/contracts": "^1.0.0",
     "@tonclient/core": "^1.11.1",
     "@tonclient/lib-node": "^1.11.1",
