@@ -21,10 +21,12 @@
             **Details**: <%= method.details %>
         <% } %>
 
-        <%= tablemark(Object.entries(method.params).map(([param, desc], i) => new Object({
-            'Index': i,
-            'Name': param,
-            'Description': desc
-        }))) %>
+        <%if (method.params && Object.entries(method.params).length > 0) { %>
+            <%= tablemark(Object.entries(method.params).map(([param, desc], i) => new Object({
+                'Index': i,
+                'Name': param,
+                'Description': desc
+            }))) %>
+        <% } %>
     <% }); %>
 <% }); %>
