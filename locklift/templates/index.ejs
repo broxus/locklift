@@ -22,7 +22,19 @@
         <% } %>
 
         <%if (method.params && Object.entries(method.params).length > 0) { %>
+            ### Params
+
             <%= tablemark(Object.entries(method.params).map(([param, desc], i) => new Object({
+                'Index': i,
+                'Name': param,
+                'Description': desc
+            }))) %>
+        <% } %>
+
+        <%if (method.returns && Object.entries(method.returns).length > 0) { %>
+            ### Returns
+
+            <%= tablemark(Object.entries(method.returns).map(([param, desc], i) => new Object({
                 'Index': i,
                 'Name': param,
                 'Description': desc
