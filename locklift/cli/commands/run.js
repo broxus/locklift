@@ -1,5 +1,6 @@
 const vm = require("vm");
 const fs = require('fs');
+const path = require('path');
 const { Command } = require('commander');
 
 const { loadConfig } = require('./../../config');
@@ -57,7 +58,16 @@ program
     await locklift.setup();
   
     global.locklift = locklift;
-    global.require = require;
+    global.__dirname = __dirname;
+    
+    global.require = (p) => {
+      const script = options.script.split('/');
+      script.pop();
+      
+      return p.startsWith('.')
+        ? require(path.resolve(process.cwd(), script.join('/'), p))
+        : require(p);
+    };
     
     const scriptCode = fs.readFileSync(options.script);
     const script = new vm.Script(scriptCode.toString());
