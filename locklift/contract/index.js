@@ -97,6 +97,8 @@ class Contract {
     if (this.autoAnswerIdOnCall) {
       if (this.abi.functions.find(e => e.name === method).inputs.find(e => e.name === '_answer_id')) {
         extendedParams._answer_id = extendedParams._answer_id === undefined ? 1 : extendedParams._answer_id;
+      } else if (this.abi.functions.find(e => e.name === method).inputs.find(e => e.name === 'answerId')) {
+        extendedParams.answerId = extendedParams.answerId === undefined ? 1 : extendedParams.answerId;
       }
     }
     
