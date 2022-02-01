@@ -1,6 +1,6 @@
 {
   "name": "locklift",
-  "version": "1.4.5",
+  "version": "1.5.0",
   "description": "Node JS framework for working with FreeTON contracts. Inspired by Truffle and Hardhat. Helps you to build, test, run and maintain your smart contracts.",
   "main": "index.js",
   "scripts": {
@@ -31,9 +31,9 @@
   "homepage": "https://github.com/broxus/ton-locklift#readme",
   "dependencies": {
     "commander": "^7.2.0",
-    "@broxus/contracts": "^1.0.0",
-    "@tonclient/core": "^1.11.1",
-    "@tonclient/lib-node": "^1.11.1",
+    "@broxus/contracts": "^1.0.3",
+    "@tonclient/core": "^1.28.0",
+    "@tonclient/lib-node": "^1.28.0",
     "bignumber.js": "^9.0.1",
     "directory-tree": "^2.2.7",
     "ejs": "^3.1.6",
@@ -42,7 +42,8 @@
     "mocha": "^8.3.2",
     "superstruct": "^0.14.2",
     "tablemark": "^2.0.0",
-    "ton-client-js": "^0.28.1",
+    "lerna": "3.22.1",
+    "ton-client-js": "github:tonlabs/ton-client-js#0a19dacc58046e4f7d0de9608815227d1335eed1",
     "underscore": "^1.13.1"
   }
 }
