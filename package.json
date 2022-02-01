@@ -42,8 +42,7 @@
     "mocha": "^8.3.2",
     "superstruct": "^0.14.2",
     "tablemark": "^2.0.0",
-    "lerna": "3.22.1",
-    "ton-client-js": "github:tonlabs/ton-client-js#0a19dacc58046e4f7d0de9608815227d1335eed1",
+    "ton-client-js": "^0.28.1",
     "underscore": "^1.13.1"
   }
 }
