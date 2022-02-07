@@ -16,6 +16,11 @@ program
   .option('--disable-build', 'Disable automatic contracts build', false)
   .option('-c, --contracts <contracts>', 'Path to the contracts folder', 'contracts')
   .option('-b, --build <build>', 'Path to the build folder', 'build')
+    .option(
+        '--disable-include-path',
+        'Disables including node_modules. Use this with old compiler versions',
+        false
+    )
   .requiredOption(
     '-n, --network <network>',
     'Network to use, choose from configuration'

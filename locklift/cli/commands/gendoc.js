@@ -10,6 +10,11 @@ program.name('gendoc')
   .description('Generate smart contracts documentation from the natspec comments')
   .option('-c, --contracts <contracts>', 'Path to the contracts folder', 'contracts')
   .option('-b, --build <build>', 'Path to the build folder', 'build')
+    .option(
+        '--disable-include-path',
+        'Disables including node_modules. Use this with old compiler versions',
+        false
+    )
   .option('-d, --docs <docs>', 'Path to the docs folder', 'docs')
   .option(
     '-i, --include <include>',

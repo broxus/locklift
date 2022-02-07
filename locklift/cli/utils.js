@@ -52,15 +52,22 @@ class Builder {
     const contractsTree = this.getContractsTree();
   
     this.log(`Found ${contractsTree.length} sources`);
-  
+
     try {
       contractsTree.map(({ path }) => {
         this.log(`Building ${path}`);
       
         const [,contractFileName] = path.match(new RegExp('contracts/(.*).sol'));
-      
-        const output = execSync(`cd ${this.options.build} && ${this.config.compiler.path} ./../${path}`);
-      
+
+        const nodeModules = require
+            .resolve('locklift/package.json')
+            .replace('locklift/package.json', '');
+
+        const includePath = `--include-path ${nodeModules}`;
+
+        const output = execSync(`cd ${this.options.build} && \
+        ${this.config.compiler.path} ${!this.options.disableIncludePath ? includePath : ''} ./../${path}`);
+
         this.log(`Compiled ${path}`);
   
         // No code was compiled, probably interface compilation

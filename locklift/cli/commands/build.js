@@ -12,6 +12,11 @@ program
   .description('Build contracts by using TON Solidity compiler and TVM linker')
   .option('-c, --contracts <contracts>', 'Path to the contracts folder', 'contracts')
   .option('-b, --build <build>', 'Path to the build folder', 'build')
+  .option(
+      '--disable-include-path',
+      'Disables including node_modules. Use this with old compiler versions',
+      false
+  )
   .requiredOption(
     '--config <config>',
     'Path to the config file',
@@ -19,7 +24,7 @@ program
   )
   .action(async (options) => {
     const config = await options.config;
-    
+
     utils.initializeDirIfNotExist(options.build);
     
     const builder = new utils.Builder(config, options);
