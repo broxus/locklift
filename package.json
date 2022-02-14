@@ -31,7 +31,6 @@
   "homepage": "https://github.com/broxus/ton-locklift#readme",
   "dependencies": {
     "commander": "^7.2.0",
-    "@broxus/contracts": "^1.0.3",
     "@tonclient/core": "^1.28.0",
     "@tonclient/lib-node": "^1.28.0",
     "bignumber.js": "^9.0.1",

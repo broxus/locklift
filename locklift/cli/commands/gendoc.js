@@ -9,12 +9,9 @@ const program = new Command();
 program.name('gendoc')
   .description('Generate smart contracts documentation from the natspec comments')
   .option('-c, --contracts <contracts>', 'Path to the contracts folder', 'contracts')
+  .option('-fs, --fileExtension <sol>', 'File extension', 'sol')
   .option('-b, --build <build>', 'Path to the build folder', 'build')
-    .option(
-        '--disable-include-path',
-        'Disables including node_modules. Use this with old compiler versions',
-        false
-    )
+  .option('--includePath', 'Add additional directories for imports resolution', '')
   .option('-d, --docs <docs>', 'Path to the docs folder', 'docs')
   .option(
     '-i, --include <include>',
@@ -33,15 +30,15 @@ program.name('gendoc')
   )
   .action(async (options) => {
     const config = await options.config;
-  
+
     utils.initializeDirIfNotExist(options.build);
     utils.initializeDirIfNotExist(options.docs);
-  
+
     const builder = new utils.Builder(config, options);
-  
+
     try {
       const status = builder.buildDocs();
-  
+
       if (status === false) {
         process.exit(1);
       } else {

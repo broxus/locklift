@@ -1,18 +1,27 @@
-# Locklift 
+# Locklift
 
-Locklift is a development environment aiming to help you with FreeTON contracts development. With Locklift, you get:
+Locklift is a development environment aiming to help you with Everscale contracts development. With Locklift, you get:
 
 - Network management for working with any networks (main, test, local, ...)
 - Automated contract testing with Mocha
-- Handy wrapper around FreeTON smart contract
+- Handy wrapper around Everscale smart contract
 - Custom givers support
 - Keys management
 - External script runner that executes scripts within specified environment
+- Supported *nix and windows platforms
 
 ## Install
 
 ```
 npm install -g locklift
+```
+
+## Install TON compiler/linker/library
+
+For quick way to manage all TON solidity tools better use https://github.com/tonlabs/everdev
+
+```
+npm install -g everdev
 ```
 
 ## Get version
@@ -57,6 +66,10 @@ module.exports = {
   linker: {
     // Path to your TVM Linker
     path: '/usr/bin/tvm_linker',
+  },
+  lib: {
+    // Path to your TVM Linker
+    path: '/usr/bin/stdlib_sol.tvm',
   },
   networks: {
     // You can use TON labs graphql endpoints or local node
@@ -104,6 +117,31 @@ Compiled contracts/Sample.sol
 Linked contracts/Sample.sol
 ```
 
+If you use another file extension, just use flag `-fs`
+
+```
+$ locklift build --config locklift.config.js -fs tsol
+Found 1 sources
+Building contracts/Sample.tsol
+Compiled contracts/Sample.tsol
+Linked contracts/Sample.tsol
+```
+
+You can add additional directories for imports resolution, by specifying flag `--includePath`
+
+## Generate documentation
+
+This command uses the specified TON Solidity compiler to generate dev/user documentation.
+Comments in TON solidity code must be created accordance with https://github.com/tonlabs/TON-Solidity-Compiler/blob/a51cf8fe760286108063681c3737cb7c81492ba2/compiler/docs/natspec-format.rst
+
+```
+$ locklift gendoc --config locklift.config.js
+Found 1 sources
+Building contracts/Sample.sol
+Compiled contracts/Sample.sol
+Docs generated successfully!
+```
+
 ## Test contracts
 
 This command runs the project Mocha tests, `test` folder by default. The `locklift` object will be
@@ -128,7 +166,7 @@ $ locklift test --config locklift.config.js --network local
 This command runs an arbitrary Node JS script with already configured `locklift` module.
 
 ```
-$ locklift run --config locklift.config.js --network local --script scripts/1-deploy-sample.js 
+$ locklift run --config locklift.config.js --network local --script scripts/1-deploy-sample.js
 Sample deployed at: 0:a56a1882231c9d901a1576ec2187575b01d1e33dd71108525b205784a41ae6d0
 ```
 
@@ -313,4 +351,5 @@ Converts amount of TONs / nanoTONs into nanoTONs / TONs. Returns `BigNumber` obj
 
 ```javascript
 locklift.utils.convertCrystal(10, 'nano'); // 10000000000
-locklift.utils.convertCrystal(10000000000, 'ton'); // 10```
+locklift.utils.convertCrystal(10000000000, 'ton'); // 10
+```

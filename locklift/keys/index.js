@@ -6,7 +6,7 @@ class Keys {
     this.locklift = locklift;
     this.keyPairs = [];
   }
-  
+
   /**
    * Returns key pairs.
    * @returns {Promise<[]|Array>}
@@ -14,7 +14,7 @@ class Keys {
   async getKeyPairs() {
     return this.keyPairs;
   }
-  
+
   /**
    * Derives specific amount of keys from the specified mnemonic phrase and HD path.
    * Phrase, amount and path should be specified in the keys config section
@@ -23,7 +23,7 @@ class Keys {
   async setup() {
     const keysHDPaths = [...Array(this.locklift.networkConfig.keys.amount).keys()]
       .map(i => this.locklift.networkConfig.keys.path.replace('INDEX', i));
-    
+
     if (process.platform !== "darwin") {
       this.keyPairs = await Promise.all(keysHDPaths.map(async (path) => {
         return this.locklift.ton.client.crypto.mnemonic_derive_sign_keys({
@@ -46,6 +46,5 @@ class Keys {
     }
   }
 }
-
 
 module.exports = Keys;
