@@ -22,6 +22,7 @@ const Compiler = object({
 
 const Linker = object({
   path: defaulted(string(), () => '/usr/bin/tvm_linker'),
+  lib: any(),
 });
 
 

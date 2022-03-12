@@ -75,7 +75,8 @@ class Builder {
       
         const contractNameNoFolderStructure = contractFileName.split('/')[contractFileName.split('/').length - 1];
       
-        const tvmLinkerLog = execSync(`cd ${this.options.build} && ${this.config.linker.path} compile "${contractNameNoFolderStructure}.code" -a "${contractNameNoFolderStructure}.abi.json"`);
+        const lib = this.config.linker.lib ? ` --lib ${this.config.linker.lib} `: '';
+        const tvmLinkerLog = execSync(`cd ${this.options.build} && ${this.config.linker.path} compile ${lib} "${contractNameNoFolderStructure}.code" -a "${contractNameNoFolderStructure}.abi.json"`);
       
         const [,tvcFile] = tvmLinkerLog.toString().match(new RegExp('Saved contract to file (.*)'));
         execSync(`cd ${this.options.build} && base64 < ${tvcFile} > ${contractNameNoFolderStructure}.base64`);
