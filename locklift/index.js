@@ -6,10 +6,11 @@ const Tracing = require('./tracing');
 const utils = require('./utils');
 
 class Locklift {
-  constructor(config, network, build) {
+  constructor(config, network, build, enable_tracing) {
     this.config = config;
     this.network = network;
     this.build = build
+    this.enable_tracing = enable_tracing
     
     this.networkConfig = this.config.networks[this.network];
   }
@@ -19,7 +20,7 @@ class Locklift {
     this.factory = new Factory(this);
     this.giver = new Giver(this);
     this.keys = new Keys(this);
-    this.tracing = new Tracing(this);
+    this.tracing = new Tracing(this, this.enable_tracing);
     this.utils = utils;
     
     await this.ton.setup();

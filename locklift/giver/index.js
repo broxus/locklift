@@ -20,6 +20,7 @@ class Giver {
    * @param constructorParams Constructor parameters data
    * @param initParams Initial data
    * @param keyPair Key pair to use
+   * @param tracing Force enable or disable transaction tracing
    * @param [amount=locklift.utils.convertCrystal(10, 'nano')] Amount in nano TONs to request from giver
    * @returns {Promise<*>}
    */
@@ -28,7 +29,8 @@ class Giver {
       contract,
       constructorParams,
       initParams,
-      keyPair
+      keyPair,
+      tracing
     },
     amount=this.locklift.utils.convertCrystal(10, 'nano')
   ) {
@@ -78,10 +80,16 @@ class Giver {
       keyPair,
     });
     
-    await this.locklift.ton.waitForRunTransaction({ message, abi: contract.abi });
-    
+    const tx = await this.locklift.ton.waitForRunTransaction({ message, abi: contract.abi });
+    let trace_params = {in_msg_id: tx.transaction.in_msg}
+    if (tracing === true) {
+      trace_params.force_trace = true;
+    } else if (tracing === false) {
+      trace_params.disable_trace = true;
+    }
+    await this.locklift.tracing.trace(trace_params);
     contract.setAddress(address);
-    
+
     return contract;
   }
   
@@ -92,6 +100,7 @@ class Giver {
       address: this.locklift.networkConfig.giver.address,
       name: 'Giver',
     });
+    this.locklift.tracing.addToContext(this.locklift.networkConfig.giver.address, this.giver);
     
     // Setup giver key in case of key-protected giver
     if (this.locklift.networkConfig.giver.key) {

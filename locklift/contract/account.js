@@ -15,9 +15,10 @@ class Account extends Contract {
    * @param params Contract's method params
    * @param [value=this.locklift.utils.convertCrystal('2', 'nano')] Value to attach in nano TONs
    * @param [keyPair=this.keyPair] Key pair to use
+   * @param tracing Force enable or disable tracing for this tx
    * @returns {Promise<*>}
    */
-  async runTarget({ contract, method, params, value, keyPair }) {
+  async runTarget({ contract, method, params, value, keyPair, tracing }) {
     let body = '';
     
     if (method !== undefined) {
@@ -61,6 +62,7 @@ class Account extends Contract {
         payload: body,
       },
       keyPair: keyPair === undefined ? this.keyPair : keyPair,
+      tracing: tracing
     });
   }
 }

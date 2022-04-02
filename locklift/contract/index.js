@@ -66,9 +66,10 @@ class Contract {
    * @param method Method name
    * @param params Method params
    * @param [keyPair=this.keyPair] Key pair to use
+   * @param tracing Force disable or enable tracing for this tx
    * @returns {Promise<*>}
    */
-  async run({ method, params, keyPair }) {
+  async run({ method, params, keyPair, tracing }) {
     const message = await this.locklift.ton.createRunMessage({
       contract: this,
       method,
@@ -76,10 +77,15 @@ class Contract {
       keyPair: keyPair === undefined ? this.keyPair : keyPair,
     });
   
-    const tx = this.locklift.ton.waitForRunTransaction({ message, abi: this.abi });
-  
-    await this.afterRun(tx);
-    
+    const tx = await this.locklift.ton.waitForRunTransaction({ message, abi: this.abi });
+    let trace_params = {in_msg_id: tx.transaction.in_msg}
+    if (tracing === true) {
+      trace_params.force_trace = true;
+    } else if (tracing === false) {
+      trace_params.disable_trace = true;
+    }
+
+    await this.locklift.tracing.trace(trace_params);
     return tx;
   }
   
