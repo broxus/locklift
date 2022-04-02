@@ -30,14 +30,14 @@ class Trace {
         this.setMsgType();
         await this.decode();
         this.checkForErrors();
-        this.out_traces = await Promise.all(this.msg.out_messages.map(async (msg) => {
+        for (const msg of this.msg.out_messages) {
             const trace = new Trace(this.tracing, msg, this);
             await trace.buildTree();
             if (trace.has_error_in_tree) {
                 this.has_error_in_tree = true;
             }
-            return trace;
-        }));
+            this.out_traces.push(trace);
+        }
     }
 
     checkForErrors() {
