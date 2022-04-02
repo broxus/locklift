@@ -3,9 +3,9 @@ const BigNumber = require('bignumber.js');
 
 class OutputDecoder {
   // output - input/output value
-  constructor(value, functionAttributes) {
+  constructor(value, attributes_schema) {
     this.value = value;
-    this.functionAttributes = functionAttributes;
+    this.attributes_schema = attributes_schema;
   }
   
   decode_value(encoded_value, schema) {
@@ -76,24 +76,19 @@ class OutputDecoder {
     return value.map(hexInt => this.decodeInt(hexInt));
   }
 
-  decodeOutput() {
-    const outputDecoded = this.decodeTuple(
-        this.value,
-        this.functionAttributes.outputs
-    );
-
+  decodeFlat() {
+    const decoded = this.decode();
     // Return single output without array notation
-    if (Object.keys(outputDecoded).length === 1) {
-      return Object.values(outputDecoded)[0];
+    if (Object.keys(decoded).length === 1) {
+      return Object.values(decoded)[0];
     }
-
-    return outputDecoded;
+    return decoded;
   }
 
-  decodeInput() {
+  decode() {
     return this.decodeTuple(
         this.value,
-        this.functionAttributes.inputs
+        this.attributes_schema
     );
   }
   
@@ -106,6 +101,20 @@ class OutputDecoder {
     });
     
     return res_struct;
+  }
+
+  static autoDecode(decoded_msg, contract_abi) {
+    let attributes_schema;
+    if (decoded_msg.body_type === 'Input') {
+      attributes_schema = (contract_abi.functions.find(({ name }) => name === decoded_msg.name)).inputs;
+    } else if (decoded_msg.body_type === 'Output') {
+      attributes_schema = (contract_abi.functions.find(({ name }) => name === decoded_msg.name)).outputs;
+    } else {
+      attributes_schema = (contract_abi.events.find(({ name }) => name === decoded_msg.name)).inputs;
+    }
+
+    const decoder = new OutputDecoder(decoded_msg.value, attributes_schema);
+    return decoder.decode();
   }
 }
 

@@ -151,10 +151,10 @@ class Contract {
   
     const outputDecoder = new OutputDecoder(
       output,
-      functionAttributes
+      functionAttributes.outputs
     );
   
-    return outputDecoder.decodeOutput();
+    return outputDecoder.decodeFlat();
   }
   
   /**
