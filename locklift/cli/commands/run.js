@@ -16,12 +16,13 @@ program
   .option('--disable-build', 'Disable automatic contracts build', false)
   .option('-c, --contracts <contracts>', 'Path to the contracts folder', 'contracts')
   .option('-b, --build <build>', 'Path to the build folder', 'build')
+  .option('--external-build [build...]', 'Paths to externally built contract folders')
   .option('--enable-tracing', 'Enable transaction tracing (experimental)')
-    .option(
-        '--disable-include-path',
-        'Disables including node_modules. Use this with old compiler versions',
-        false
-    )
+  .option(
+      '--disable-include-path',
+      'Disables including node_modules. Use this with old compiler versions',
+      false
+  )
   .requiredOption(
     '-n, --network <network>',
     'Network to use, choose from configuration'
@@ -56,12 +57,7 @@ program
     }
   
     // Initialize Locklift
-    const locklift = new Locklift(
-      config,
-      options.network,
-      options.build,
-      options.enableTracing
-    );
+    const locklift = new Locklift(config, options);
   
     await locklift.setup();
   

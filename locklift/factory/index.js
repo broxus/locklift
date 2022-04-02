@@ -14,6 +14,7 @@ class Factory {
   constructor(locklift) {
     this.locklift = locklift;
     this.build = this.locklift.build
+    this.external_build = this.locklift.external_build
     this.artifacts = {}
   }
   
@@ -70,16 +71,23 @@ class Factory {
       name: contract.name
     });
   }
-  
-  async setup() {
-    const filesTree = dirTree(this.build, { extensions: /\.tvc/ });
+
+  async cacheBuildDir(directory) {
+    const filesTree = dirTree(directory, { extensions: /\.tvc/ });
     const files_flat = flatDirTree(filesTree);
     await Promise.all(files_flat.map(async (file) => {
       const tvc = fs.readFileSync(file.path, 'base64');
       const decoded = await this.locklift.ton.client.boc.decode_tvc({tvc: tvc});
       const contract_name = file.name.slice(0, -4);
-      const abi = utils.loadJSONFromFile(`${this.build}/${contract_name}.abi.json`);
-      this.artifacts[`${this.build}/${contract_name}`] = {...decoded, name: contract_name, abi: abi, base64: tvc, build: this.build};
+      const abi = utils.loadJSONFromFile(`${directory}/${contract_name}.abi.json`);
+      this.artifacts[`${directory}/${contract_name}`] = {...decoded, name: contract_name, abi: abi, base64: tvc, build: this.build};
+    }));
+  }
+  
+  async setup() {
+    await this.cacheBuildDir(this.build)
+    await Promise.all(this.external_build.map(async (dir) => {
+      await this.cacheBuildDir(dir);
     }));
   }
 }
