@@ -57,7 +57,8 @@ program
     }
   
     // Initialize Locklift and pass it into tests context
-    const locklift = new Locklift(config, options.network);
+    // TODO: add build to locklift
+    const locklift = new Locklift(config, options.network, options.build);
     
     await locklift.setup();
     

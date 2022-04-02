@@ -50,6 +50,7 @@ class Contract {
    */
   setAddress(address) {
     this.address = address;
+    this.locklift.tracing.addToContext(address, this);
   }
   
   /**
@@ -147,7 +148,7 @@ class Contract {
       functionAttributes
     );
   
-    return outputDecoder.decode();
+    return outputDecoder.decodeOutput();
   }
   
   /**

@@ -2,8 +2,9 @@ const BigNumber = require('bignumber.js');
 
 
 class OutputDecoder {
-  constructor(output, functionAttributes) {
-    this.output = output;
+  // output - input/output value
+  constructor(value, functionAttributes) {
+    this.value = value;
     this.functionAttributes = functionAttributes;
   }
   
@@ -74,19 +75,26 @@ class OutputDecoder {
   decodeIntArray(value) {
     return value.map(hexInt => this.decodeInt(hexInt));
   }
-  
-  decode() {
+
+  decodeOutput() {
     const outputDecoded = this.decodeTuple(
-      this.output,
-      this.functionAttributes.outputs
+        this.value,
+        this.functionAttributes.outputs
     );
-    
+
     // Return single output without array notation
     if (Object.keys(outputDecoded).length === 1) {
       return Object.values(outputDecoded)[0];
     }
-    
+
     return outputDecoded;
+  }
+
+  decodeInput() {
+    return this.decodeTuple(
+        this.value,
+        this.functionAttributes.inputs
+    );
   }
   
   decodeTuple(value, schema) {

@@ -57,7 +57,8 @@ program
     // Initialize Locklift
     const locklift = new Locklift(
       config,
-      options.network
+      options.network,
+      options.build
     );
   
     await locklift.setup();
