@@ -56,6 +56,14 @@ class Trace {
         if (this.type === TraceType.TRANSFER || this.type === TraceType.BOUNCE) {
             return;
         }
+
+        if (this.type === TraceType.FUNCTION_CALL && this.src_trace) {
+            // this is responsible callback with answerId = 0, we cant decode it, however contract doesnt need it too
+            if (this.src_trace.decoded_msg && this.src_trace.decoded_msg.value.answerId === '0') {
+                return;
+            }
+        }
+
         const is_internal = this.msg.msg_type === 0;
         this.decoded_msg = await this.tracing.locklift.ton.client.abi.decode_message_body({
             abi: {
