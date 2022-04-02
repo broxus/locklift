@@ -84,7 +84,7 @@ class Trace {
     async initContract() {
         for (const contract_data of Object.values(this.tracing.locklift.factory.artifacts)) {
             if (contract_data.code_hash === this.msg.code_hash) {
-                this.contract = await this.tracing.locklift.factory.getContract(contract_data.name);
+                this.contract = await this.tracing.locklift.factory.getContract(contract_data.name, contract_data.build);
                 this.contract.setAddress(this.msg.dst); // added to context automatically
                 return;
             }

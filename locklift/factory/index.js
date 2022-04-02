@@ -80,7 +80,7 @@ class Factory {
       const decoded = await this.locklift.ton.client.boc.decode_tvc({tvc: tvc});
       const contract_name = file.name.slice(0, -4);
       const abi = utils.loadJSONFromFile(`${directory}/${contract_name}.abi.json`);
-      this.artifacts[`${directory}/${contract_name}`] = {...decoded, name: contract_name, abi: abi, base64: tvc, build: this.build};
+      this.artifacts[`${directory}/${contract_name}`] = {...decoded, name: contract_name, abi: abi, base64: tvc, build: directory};
     }));
   }
   
