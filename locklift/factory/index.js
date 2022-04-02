@@ -86,9 +86,11 @@ class Factory {
   
   async setup() {
     await this.cacheBuildDir(this.build)
-    await Promise.all(this.external_build.map(async (dir) => {
-      await this.cacheBuildDir(dir);
-    }));
+    if (this.external_build) {
+      await Promise.all(this.external_build.map(async (dir) => {
+        await this.cacheBuildDir(dir);
+      }));
+    }
   }
 }
 
