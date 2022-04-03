@@ -91,7 +91,10 @@ class Trace {
             return;
         }
 
-        // if we have 60 error, dont try to decode msg
+        // 60 error on compute phase - wrong function id. We cant decode this msg with contract abi
+        if (this.error && this.error.phase === 'compute' && this.error.code === 60) {
+            return;
+        }
 
         const is_internal = this.msg.msg_type === 0;
         this.decoded_msg = await this.tracing.locklift.ton.client.abi.decode_message_body({
