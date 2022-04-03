@@ -67,9 +67,10 @@ class Contract {
    * @param params Method params
    * @param [keyPair=this.keyPair] Key pair to use
    * @param tracing Force disable or enable tracing for this tx
+   * @param tracing_allowed_codes Allowed exit/result codes for compute/actions phases, which will not throw error
    * @returns {Promise<*>}
    */
-  async run({ method, params, keyPair, tracing }) {
+  async run({ method, params, keyPair, tracing, tracing_allowed_codes={compute:[],action:[]} }) {
     const message = await this.locklift.ton.createRunMessage({
       contract: this,
       method,
@@ -78,15 +79,15 @@ class Contract {
     });
   
     const tx = await this.locklift.ton.waitForRunTransaction({ message, abi: this.abi });
-    let trace_params = {in_msg_id: tx.transaction.in_msg}
+    let trace_params = {in_msg_id: tx.transaction.in_msg, allowed_codes: tracing_allowed_codes}
     if (tracing === true) {
       trace_params.force_trace = true;
     } else if (tracing === false) {
       trace_params.disable_trace = true;
     }
 
-    await this.locklift.tracing.trace(trace_params);
-    return tx;
+    // return full msg tree
+    return await this.locklift.tracing.trace(trace_params);
   }
   
   /**

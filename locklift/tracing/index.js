@@ -7,6 +7,8 @@ class Tracing {
         this.locklift = locklift;
         this.context = new Context(locklift);
         this.enabled = enabled;
+
+        this.allowed_codes = {compute:[], action:[]}
     }
 
     async setup() {}
@@ -21,6 +23,34 @@ class Tracing {
 
     getFromContext(address) {
         return this.context.getContract(address)
+    }
+
+    allowCodes(allowed_codes={compute:[], action:[]}) {
+        if (allowed_codes.compute) {
+            this.allowed_codes.compute.push(...allowed_codes.compute);
+        }
+        if (allowed_codes.action) {
+            this.allowed_codes.action.push(...allowed_codes.action);
+        }
+    }
+
+    removeAllowedCodes(allowed_codes={compute:[], action:[]}) {
+        if (allowed_codes.compute) {
+            allowed_codes.compute.map((code) => {
+                const idx = this.allowed_codes.compute.indexOf(code);
+                if (idx > -1) {
+                    this.allowed_codes.compute.splice(idx, 1);
+                }
+            })
+        }
+        if (allowed_codes.action) {
+            allowed_codes.action.map((code) => {
+                const idx = this.allowed_codes.action.indexOf(code);
+                if (idx > -1) {
+                    this.allowed_codes.action.splice(idx, 1);
+                }
+            })
+        }
     }
 
     async buildMsgTree(in_msg_id) {
@@ -41,7 +71,7 @@ class Tracing {
         return trace;
     }
 
-    // allowed_codes - {compute: [100, 50, 12], action: [11, 12]}
+    // allowed_codes example - {compute: [100, 50, 12], action: [11, 12]}
     async trace({in_msg_id, force_trace=false, disable_trace=false, allowed_codes={compute: [], action: []}}) {
         if (force_trace === true && disable_trace === true) {
             throw 'You cant force and disable tracing at the same time!'
@@ -49,12 +79,21 @@ class Tracing {
         const msg_tree = await this.buildMsgTree(in_msg_id);
         if (disable_trace) return;
         if (this.enabled || force_trace) {
-            const trace_tree = await this.buildTracingTree(msg_tree, allowed_codes);
+            // copy global allowed codes
+            let allowed_codes_extended = JSON.parse(JSON.stringify(this.allowed_codes));
+            if (allowed_codes.compute) {
+                allowed_codes_extended.compute.push(...allowed_codes.compute);
+            }
+            if (allowed_codes.action) {
+                allowed_codes_extended.actions.push(...allowed_codes.action);
+            }
+            const trace_tree = await this.buildTracingTree(msg_tree, allowed_codes_extended);
             const reverted = this.findRevertedBranch(trace_tree);
             if (reverted) {
                 this.throwErrorInConsole(reverted);
             }
         }
+        return msg_tree;
     }
 
     throwErrorInConsole(reverted_branch) {
@@ -64,6 +103,9 @@ class Tracing {
             let name = 'undefinedContract';
             if (trace.contract) {
                 name = trace.contract.name;
+                if (trace.contract.platform) {
+                    name = `(${trace.contract.platform})${name}`;
+                }
             }
             let method = 'undefinedMethod';
             if (trace.decoded_msg) {

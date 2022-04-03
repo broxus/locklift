@@ -55,12 +55,15 @@ class Trace {
 
         // error occured during compute phase
         if (!skip_compute_check && tx && tx.compute.exit_code !== 0) {
-            // if we expected this error, its ok
+            // we didnt expect this error, save error
             if (allowed_codes.compute.indexOf(tx.compute.exit_code) === -1) {
                 this.error = {phase: 'compute', code: tx.compute.exit_code}
             }
         } else if (!skip_action_check && tx && tx.action && tx.action.result_code !== 0) {
-            this.error = {phase: 'action', code: tx.action.result_code}
+            // we didnt expect this error, save error
+            if (allowed_codes.action.indexOf(tx.action.result_code) === -1) {
+                this.error = {phase: 'action', code: tx.action.result_code}
+            }
         }
         if (this.error) {
             this.has_error_in_tree = true;
@@ -68,6 +71,7 @@ class Trace {
     }
 
     async decodeMsg() {
+        // TODO: process bounce
         if (this.type === TraceType.TRANSFER || this.type === TraceType.BOUNCE) {
             return;
         }
@@ -83,6 +87,8 @@ class Trace {
         if (this.type === TraceType.FUNCTION_CALL && !this.contract) {
             return;
         }
+
+        // if we have 60 error, dont try to decode msg
 
         const is_internal = this.msg.msg_type === 0;
         this.decoded_msg = await this.tracing.locklift.ton.client.abi.decode_message_body({
@@ -105,11 +111,10 @@ class Trace {
         }
         this.decoded_params = OutputDecoder.autoDecode(this.decoded_msg, this.contract.abi);
 
-        if (this.type === TraceType.DEPLOY && this.contract.name === 'Platform') {
+        if (this.type === TraceType.DEPLOY && (this.contract.name === 'Platform' || this.contract.name === 'DexPlatform')) {
             // replace with real contract
             await this.initContractByCode(this.decoded_msg.value.code);
-            console.log(`Replced platform with ${this.contract.name}`);
-            this.contract.platform = true;
+            this.contract.platform = this.contract.name;
         }
     }
 
@@ -136,6 +141,7 @@ class Trace {
     }
 
     async decode() {
+        // TODO: bounce
         switch (this.type) {
             case TraceType.DEPLOY:
                 await this.initContract();
