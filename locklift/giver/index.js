@@ -59,7 +59,8 @@ class Giver {
       params: {
         dest: address,
         amount,
-      }
+      },
+      tracing_allowed_codes: {compute: [null]}
     });
     
     // Wait for receiving grams
