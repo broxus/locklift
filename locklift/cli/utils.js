@@ -15,6 +15,8 @@ function checkDirEmpty(dir) {
   return fs.readdirSync(dir).length === 0;
 }
 
+const DEFAULT_CONFIG_FILE = 'locklift.config.js';
+
 
 function initializeDirIfNotExist(dir) {
   if (!fs.existsSync(dir)) {
@@ -197,4 +199,5 @@ module.exports = {
   flatDirTree,
   Builder,
   initializeDirIfNotExist,
+  DEFAULT_CONFIG_FILE
 };

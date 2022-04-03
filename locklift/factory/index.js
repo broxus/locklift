@@ -74,6 +74,9 @@ class Factory {
 
   async cacheBuildDir(directory) {
     const filesTree = dirTree(directory, { extensions: /\.tvc/ });
+    if (filesTree === null) {
+      throw new Error(`No such directory - ${directory}`);
+    }
     const files_flat = flatDirTree(filesTree);
     await Promise.all(files_flat.map(async (file) => {
       const tvc = fs.readFileSync(file.path, 'base64');

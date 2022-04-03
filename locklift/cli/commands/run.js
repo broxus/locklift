@@ -27,10 +27,11 @@ program
     '-n, --network <network>',
     'Network to use, choose from configuration'
   )
-  .requiredOption(
-    '--config <config>',
-    'Path to the config file',
-    async (config) => loadConfig(config),
+  .option(
+      '--config <config>',
+      'Path to the config file',
+      async (config) => loadConfig(config),
+      (loadConfig(utils.DEFAULT_CONFIG_FILE))
   )
   .requiredOption(
     '-s, --script <script>',

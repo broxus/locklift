@@ -26,10 +26,11 @@ program.name('gendoc')
       .default('devdoc')
       .choices(['devdoc', 'userdoc'])
   )
-  .requiredOption(
-    '--config <config>',
-    'Path to the config file',
-    async (config) => loadConfig(config),
+  .option(
+      '--config <config>',
+      'Path to the config file',
+      async (config) => loadConfig(config),
+      (loadConfig(utils.DEFAULT_CONFIG_FILE))
   )
   .action(async (options) => {
     const config = await options.config;
