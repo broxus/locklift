@@ -123,6 +123,21 @@ $ locklift test --config locklift.config.js --network local
   3 passing (3s)
 ```
 
+## Tracing
+The tracing module scans the message tree, determines which contracts have been deployed,
+and decodes all method calls. In case of an error in some section of the execution graph,
+tracing will show the chain of calls that led to the error, as well as the error itself.
+
+Tracing could be enabled on testing or running scripts with flag:
+```
+locklift test --config locklift.config.js -n local --enable-tracing
+```
+If you use contracts built outside of the locklift context you should provide all external build
+directories so that tracing module work correctly:
+```
+locklift test --config locklift.config.js -n local --enable-tracing --external-build node_modules/broxus-ton-tokens-contracts/build
+```
+
 ## Run script
 
 This command runs an arbitrary Node JS script with already configured `locklift` module.
