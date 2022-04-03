@@ -8,7 +8,7 @@ class Tracing {
         this.context = new Context(locklift);
         this.enabled = enabled;
 
-        this.allowed_codes = {compute:[], action:[]}
+        this.allowed_codes = {compute:[], action:[]};
     }
 
     async setup() {}
@@ -85,7 +85,7 @@ class Tracing {
                 allowed_codes_extended.compute.push(...allowed_codes.compute);
             }
             if (allowed_codes.action) {
-                allowed_codes_extended.actions.push(...allowed_codes.action);
+                allowed_codes_extended.action.push(...allowed_codes.action);
             }
             const trace_tree = await this.buildTracingTree(msg_tree, allowed_codes_extended);
             const reverted = this.findRevertedBranch(trace_tree);
