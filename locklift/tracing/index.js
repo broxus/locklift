@@ -1,5 +1,5 @@
 const Context = require('./context');
-const { Trace } = require('./trace');
+const { Trace, TraceType} = require('./trace');
 
 
 class Tracing {
@@ -110,6 +110,8 @@ class Tracing {
             let method = 'undefinedMethod';
             if (trace.decoded_msg) {
                 method = trace.decoded_msg.name;
+            } else if (trace.type === TraceType.BOUNCE) {
+                method = 'onBounce'
             }
             let params_str = '()';
             if (trace.decoded_params) {
@@ -130,8 +132,11 @@ class Tracing {
             console.log(`Addr: \x1b[32m${trace.msg.dst}\x1b[0m`)
             console.log(`MsgId: \x1b[32m${trace.msg.id}\x1b[0m`)
             console.log('-----------------------------------------------------------------')
+            if (trace.type === TraceType.BOUNCE) {
+                console.log('-> Bounced msg')
+            }
             if (trace.error && trace.error.ignored) {
-                console.log(`Ignored ${trace.error.code} code on ${trace.error.phase} phase`)
+                console.log(`-> Ignored ${trace.error.code} code on ${trace.error.phase} phase`)
             }
             // bold tag
             console.log(`\x1b[1m${name}.${method}\x1b[22m{value: ${msg_value.toPrecision(4)}, bounce: ${bounce}}${params_str}`)
@@ -152,7 +157,7 @@ class Tracing {
     }
 
     depthSearch(trace_tree, total_actions, action_idx) {
-        if (trace_tree.error) {
+        if (trace_tree.error && !trace_tree.error.ignored) {
             // clean unnecessary structure
             trace_tree.out_traces = [];
             return [{total_actions: total_actions, action_idx: action_idx, trace: trace_tree}];

@@ -75,7 +75,6 @@ class Trace {
     }
 
     async decodeMsg() {
-        // TODO: process bounce
         if (this.type === TraceType.TRANSFER || this.type === TraceType.BOUNCE) {
             return;
         }
@@ -146,7 +145,6 @@ class Trace {
     }
 
     async decode() {
-        // TODO: bounce
         switch (this.type) {
             case TraceType.DEPLOY:
                 await this.initContract();
@@ -160,6 +158,9 @@ class Trace {
                 break;
             case TraceType.EVENT_OR_FUNCTION_RETURN:
                 this.contract = this.tracing.getFromContext(this.msg.src);
+                break
+            case TraceType.BOUNCE:
+                this.contract = this.tracing.getFromContext(this.msg.dst);
         }
         await this.decodeMsg();
     }
