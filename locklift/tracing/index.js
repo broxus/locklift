@@ -126,12 +126,19 @@ class Tracing {
 
             console.log('\t\t⬇\n\t\t⬇');
             console.log(`\t#${action_idx + 1} action out of ${total_actions}`)
+            // green tags
             console.log(`Addr: \x1b[32m${trace.msg.dst}\x1b[0m`)
             console.log(`MsgId: \x1b[32m${trace.msg.id}\x1b[0m`)
-            console.log(`${name}.${method}{value: ${msg_value.toPrecision(3)}, bounce: ${bounce}}${params_str}`)
-            if (trace.error) {
+            console.log('-----------------------------------------------------------------')
+            if (trace.error && trace.error.ignored) {
+                console.log(`Ignored ${trace.error.code} code on ${trace.error.phase} phase`)
+            }
+            // bold tag
+            console.log(`\x1b[1m${name}.${method}\x1b[22m{value: ${msg_value.toPrecision(4)}, bounce: ${bounce}}${params_str}`)
+            if (trace.error && !trace.error.ignored) {
+                // red tag
                 console.log('\x1b[31m', `!!! Reverted with ${trace.error.code} error code on ${trace.error.phase} phase !!!`)
-                throw new Error(`Reverted with ${trace.error.code} error code on ${trace.error.phase} phase`)
+                throw new Error(`Reverted with ${trace.error.code} code on ${trace.error.phase} phase`)
             }
         }
     }

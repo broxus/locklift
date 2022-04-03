@@ -55,17 +55,21 @@ class Trace {
 
         // error occured during compute phase
         if (!skip_compute_check && tx && tx.compute.exit_code !== 0) {
+            this.error = {phase: 'compute', code: tx.compute.exit_code}
             // we didnt expect this error, save error
+            if (allowed_codes.compute.indexOf(tx.compute.exit_code) > -1) {
+                this.error.ignored = true;
+            }
             if (allowed_codes.compute.indexOf(tx.compute.exit_code) === -1) {
-                this.error = {phase: 'compute', code: tx.compute.exit_code}
             }
         } else if (!skip_action_check && tx && tx.action && tx.action.result_code !== 0) {
+            this.error = {phase: 'action', code: tx.action.result_code}
             // we didnt expect this error, save error
-            if (allowed_codes.action.indexOf(tx.action.result_code) === -1) {
-                this.error = {phase: 'action', code: tx.action.result_code}
+            if (allowed_codes.action.indexOf(tx.action.result_code) > -1) {
+                this.error.ignored = true;
             }
         }
-        if (this.error) {
+        if (this.error && !this.error.ignored) {
             this.has_error_in_tree = true;
         }
     }
@@ -113,8 +117,9 @@ class Trace {
 
         if (this.type === TraceType.DEPLOY && (this.contract.name === 'Platform' || this.contract.name === 'DexPlatform')) {
             // replace with real contract
+            const platform_type = this.contract.name;
             await this.initContractByCode(this.decoded_msg.value.code);
-            this.contract.platform = this.contract.name;
+            this.contract.platform = platform_type;
         }
     }
 
