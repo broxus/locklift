@@ -26,13 +26,13 @@ class Trace {
         this.has_error_in_tree = false;
     }
 
-    async buildTree() {
+    async buildTree(allowed_codes={compute: [], action: []}) {
         this.setMsgType();
+        this.checkForErrors(allowed_codes);
         await this.decode();
-        this.checkForErrors();
         for (const msg of this.msg.out_messages) {
             const trace = new Trace(this.tracing, msg, this);
-            await trace.buildTree();
+            await trace.buildTree(allowed_codes);
             if (trace.has_error_in_tree) {
                 this.has_error_in_tree = true;
             }
@@ -40,11 +40,26 @@ class Trace {
         }
     }
 
-    checkForErrors() {
+    // allowed_codes - {compute: [100, 50, 12], action: [11, 12]}
+    checkForErrors(allowed_codes={compute: [], action: []}) {
         const tx = this.msg.dst_transaction;
-        if (tx && tx.compute.exit_code > 0) {
-            this.error = {phase: 'compute', code: tx.compute.exit_code}
-        } else if (tx && tx.action && tx.action.result_code !== 0) {
+
+        let skip_compute_check = false;
+        if (tx && (tx.compute.success || tx.compute.compute_type === 0) && !tx.aborted) {
+            skip_compute_check = true;
+        }
+        let skip_action_check = false;
+        if (tx && tx.action && tx.action.success) {
+            skip_action_check = true;
+        }
+
+        // error occured during compute phase
+        if (!skip_compute_check && tx && tx.compute.exit_code !== 0) {
+            // if we expected this error, its ok
+            if (allowed_codes.compute.indexOf(tx.compute.exit_code) === -1) {
+                this.error = {phase: 'compute', code: tx.compute.exit_code}
+            }
+        } else if (!skip_action_check && tx && tx.action && tx.action.result_code !== 0) {
             this.error = {phase: 'action', code: tx.action.result_code}
         }
         if (this.error) {
@@ -64,6 +79,11 @@ class Trace {
             }
         }
 
+        // function call, but we dont have contract here => we cant decode msg
+        if (this.type === TraceType.FUNCTION_CALL && !this.contract) {
+            return;
+        }
+
         const is_internal = this.msg.msg_type === 0;
         this.decoded_msg = await this.tracing.locklift.ton.client.abi.decode_message_body({
             abi: {
@@ -74,7 +94,7 @@ class Trace {
             is_internal: is_internal
         });
 
-        // determine more precisely its an event or function return
+        // determine more precisely is it an event or function return
         if (this.type === TraceType.EVENT_OR_FUNCTION_RETURN) {
             const is_function_return = this.contract.abi.functions.find(({ name }) => name === this.decoded_msg.name);
             if (is_function_return) {
@@ -83,8 +103,14 @@ class Trace {
                 this.type = TraceType.EVENT;
             }
         }
-
         this.decoded_params = OutputDecoder.autoDecode(this.decoded_msg, this.contract.abi);
+
+        if (this.type === TraceType.DEPLOY && this.contract.name === 'Platform') {
+            // replace with real contract
+            await this.initContractByCode(this.decoded_msg.value.code);
+            console.log(`Replced platform with ${this.contract.name}`);
+            this.contract.platform = true;
+        }
     }
 
 
@@ -92,6 +118,16 @@ class Trace {
     async initContract() {
         for (const contract_data of Object.values(this.tracing.locklift.factory.artifacts)) {
             if (contract_data.code_hash === this.msg.code_hash) {
+                this.contract = await this.tracing.locklift.factory.getContract(contract_data.name, contract_data.build);
+                this.contract.setAddress(this.msg.dst); // added to context automatically
+                return;
+            }
+        }
+    }
+
+    async initContractByCode(code) {
+        for (const contract_data of Object.values(this.tracing.locklift.factory.artifacts)) {
+            if (contract_data.code === code) {
                 this.contract = await this.tracing.locklift.factory.getContract(contract_data.name, contract_data.build);
                 this.contract.setAddress(this.msg.dst); // added to context automatically
                 return;
