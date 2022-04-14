@@ -1,5 +1,9 @@
 const Context = require('./context');
 const { Trace, TraceType} = require('./trace');
+const ConsoleAbi = require('../console.abi.json');
+
+
+const CONSOLE_ADDRESS = '0:7fffffffffffffffffffffffffffffffffffffffffffffffff123456789abcde';
 
 
 class Tracing {
@@ -53,9 +57,24 @@ class Tracing {
         }
     }
 
+    async printConsoleMsg(msg) {
+        const decoded_msg = await this.locklift.ton.client.abi.decode_message_body({
+            abi: {
+                type: 'Contract',
+                value: ConsoleAbi
+            },
+            body: msg.body,
+            is_internal: true
+        });
+        console.log(decoded_msg.value._log);
+    }
+
     async buildMsgTree(in_msg_id) {
         const msg_query = `{messages(filter:{id:{eq:"${in_msg_id}"}}){id,body,code_hash,src,msg_type,dst,dst_transaction{status,aborted,out_msgs,compute{exit_code,compute_type,success},action{result_code,success}},status,value,bounced,bounce}}`;
-            const msg = (await locklift.ton.client.net.query({ "query": msg_query })).result.data.messages[0];
+        const msg = (await locklift.ton.client.net.query({ "query": msg_query })).result.data.messages[0];
+        if (msg.dst === CONSOLE_ADDRESS) {
+            await this.printConsoleMsg(msg);
+        }
         msg.out_messages = [];
         if (msg.dst_transaction && msg.dst_transaction.out_msgs.length > 0) {
             msg.out_messages = await Promise.all(msg.dst_transaction.out_msgs.map(async (msg_id) => {

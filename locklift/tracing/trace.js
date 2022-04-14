@@ -10,6 +10,9 @@ const TraceType = {
 }
 
 
+const CONSOLE_ADDRESS = '0:7fffffffffffffffffffffffffffffffffffffffffffffffff123456789abcde';
+
+
 class Trace {
     constructor(tracing, msg, src_trace=null) {
         this.tracing = tracing;
@@ -44,6 +47,10 @@ class Trace {
     checkForErrors(allowed_codes={compute: [], action: []}) {
         const tx = this.msg.dst_transaction;
 
+        if (this.msg.dst === CONSOLE_ADDRESS) {
+            return;
+        }
+
         let skip_compute_check = false;
         if (tx && (tx.compute.success || tx.compute.compute_type === 0) && !tx.aborted) {
             skip_compute_check = true;
@@ -75,6 +82,10 @@ class Trace {
     }
 
     async decodeMsg() {
+        if (this.msg.dst === CONSOLE_ADDRESS) {
+            return;
+        }
+
         if (this.type === TraceType.TRANSFER || this.type === TraceType.BOUNCE) {
             return;
         }
