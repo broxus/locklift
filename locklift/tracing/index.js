@@ -157,6 +157,9 @@ class Tracing {
             if (trace.error && trace.error.ignored) {
                 console.log(`-> Ignored ${trace.error.code} code on ${trace.error.phase} phase`)
             }
+            if (!trace.contract) {
+                console.log('-> Contract not deployed/Not recognized because build artifacts not provided')
+            }
             // bold tag
             console.log(`\x1b[1m${name}.${method}\x1b[22m{value: ${msg_value.toPrecision(4)}, bounce: ${bounce}}${params_str}`)
             if (trace.error && !trace.error.ignored) {

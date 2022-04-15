@@ -107,6 +107,10 @@ class Trace {
             return;
         }
 
+        if (!this.contract) {
+            return;
+        }
+
         const is_internal = this.msg.msg_type === 0;
         this.decoded_msg = await this.tracing.locklift.ton.client.abi.decode_message_body({
             abi: {
