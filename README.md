@@ -122,7 +122,20 @@ $ locklift test --config locklift.config.js --network local
 
   3 passing (3s)
 ```
+### Debugging
+You can print to console in contracts with special library:
+```
+import "locklift/console.sol";
 
+contract Sample {
+    function testFunc(uint input) external {
+        tvm.accept();
+        
+        console.log(format("You called testFunc with input = {}", input));
+    }
+}
+```
+Note that `console.log` use internal msg spending 0.01 ever. 
 ## Tracing
 The tracing module scans the message tree, determines which contracts have been deployed,
 and decodes all method calls. In case of an error in some section of the execution graph,
