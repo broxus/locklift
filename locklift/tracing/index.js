@@ -38,6 +38,40 @@ class Tracing {
         }
     }
 
+    allowCodesForAddress(address, allowed_codes={compute:[], action:[]}) {
+        if (!this.allowed_codes[address]) {
+            this.allowed_codes[address] = {compute:[], action:[]};
+        }
+        if (allowed_codes.compute) {
+            this.allowed_codes[address].compute.push(...allowed_codes.compute);
+        }
+        if (allowed_codes.action) {
+            this.allowed_codes[address].action.push(...allowed_codes.action);
+        }
+    }
+
+    removeAllowedCodesForAddress(address, allowed_codes={compute:[], action:[]}) {
+        if (!this.allowed_codes[address]) {
+            this.allowed_codes[address] = {compute:[], action:[]};
+        }
+        if (allowed_codes.compute) {
+            this.allowed_codes[address].compute.map((code) => {
+                const idx = this.allowed_codes[address].compute.indexOf(code);
+                if (idx > -1) {
+                    this.allowed_codes[address].compute.splice(idx, 1);
+                }
+            })
+        }
+        if (allowed_codes.action) {
+            this.allowed_codes[address].action.map((code) => {
+                const idx = this.allowed_codes[address].action.indexOf(code);
+                if (idx > -1) {
+                    this.allowed_codes[address].action.splice(idx, 1);
+                }
+            })
+        }
+    }
+
     removeAllowedCodes(allowed_codes={compute:[], action:[]}) {
         if (allowed_codes.compute) {
             allowed_codes.compute.map((code) => {
@@ -90,8 +124,13 @@ class Tracing {
         return trace;
     }
 
-    // allowed_codes example - {compute: [100, 50, 12], action: [11, 12]}
-    async trace({in_msg_id, force_trace=false, disable_trace=false, allowed_codes={compute: [], action: []}}) {
+    // allowed_codes example - {compute: [100, 50, 12], action: [11, 12], "ton_addr": {compute: [60], action: [2]}}
+    async trace({
+        in_msg_id,
+        force_trace=false,
+        disable_trace=false,
+        allowed_codes={compute: [], action: [], any: {compute: [], action: []}}}
+    ) {
         if (force_trace === true && disable_trace === true) {
             throw 'You cant force and disable tracing at the same time!'
         }
@@ -100,6 +139,24 @@ class Tracing {
         if (this.enabled || force_trace) {
             // copy global allowed codes
             let allowed_codes_extended = JSON.parse(JSON.stringify(this.allowed_codes));
+            for (const [key, value] of Object.entries(allowed_codes)) {
+                if (key === 'compute') {
+                    allowed_codes_extended.compute.push(...value);
+                } else if (key === 'action') {
+                    allowed_codes_extended.action.push(...value);
+                } else {
+                    // key - address, value - {compute:[], action:[]}
+                    if (!allowed_codes_extended[key]) {
+                        allowed_codes_extended[key] = {compute:[], action:[]};
+                    }
+                    if (value.compute) {
+                        allowed_codes_extended[key].compute.push(...value.compute);
+                    }
+                    if (value.action) {
+                        allowed_codes_extended[key].action.push(...value.action);
+                    }
+                }
+            }
             if (allowed_codes.compute) {
                 allowed_codes_extended.compute.push(...allowed_codes.compute);
             }

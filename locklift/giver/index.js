@@ -21,6 +21,7 @@ class Giver {
    * @param initParams Initial data
    * @param keyPair Key pair to use
    * @param tracing Force enable or disable transaction tracing
+   * @param tracing_allowed_codes Allowed exit/result codes for compute/actions phases, which will not throw error
    * @param [amount=locklift.utils.convertCrystal(10, 'nano')] Amount in nano TONs to request from giver
    * @returns {Promise<*>}
    */
@@ -30,7 +31,8 @@ class Giver {
       constructorParams,
       initParams,
       keyPair,
-      tracing
+      tracing,
+      tracing_allowed_codes={compute: [], action: [], any: {compute: [], action: []}}
     },
     amount=this.locklift.utils.convertCrystal(10, 'nano')
   ) {
@@ -82,7 +84,7 @@ class Giver {
     });
     
     const tx = await this.locklift.ton.waitForRunTransaction({ message, abi: contract.abi });
-    let trace_params = {in_msg_id: tx.transaction.in_msg}
+    let trace_params = {in_msg_id: tx.transaction.in_msg, allowed_codes: tracing_allowed_codes}
     if (tracing === true) {
       trace_params.force_trace = true;
     } else if (tracing === false) {

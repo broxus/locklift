@@ -201,22 +201,28 @@ We can tell tracing to ignore specific errors on compute or action phases.
 
 We can ignore errors on specific call:
 ```
-// tracing will ignore all 51 and 60 errors on compute phase + 30 error on action phase
-// note that these errors will be ignored for all msgs created by this call, not just for 1 one
+// Tracing will ignore all 51 and 60 errors on compute phase + 30 error on action phase
+// Here 51 compute and 30 action errors will be ignored for all transacions in msg chain and 60 compute error
+// will be ignored only on specific address
 await user.runTarget({
   contract: root,
   method: 'deployEmptyWallet',
   params: {},
-  tracing_allowed_codes: {compute: [51, 60], action: [30]}
+  tracing_allowed_codes: {compute: [51], action: [30], SOME_ADDRESS: {compute: [60]}}
 });
 ```
 Or set ignoring by default for all further calls:
 ```
-// ignore only compute phase erros
+// ignore compute phase erros for all transactions
 locklift.tracing.allowCodes({compute: [51, 60]})
+// ignore more errors for specific address
+locklift.tracing.allowCodesForAddress(SOME_ADDRESS, {compute: [123], action: [111]})
 
 // remove code from default list of ignored errors, so that only 51 erros will be ignored
+// this affects only global rules, per-address rules are not modified
 locklift.tracing.removeAllowedCodes({compute: [60]})
+// remove code from deault list of ignored errors for specific address
+locklift.tracing.removeAllowedCodesForAddress(SOME_ADDRESS, {compute: [123]})
 ```
 If we enabled tracing with flag, but we want to disable tracing for specific call we can force-disable it:
 ```

@@ -29,7 +29,7 @@ class Trace {
         this.has_error_in_tree = false;
     }
 
-    async buildTree(allowed_codes={compute: [], action: []}) {
+    async buildTree(allowed_codes={compute: [], action: [], any: {compute: [], action: []}}) {
         this.setMsgType();
         this.checkForErrors(allowed_codes);
         await this.decode();
@@ -44,7 +44,7 @@ class Trace {
     }
 
     // allowed_codes - {compute: [100, 50, 12], action: [11, 12]}
-    checkForErrors(allowed_codes={compute: [], action: []}) {
+    checkForErrors(allowed_codes={compute: [], action: [], any: {compute: [], action: []}}) {
         const tx = this.msg.dst_transaction;
 
         if (this.msg.dst === CONSOLE_ADDRESS) {
@@ -64,15 +64,19 @@ class Trace {
         if (!skip_compute_check && tx && tx.compute.exit_code !== 0) {
             this.error = {phase: 'compute', code: tx.compute.exit_code}
             // we didnt expect this error, save error
-            if (allowed_codes.compute.indexOf(tx.compute.exit_code) > -1) {
+            if (
+                allowed_codes.compute.indexOf(tx.compute.exit_code) > -1 ||
+                (allowed_codes[this.msg.dst] && allowed_codes[this.msg.dst].compute.indexOf(tx.compute.exit_code) > -1)
+            ) {
                 this.error.ignored = true;
-            }
-            if (allowed_codes.compute.indexOf(tx.compute.exit_code) === -1) {
             }
         } else if (!skip_action_check && tx && tx.action && tx.action.result_code !== 0) {
             this.error = {phase: 'action', code: tx.action.result_code}
             // we didnt expect this error, save error
-            if (allowed_codes.action.indexOf(tx.action.result_code) > -1) {
+            if (
+                allowed_codes.action.indexOf(tx.action.result_code) > -1 ||
+                (allowed_codes[this.msg.dst] && allowed_codes[this.msg.dst].action.indexOf(tx.action.result_code) > -1)
+            ) {
                 this.error.ignored = true;
             }
         }

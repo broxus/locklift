@@ -19,7 +19,7 @@ class Account extends Contract {
    * @param tracing_allowed_codes Allowed exit/result codes for compute/actions phases, which will not throw error
    * @returns {Promise<*>}
    */
-  async runTarget({ contract, method, params, value, keyPair, tracing, tracing_allowed_codes={compute:[],action:[]} }) {
+  async runTarget({ contract, method, params, value, keyPair, tracing, tracing_allowed_codes={compute: [], action: [], any: {compute: [], action: []}} }) {
     let body = '';
     
     if (method !== undefined) {

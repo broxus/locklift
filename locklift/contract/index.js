@@ -70,7 +70,7 @@ class Contract {
    * @param tracing_allowed_codes Allowed exit/result codes for compute/actions phases, which will not throw error
    * @returns {Promise<*>}
    */
-  async run({ method, params, keyPair, tracing, tracing_allowed_codes={compute:[],action:[]} }) {
+  async run({ method, params, keyPair, tracing, tracing_allowed_codes={compute: [], action: [], any: {compute: [], action: []}} }) {
     const message = await this.locklift.ton.createRunMessage({
       contract: this,
       method,
