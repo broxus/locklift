@@ -87,7 +87,9 @@ class Contract {
     }
 
     // return full msg tree
-    return await this.locklift.tracing.trace(trace_params);
+    const msg_tree = await this.locklift.tracing.trace(trace_params);
+    msg_tree.decoded = tx.decoded; // for back compatibility
+    return msg_tree;
   }
   
   /**
