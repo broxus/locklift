@@ -1,5 +1,4 @@
-const Contract = require('./index');
-
+const Contract = require("./index");
 
 /**
  * Account contract wrapping. Extending Contract object. Implements method
@@ -18,19 +17,31 @@ class Account extends Contract {
    * @returns {Promise<*>}
    */
   async runTarget({ contract, method, params, value, keyPair }) {
-    let body = '';
-    
+    let body = "";
+
     if (method !== undefined) {
       const extendedParams = params === undefined ? {} : params;
-  
+
       if (this.autoAnswerIdOnCall) {
-        if (contract.abi.functions.find(e => e.name === method).inputs.find(e => e.name === '_answer_id')) {
-          extendedParams._answer_id = extendedParams._answer_id === undefined ? 1 : extendedParams._answer_id;
-        } else if (contract.abi.functions.find(e => e.name === method).inputs.find(e => e.name === 'answerId')) {
-          extendedParams.answerId = extendedParams.answerId === undefined ? 1 : extendedParams.answerId;
+        if (
+          contract.abi.functions
+            .find(e => e.name === method)
+            .inputs.find(e => e.name === "_answer_id")
+        ) {
+          extendedParams._answer_id =
+            extendedParams._answer_id === undefined
+              ? 1
+              : extendedParams._answer_id;
+        } else if (
+          contract.abi.functions
+            .find(e => e.name === method)
+            .inputs.find(e => e.name === "answerId")
+        ) {
+          extendedParams.answerId =
+            extendedParams.answerId === undefined ? 1 : extendedParams.answerId;
         }
       }
-  
+
       const message = await this.locklift.ton.client.abi.encode_message_body({
         address: contract.address,
         abi: {
@@ -42,20 +53,22 @@ class Account extends Contract {
           input: extendedParams,
         },
         signer: {
-          type: 'None',
+          type: "None",
         },
         is_internal: true,
       });
-      
+
       body = message.body;
     }
-    
+
     return this.run({
-      method: 'sendTransaction',
+      method: "sendTransaction",
       params: {
         dest: contract.address,
-        value: value === undefined ?
-          this.locklift.utils.convertCrystal('2', 'nano') : value,
+        value:
+          value === undefined
+            ? this.locklift.utils.convertCrystal("2", "nano")
+            : value,
         bounce: true,
         flags: 0,
         payload: body,
@@ -64,6 +77,5 @@ class Account extends Contract {
     });
   }
 }
-
 
 module.exports = Account;
