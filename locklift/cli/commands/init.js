@@ -8,14 +8,8 @@ const program = new Command();
 program
   .name("init")
   .description("Initialize sample Locklift project in a directory")
-  .requiredOption(
-    "-p, --path <path>",
-    "Path to the project folder",
-    ".")
-  .option(
-    "-f, --force",
-    "Ignore non-empty path",
-    false)
+  .requiredOption("-p, --path <path>", "Path to the project folder", ".")
+  .option("-f, --force", "Ignore non-empty path", false)
   .action(options => {
     const pathEmpty = utils.checkDirEmpty(options.path);
 
@@ -37,6 +31,23 @@ program
 
       console.log(`New Locklift project initialized in ${options.path}`);
     });
+
+    let rootDir;
+    if (options.path === ".") {
+      rootDir = process.cwd();
+    } else {
+      rootDir = options.path;
+    }
+
+    fs.writeJSONSync(
+      "./../locklift/config/env.json",
+      JSON.stringify({ rootDir: rootDir, initialized: true }),
+      err => {
+        if (err) {
+          throw err;
+        }
+      },
+    );
   });
 
 module.exports = program;
