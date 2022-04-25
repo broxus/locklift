@@ -13,7 +13,11 @@ const program = new Command();
 program
   .name("run")
   .description("Run arbitrary locklift script")
-  .option("--disable-build", "Disable automatic contracts build", false)
+  .option(
+    "--disable-build",
+    "Disable automatic contracts build",
+    env.disableBuild,
+  )
   .option(
     "-c, --contracts <contracts>",
     "Path to the contracts folder",
@@ -29,16 +33,17 @@ program
     "-n, --network <network>",
     "Network to use, choose from configuration",
   )
-  .option(
-    "--config <config>",
-    "Path to the config file",
-    async config => loadConfig(config),
-    async => loadConfig(`${env.rootDir}/locklift.config.js`),
+  .option("--config <config>", "Path to the config file", async config =>
+    loadConfig(config),
   )
   .requiredOption("-s, --script <script>", "Script to run")
   .allowUnknownOption()
   .action(async options => {
-    const config = await options.config;
+    let config = await options.config;
+
+    if (config === undefined) {
+      config = await loadConfig(`${env.rootDir}/locklift.config.js`);
+    }
 
     if (config.networks[options.network] === undefined) {
       console.error(`Can't find configuration for ${options.network} network!`);

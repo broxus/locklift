@@ -32,14 +32,15 @@ program
       .default("devdoc")
       .choices(["devdoc", "userdoc"]),
   )
-  .option(
-    "--config <config>",
-    "Path to the config file",
-    async config => loadConfig(config),
-    async => loadConfig(`${env.rootDir}/locklift.config.js`),
+  .option("--config <config>", "Path to the config file", async config =>
+    loadConfig(config),
   )
   .action(async options => {
-    const config = await options.config;
+    let config = await options.config;
+
+    if (config === undefined) {
+      config = await loadConfig(`${env.rootDir}/locklift.config.js`);
+    }
 
     utils.initializeDirIfNotExist(options.build);
     utils.initializeDirIfNotExist(options.docs);

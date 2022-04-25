@@ -64,42 +64,33 @@ async function loadConfig(configPath) {
 
   const configFile = require(resolvedConfigPath);
 
-  const config = create(configFile, Config);
-
   const client = new TonClient();
+  const keys = JSON.parse(require(`${env.rootDir}/keys.json`));
 
-  config.networks = await Object.entries(config.networks).reduce(
-    async (accP, [network, networkConfig]) => {
-      const acc = await accP;
+  if (keys.mnemonic === "") {
+    const phrase = await client.crypto.mnemonic_from_random({
+      dictionary: 1,
+      word_count: 12,
+    });
 
-      const keys = require(`${env.rootDir}/keys.json`);
+    keys.mnemonic = phrase.phrase;
 
-      if (keys.mnemonic === "") {
-        const phrase = await client.crypto.mnemonic_from_random({
-          dictionary: 1,
-          word_count: 12,
-        });
-
-        keys.mnemonic = phrase.phrase;
-
-        fse.writeJSON(`${env.rootDir}/keys.json`, JSON.stringify(keys), err => {
-          if (err) {
-            throw err;
-          }
-        });
-
-        console.log(
-          `A new mnemonic phrase has been generated in ${env.rootDir}/keys.json`,
-        );
+    fse.writeJSONSync(`${env.rootDir}/keys.json`, JSON.stringify(keys), err => {
+      if (err) {
+        throw err;
       }
+    });
 
-      return {
-        ...acc,
-        [network]: networkConfig,
-      };
-    },
-    Promise.resolve({}),
-  );
+    console.log(
+      `A new mnemonic phrase has been generated in ${env.rootDir}/keys.json`,
+    );
+  }
+
+  configFile.networks.local.keys = {
+    phrase: keys.mnemonic,
+    amount: 12,
+  };
+  const config = create(configFile, Config);
 
   return config;
 }

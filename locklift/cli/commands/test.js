@@ -31,16 +31,17 @@ program
     "-n, --network <network>",
     "Network to use, choose from configuration",
   )
-  .option(
-    "--config <config>",
-    "Path to the config file",
-    async config => loadConfig(config),
-    async => loadConfig(`${env.rootDir}/locklift.config.js`),
+  .option("--config <config>", "Path to the config file", async config =>
+    loadConfig(config),
   )
   .option("--tests [tests...]", "Set of tests to run, separated by comma")
   .allowUnknownOption()
   .action(async options => {
-    const config = await options.config;
+    let config = await options.config;
+
+    if (config === undefined) {
+      config = await loadConfig(`${env.rootDir}/locklift.config.js`);
+    }
 
     if (config.networks[options.network] === undefined) {
       console.error(`Can't find configuration for ${options.network} network!`);

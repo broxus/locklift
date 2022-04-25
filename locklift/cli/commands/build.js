@@ -20,15 +20,15 @@ program
     "Disables including node_modules. Use this with old compiler versions",
     false,
   )
-  .option(
-    "--config <config>",
-    "Path to the config file",
-    async config => loadConfig(config),
-    asnnc => loadConfig(`${env.rootDir}/locklift.config.js`),
+  .option("--config <config>", "Path to the config file", async config =>
+    loadConfig(config),
   )
   .action(async options => {
-    const config = await options.config;
+    let config = await options.config;
 
+    if (config === undefined) {
+      config = await loadConfig(`${env.rootDir}/locklift.config.js`);
+    }
     utils.initializeDirIfNotExist(options.build);
 
     const builder = new utils.Builder(config, options);
