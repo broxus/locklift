@@ -1,10 +1,10 @@
 const { Command } = require("commander");
-const fs = require("fs");
 
 const { loadConfig } = require("./../../config");
 const utils = require("./../utils");
 
 const program = new Command();
+const env = utils.env;
 
 program
   .name("build")
@@ -20,10 +20,11 @@ program
     "Disables including node_modules. Use this with old compiler versions",
     false,
   )
-  .requiredOption(
+  .option(
     "--config <config>",
     "Path to the config file",
     async config => loadConfig(config),
+    asnnc => loadConfig(`${env.rootDir}/locklift.config.js`),
   )
   .action(async options => {
     const config = await options.config;

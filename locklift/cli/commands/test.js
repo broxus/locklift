@@ -7,6 +7,7 @@ const dirTree = require("directory-tree");
 const { loadConfig } = require("./../../config");
 const { Locklift } = require("./../../index");
 const utils = require("./../utils");
+const env = utils.env;
 
 const program = new Command();
 
@@ -30,10 +31,11 @@ program
     "-n, --network <network>",
     "Network to use, choose from configuration",
   )
-  .requiredOption(
+  .option(
     "--config <config>",
     "Path to the config file",
     async config => loadConfig(config),
+    async => loadConfig(`${env.rootDir}/locklift.config.js`),
   )
   .option("--tests [tests...]", "Set of tests to run, separated by comma")
   .allowUnknownOption()

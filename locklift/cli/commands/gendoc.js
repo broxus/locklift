@@ -2,7 +2,7 @@ const { Command, Option } = require("commander");
 
 const { loadConfig } = require("./../../config");
 const utils = require("./../utils");
-
+const env = utils.env;
 const program = new Command();
 
 program
@@ -32,10 +32,11 @@ program
       .default("devdoc")
       .choices(["devdoc", "userdoc"]),
   )
-  .requiredOption(
+  .option(
     "--config <config>",
     "Path to the config file",
     async config => loadConfig(config),
+    async => loadConfig(`${env.rootDir}/locklift.config.js`),
   )
   .action(async options => {
     const config = await options.config;

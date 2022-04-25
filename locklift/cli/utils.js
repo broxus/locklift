@@ -5,6 +5,7 @@ const _ = require("underscore");
 const { resolve } = require("path");
 const ejs = require("ejs");
 const tablemark = require("tablemark");
+const env = JSON.parse(require("../config/env.json"));
 
 function checkDirEmpty(dir) {
   if (!fs.existsSync(dir)) {
@@ -70,8 +71,9 @@ class Builder {
         // No code was compiled, probably interface compilation
         if (output.toString() === "") return;
 
-        const contractNameNoFolderStructure =
-          contractFileName.split("/")[contractFileName.split("/").length - 1];
+        const contractNameNoFolderStructure = contractFileName.split("/")[
+          contractFileName.split("/").length - 1
+        ];
 
         const lib = this.config.linker.lib
           ? ` --lib ${this.config.linker.lib} `

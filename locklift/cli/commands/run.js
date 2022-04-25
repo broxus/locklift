@@ -6,6 +6,7 @@ const { Command } = require("commander");
 const { loadConfig } = require("./../../config");
 const { Locklift } = require("./../../index");
 const utils = require("./../utils");
+const env = utils.env;
 
 const program = new Command();
 
@@ -28,10 +29,11 @@ program
     "-n, --network <network>",
     "Network to use, choose from configuration",
   )
-  .requiredOption(
+  .option(
     "--config <config>",
     "Path to the config file",
     async config => loadConfig(config),
+    async => loadConfig(`${env.rootDir}/locklift.config.js`),
   )
   .requiredOption("-s, --script <script>", "Script to run")
   .allowUnknownOption()

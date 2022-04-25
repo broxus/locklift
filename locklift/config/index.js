@@ -1,4 +1,5 @@
 const fs = require("fs");
+const fse = require("fs-extra");
 const path = require("path");
 const commander = require("commander");
 const {
@@ -10,6 +11,8 @@ const {
   integer,
   record,
 } = require("superstruct");
+
+const env = JSON.parse(require("../config/env.json"));
 
 const { TonClient } = require("@tonclient/core");
 const { libNode } = require("@tonclient/lib-node");
@@ -33,7 +36,7 @@ const Giver = object({
 const Keys = object({
   phrase: string(),
   amount: defaulted(integer(), () => 25),
-  path: defaulted(string(), () => 'm/44\'/396\'/0\'/0/INDEX'),
+  path: defaulted(string(), () => "m/44'/396'/0'/0/INDEX"),
 });
 
 const Network = object({
@@ -52,21 +55,16 @@ async function loadConfig(configPath) {
   const resolvedConfigPath = path.resolve(process.cwd(), configPath);
 
   if (!fs.existsSync(resolvedConfigPath)) {
-    throw new commander.InvalidOptionArgumentError(
-      `Config at ${configPath} not found!`,
-    );
+    if (env.initialized) {
+      throw new commander.InvalidOptionArgumentError(
+        `Config at ${configPath} not found!`,
+      );
+    } else return;
   }
 
   const configFile = require(resolvedConfigPath);
 
   const config = create(configFile, Config);
-
-  // Ad hoc
-  // Since superstruct not allows async default value, default mnemonic phrases are generated bellow
-  function genHexString(len) {
-    const str = Math.floor(Math.random() * Math.pow(16, len)).toString(16);
-    return "0".repeat(len - str.length) + str;
-  }
 
   const client = new TonClient();
 
@@ -74,15 +72,25 @@ async function loadConfig(configPath) {
     async (accP, [network, networkConfig]) => {
       const acc = await accP;
 
-      if (networkConfig.keys.phrase === "") {
-        const entropy = genHexString(32);
+      const keys = require(`${env.rootDir}/keys.json`);
 
-        const { phrase } = await client.crypto.mnemonic_from_entropy({
-          entropy,
+      if (keys.mnemonic === "") {
+        const phrase = await client.crypto.mnemonic_from_random({
+          dictionary: 1,
           word_count: 12,
         });
 
-        networkConfig.keys.phrase = phrase;
+        keys.mnemonic = phrase.phrase;
+
+        fse.writeJSON(`${env.rootDir}/keys.json`, JSON.stringify(keys), err => {
+          if (err) {
+            throw err;
+          }
+        });
+
+        console.log(
+          `A new mnemonic phrase has been generated in ${env.rootDir}/keys.json`,
+        );
       }
 
       return {
