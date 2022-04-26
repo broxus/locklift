@@ -8,15 +8,17 @@ const { Locklift } = require("./../../index");
 const utils = require("./../utils");
 const env = utils.env;
 
-const program = new Command();
+const config = require(`${env.rootDir}/locklift.config.js`);
 
+const program = new Command();
+console.log(config);
 program
   .name("run")
   .description("Run arbitrary locklift script")
   .option(
     "--disable-build",
     "Disable automatic contracts build",
-    env.disableBuild,
+    config.disableBuild,
   )
   .option(
     "-c, --contracts <contracts>",

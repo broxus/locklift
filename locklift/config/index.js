@@ -10,6 +10,7 @@ const {
   any,
   integer,
   record,
+  boolean,
 } = require("superstruct");
 
 const env = JSON.parse(require("../config/env.json"));
@@ -49,6 +50,7 @@ const Config = object({
   compiler: Compiler,
   linker: Linker,
   networks: record(string(), Network),
+  disableBuild: boolean(),
 });
 
 async function loadConfig(configPath) {
@@ -65,7 +67,7 @@ async function loadConfig(configPath) {
   const configFile = require(resolvedConfigPath);
 
   const client = new TonClient();
-  const keys = JSON.parse(require(`${env.rootDir}/keys.json`));
+  let keys = require(`${env.rootDir}/keys.json`);
 
   if (keys.mnemonic === "") {
     const phrase = await client.crypto.mnemonic_from_random({
@@ -84,12 +86,15 @@ async function loadConfig(configPath) {
     console.log(
       `A new mnemonic phrase has been generated in ${env.rootDir}/keys.json`,
     );
+  } else {
+    keys = JSON.parse(keys);
   }
 
   configFile.networks.local.keys = {
     phrase: keys.mnemonic,
     amount: 12,
   };
+
   const config = create(configFile, Config);
 
   return config;

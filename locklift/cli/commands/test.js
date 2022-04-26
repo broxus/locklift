@@ -9,12 +9,18 @@ const { Locklift } = require("./../../index");
 const utils = require("./../utils");
 const env = utils.env;
 
+const config = require(`${env.rootDir}/locklift.config.js`);
+
 const program = new Command();
 
 program
   .name("test")
   .description("Run mocha tests")
-  .option("--disable-build", "Disable automatic contracts build", false)
+  .option(
+    "--disable-build",
+    "Disable automatic contracts build",
+    config.disableBuild,
+  )
   .option("-t, --test <test>", "Path to Mocha test folder", "test")
   .option(
     "-c, --contracts <contracts>",

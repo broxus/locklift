@@ -36,7 +36,7 @@ program
     const status = builder.buildContracts();
 
     if (status === false) process.exit(1);
-
+    console.log(config);
     process.exit(0);
   });
 
