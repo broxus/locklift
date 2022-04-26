@@ -11,7 +11,6 @@ const env = utils.env;
 const config = require(`${env.rootDir}/locklift.config.js`);
 
 const program = new Command();
-console.log(config);
 program
   .name("run")
   .description("Run arbitrary locklift script")
