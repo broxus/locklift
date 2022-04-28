@@ -6,19 +6,14 @@ const { Command } = require("commander");
 const { loadConfig } = require("./../../config");
 const { Locklift } = require("./../../index");
 const utils = require("./../utils");
-const env = utils.env;
 
-const config = require(`${env.rootDir}/locklift.config.js`);
+//const config = require(`${process.cwd()}/locklift.config.js`);
 
 const program = new Command();
 program
   .name("run")
   .description("Run arbitrary locklift script")
-  .option(
-    "--disable-build",
-    "Disable automatic contracts build",
-    config.disableBuild,
-  )
+
   .option(
     "-c, --contracts <contracts>",
     "Path to the contracts folder",
@@ -37,13 +32,18 @@ program
   .option("--config <config>", "Path to the config file", async config =>
     loadConfig(config),
   )
+  .option(
+    "--disable-build",
+    "Disable automatic contracts build",
+    this.disableBuild,
+  )
   .requiredOption("-s, --script <script>", "Script to run")
   .allowUnknownOption()
   .action(async options => {
     let config = await options.config;
 
     if (config === undefined) {
-      config = await loadConfig(`${env.rootDir}/locklift.config.js`);
+      config = await loadConfig(`${process.cwd()}/ ./../locklift.config.js`);
     }
 
     if (config.networks[options.network] === undefined) {

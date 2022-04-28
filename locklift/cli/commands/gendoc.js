@@ -2,7 +2,7 @@ const { Command, Option } = require("commander");
 
 const { loadConfig } = require("./../../config");
 const utils = require("./../utils");
-const env = utils.env;
+
 const program = new Command();
 
 program
@@ -39,7 +39,7 @@ program
     let config = await options.config;
 
     if (config === undefined) {
-      config = await loadConfig(`${env.rootDir}/locklift.config.js`);
+      config = await loadConfig(`${process.cwd()}/locklift.config.js`);
     }
 
     utils.initializeDirIfNotExist(options.build);

@@ -1,26 +1,18 @@
 const { Command } = require("commander");
 const Mocha = require("mocha");
-const fs = require("fs");
 const path = require("path");
 const dirTree = require("directory-tree");
 
 const { loadConfig } = require("./../../config");
 const { Locklift } = require("./../../index");
 const utils = require("./../utils");
-const env = utils.env;
-
-const config = require(`${env.rootDir}/locklift.config.js`);
 
 const program = new Command();
 
 program
   .name("test")
   .description("Run mocha tests")
-  .option(
-    "--disable-build",
-    "Disable automatic contracts build",
-    config.disableBuild,
-  )
+  // .option("-d --disable-build", "Disable automatic contracts build", false)
   .option("-t, --test <test>", "Path to Mocha test folder", "test")
   .option(
     "-c, --contracts <contracts>",
@@ -36,6 +28,7 @@ program
   .requiredOption(
     "-n, --network <network>",
     "Network to use, choose from configuration",
+    "local",
   )
   .option("--config <config>", "Path to the config file", async config =>
     loadConfig(config),
@@ -46,7 +39,7 @@ program
     let config = await options.config;
 
     if (config === undefined) {
-      config = await loadConfig(`${env.rootDir}/locklift.config.js`);
+      config = await loadConfig(`${process.cwd()}/locklift.config.js`);
     }
 
     if (config.networks[options.network] === undefined) {
@@ -55,13 +48,12 @@ program
       process.exit(1);
     }
 
-    if (options.disableBuild !== true) {
+    if (config.disableBuild !== true) {
       utils.initializeDirIfNotExist(options.build);
 
       const builder = new utils.Builder(config, options);
 
       const status = builder.buildContracts();
-
       if (status === false) process.exit(1);
     }
 

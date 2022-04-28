@@ -38,16 +38,22 @@ program
     } else {
       rootDir = options.path;
     }
-
-    fs.writeJSONSync(
-      "./../locklift/config/env.json",
-      JSON.stringify({ rootDir: rootDir, initialized: true }),
-      err => {
-        if (err) {
-          throw err;
-        }
-      },
+    const nodeModules = require
+      .resolve("locklift/package.json")
+      .replace("locklift/package.json", "");
+    const configPath = path.resolve(
+      nodeModules + "./../locklift/config/env.json",
     );
+
+    // fs.writeJSONSync(
+    //   configPath,
+    //   JSON.stringify({ rootDir: rootDir, initialized: true }),
+    //   err => {
+    //     if (err) {
+    //       throw err;
+    //     }
+    //   },
+    // );
   });
 
 module.exports = program;
