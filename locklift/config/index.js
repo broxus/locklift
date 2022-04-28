@@ -13,8 +13,6 @@ const {
   boolean,
 } = require("superstruct");
 
-const env = JSON.parse(require("../config/env.json"));
-
 const { TonClient } = require("@tonclient/core");
 const { libNode } = require("@tonclient/lib-node");
 const { stringify } = require("querystring");
@@ -59,11 +57,9 @@ async function loadConfig(configPath) {
   const resolvedConfigPath = path.resolve(process.cwd(), configPath);
 
   if (!fs.existsSync(resolvedConfigPath)) {
-    if (env.initialized) {
-      throw new commander.InvalidOptionArgumentError(
-        `Config at ${configPath} not found!`,
-      );
-    } else return;
+    throw new commander.InvalidOptionArgumentError(
+      `Config at ${configPath} not found!`,
+    );
   }
 
   const configFile = require(resolvedConfigPath);
