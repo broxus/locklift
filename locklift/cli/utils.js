@@ -5,7 +5,6 @@ const _ = require("underscore");
 const { resolve } = require("path");
 const ejs = require("ejs");
 const tablemark = require("tablemark");
-const env = JSON.parse(require("../config/env.json"));
 
 function checkDirEmpty(dir) {
   if (!fs.existsSync(dir)) {
