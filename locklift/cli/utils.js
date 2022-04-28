@@ -215,5 +215,4 @@ module.exports = {
   flatDirTree,
   Builder,
   initializeDirIfNotExist,
-  env,
 };

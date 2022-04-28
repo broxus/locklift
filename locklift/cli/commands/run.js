@@ -7,8 +7,6 @@ const { loadConfig } = require("./../../config");
 const { Locklift } = require("./../../index");
 const utils = require("./../utils");
 
-//const config = require(`${process.cwd()}/locklift.config.js`);
-
 const program = new Command();
 program
   .name("run")
@@ -25,17 +23,13 @@ program
     "Disables including node_modules. Use this with old compiler versions",
     false,
   )
-  .requiredOption(
+  .option(
     "-n, --network <network>",
     "Network to use, choose from configuration",
+    undefined,
   )
   .option("--config <config>", "Path to the config file", async config =>
     loadConfig(config),
-  )
-  .option(
-    "--disable-build",
-    "Disable automatic contracts build",
-    this.disableBuild,
   )
   .requiredOption("-s, --script <script>", "Script to run")
   .allowUnknownOption()
@@ -45,6 +39,9 @@ program
     if (config === undefined) {
       config = await loadConfig(`${process.cwd()}/ ./../locklift.config.js`);
     }
+    if (options.network === undefined) {
+      options.network = config.network;
+    }
 
     if (config.networks[options.network] === undefined) {
       console.error(`Can't find configuration for ${options.network} network!`);
@@ -52,7 +49,7 @@ program
       process.exit(1);
     }
 
-    if (options.disableBuild !== true) {
+    if (config.disableBuild !== true) {
       utils.initializeDirIfNotExist(options.build);
 
       const builder = new utils.Builder(config, options);

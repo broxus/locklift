@@ -25,10 +25,10 @@ program
     "Disables including node_modules. Use this with old compiler versions",
     false,
   )
-  .requiredOption(
+  .option(
     "-n, --network <network>",
     "Network to use, choose from configuration",
-    "local",
+    undefined,
   )
   .option("--config <config>", "Path to the config file", async config =>
     loadConfig(config),
@@ -40,6 +40,10 @@ program
 
     if (config === undefined) {
       config = await loadConfig(`${process.cwd()}/locklift.config.js`);
+    }
+
+    if (options.network === undefined) {
+      options.network = config.network;
     }
 
     if (config.networks[options.network] === undefined) {

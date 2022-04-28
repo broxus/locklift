@@ -17,6 +17,7 @@ const env = JSON.parse(require("../config/env.json"));
 
 const { TonClient } = require("@tonclient/core");
 const { libNode } = require("@tonclient/lib-node");
+const { stringify } = require("querystring");
 TonClient.useBinaryLibrary(libNode);
 
 const Compiler = object({
@@ -47,6 +48,7 @@ const Network = object({
 });
 
 const Config = object({
+  network: string(),
   compiler: Compiler,
   linker: Linker,
   networks: record(string(), Network),
@@ -94,7 +96,7 @@ async function loadConfig(configPath) {
     keys = JSON.parse(keys);
   }
 
-  configFile.networks.local.keys = {
+  configFile.networks[configFile.network].keys = {
     phrase: keys.mnemonic,
     amount: 12,
   };
