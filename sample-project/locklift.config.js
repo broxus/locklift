@@ -1,4 +1,5 @@
 module.exports = {
+  network: "local",
   compiler: {
     // Specify path to your TON-Solidity-Compiler
     path: "/usr/bin/solc-ton",
@@ -14,7 +15,7 @@ module.exports = {
       ton_client: {
         // See the TON client specification for all available options
         network: {
-          server_address: "http://localhost/",
+          server_address: "http://localhost:8085/",
         },
       },
       // This giver is default local-node giver
