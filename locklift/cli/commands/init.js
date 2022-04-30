@@ -31,29 +31,6 @@ program
 
       console.log(`New Locklift project initialized in ${options.path}`);
     });
-
-    let rootDir;
-    if (options.path === ".") {
-      rootDir = process.cwd();
-    } else {
-      rootDir = options.path;
-    }
-    const nodeModules = require
-      .resolve("locklift/package.json")
-      .replace("locklift/package.json", "");
-    const configPath = path.resolve(
-      nodeModules + "./../locklift/config/env.json",
-    );
-
-    // fs.writeJSONSync(
-    //   configPath,
-    //   JSON.stringify({ rootDir: rootDir, initialized: true }),
-    //   err => {
-    //     if (err) {
-    //       throw err;
-    //     }
-    //   },
-    // );
   });
 
 module.exports = program;
