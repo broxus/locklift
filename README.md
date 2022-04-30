@@ -125,7 +125,7 @@ $ locklift test --config locklift.config.js --network local
 ### Debugging
 You can print to console in contracts with special library:
 ```
-import "locklift/console.sol";
+import "locklift/locklift/console.sol";
 
 contract Sample {
     function testFunc(uint input) external {
