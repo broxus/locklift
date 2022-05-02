@@ -91,12 +91,11 @@ class Giver {
 
     // Setup giver key in case of key-protected giver
     if (this.locklift.networkConfig.giver.key) {
-      const keyPair =
-        await this.locklift.ton.client.crypto.nacl_sign_keypair_from_secret_key(
-          {
-            secret: this.locklift.networkConfig.giver.key,
-          },
-        );
+      const keyPair = await this.locklift.ton.client.crypto.nacl_sign_keypair_from_secret_key(
+        {
+          secret: this.locklift.networkConfig.giver.key,
+        },
+      );
 
       // TODO: looks like bug in SDK, keypair.secret is extended with keypair.public
       keyPair.secret = keyPair.secret.slice(0, 64);

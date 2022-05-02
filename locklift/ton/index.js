@@ -14,7 +14,6 @@ class Ton {
    */
   constructor(locklift) {
     this.locklift = locklift;
-
     this.client = new TonClient(
       this.locklift.config.networks[this.locklift.network].ton_client,
     );
@@ -115,11 +114,12 @@ class Ton {
    * @returns {Promise<ResultOfProcessMessage>}
    */
   async waitForRunTransaction({ message, abi }) {
-    const { shard_block_id } =
-      await this.locklift.ton.client.processing.send_message({
-        message: message.message,
-        send_events: false,
-      });
+    const {
+      shard_block_id,
+    } = await this.locklift.ton.client.processing.send_message({
+      message: message.message,
+      send_events: false,
+    });
 
     return this.locklift.ton.client.processing.wait_for_transaction({
       message: message.message,

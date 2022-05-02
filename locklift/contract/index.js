@@ -168,15 +168,16 @@ class Contract {
    */
   async decodeMessages(messages, is_internal, messageDirection) {
     const decodedMessages = messages.map(async message => {
-      const decodedMessage =
-        await this.locklift.ton.client.abi.decode_message_body({
+      const decodedMessage = await this.locklift.ton.client.abi.decode_message_body(
+        {
           abi: {
             type: "Contract",
             value: this.abi,
           },
           body: message.body,
           is_internal,
-        });
+        },
+      );
 
       return {
         ...decodedMessage,
