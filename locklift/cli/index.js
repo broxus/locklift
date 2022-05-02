@@ -9,6 +9,8 @@ program.addCommand(require("./commands/run"));
 program.addCommand(require("./commands/gendoc"));
 program.addCommand(require("./commands/genphrase"));
 program.addCommand(require("./commands/deployAccount"));
+program.addCommand(require("./commands/transfer"));
+program.addCommand(require("./commands/getBalance"));
 program.addCommand(require("./commands/runSandbox"));
 program.addCommand(require("./commands/killSandbox"));
 
