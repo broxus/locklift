@@ -1,13 +1,11 @@
-const { Command, Option } = require("commander");
+const { Command } = require("commander");
 
 const { TonClient } = require("@tonclient/core");
 const { libNode } = require("@tonclient/lib-node");
 TonClient.useBinaryLibrary(libNode);
-const fs = require("fs-extra");
 const { Locklift } = require("../../index");
 const utils = require("../utils");
 const { loadConfig } = require("./../../config");
-const env = utils.env;
 const program = new Command();
 
 const Utils = require("../../utils/index");
@@ -19,7 +17,12 @@ program
     "Network to use, choose from configuration",
     undefined,
   )
-  .option("-k, --key-number <count>", "Key number", 0)
+  .option(
+    "-kn, --key-number <count>",
+    "The key number from the keys obtained from \
+    the specified mnemonic in keys.json and the HD path.",
+    0,
+  )
   .option("-b, --balance <amount>", "Initial balance. Only testnet.", 100)
   .option("--build <path>", "Path to the build folder", "build")
   .option("--config <config>", "Path to the config file", async config =>
@@ -42,11 +45,14 @@ program
     }
     const locklift = new Locklift(config, options.network);
     await locklift.setup();
-    await locklift.utils.deployAccount(
-      options.keyNumber,
-      options.balance,
-      options.build,
-    );
+
+    await locklift.utils
+      .deployAccount({
+        keyNumber: options.keyNumber,
+        balance: options.balance,
+        build: options.build,
+      })
+      .catch(err => console.log(err));
     process.exit();
   });
 
