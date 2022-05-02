@@ -225,6 +225,21 @@ module.exports = class Utils {
     console.log(`${Contract.code}`);
     return Contract.code;
   }
+  async validateAddress(address) {
+    return await this.locklift.ton.client.utils
+      .convert_address({
+        address,
+        output_format: {
+          type: "Hex",
+        },
+      })
+      .then(() => {
+        return true;
+      })
+      .catch(err => {
+        console.log(err);
+      });
+  }
   log(text) {
     console.log(text);
   }
