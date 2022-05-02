@@ -2,7 +2,7 @@ const Factory = require("./factory");
 const Giver = require("./giver");
 const Keys = require("./keys");
 const Ton = require("./ton");
-const utils = require("./utils");
+const Utils = require("./utils");
 
 class Locklift {
   constructor(config, network) {
@@ -17,7 +17,7 @@ class Locklift {
     this.factory = new Factory(this);
     this.giver = new Giver(this);
     this.keys = new Keys(this);
-    this.utils = utils;
+    this.utils = new Utils(this);
 
     await this.ton.setup();
     await this.factory.setup();
