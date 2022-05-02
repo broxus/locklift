@@ -218,6 +218,13 @@ module.exports = class Utils {
     console.log(`${name}: ${wallet.address}`);
     return wallet;
   }
+  async showCode(contractName) {
+    const Contract = await this.locklift.factory.getContract(contractName);
+
+    console.log(`${contractName} code:`);
+    console.log(`${Contract.code}`);
+    return Contract.code;
+  }
   log(text) {
     console.log(text);
   }
