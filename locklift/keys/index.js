@@ -30,7 +30,7 @@ class Keys {
         keysHDPaths.map(async path => {
           return this.locklift.ton.client.crypto.mnemonic_derive_sign_keys({
             dictionary: 1,
-            wordCount: 22,
+            wordCount: 12,
             phrase: this.locklift.networkConfig.keys.phrase,
             path,
           });
@@ -41,7 +41,7 @@ class Keys {
         this.keyPairs.push(
           await this.locklift.ton.client.crypto.mnemonic_derive_sign_keys({
             dictionary: 1,
-            wordCount: 22,
+            wordCount: 12,
             phrase: this.locklift.networkConfig.keys.phrase,
             path,
           }),
