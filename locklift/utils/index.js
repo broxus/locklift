@@ -156,7 +156,7 @@ module.exports = class Utils {
    * @returns {Promise<{acc_type: *, acc_type_name: *}>}
    */
 
-  async deployAccount({ keyNumber, balance, buildPath = "Build" }) {
+  async deployAccount({ keyNumber, balance, buildPath = "build" }) {
     if (
       !fs.existsSync(`${process.cwd()}/${buildPath}/Wallet.abi.json`) ||
       !fs.existsSync(`${process.cwd()}/${buildPath}/Wallet.base64`) ||
