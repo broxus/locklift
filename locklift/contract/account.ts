@@ -1,5 +1,11 @@
-const Contract = require('./index');
+import BigNumber from 'bignumber.js';
+import Contract from './index';
+import { CreateRunMessageParams } from '../ton';
 
+export type RunTargetParams = Partial<CreateRunMessageParams> & {
+  contract: Contract;
+  value?: string | BigNumber
+}
 
 /**
  * Account contract wrapping. Extending Contract object. Implements method
@@ -17,22 +23,21 @@ class Account extends Contract {
    * @param [keyPair=this.keyPair] Key pair to use
    * @returns {Promise<*>}
    */
-  async runTarget({ contract, method, params, value, keyPair }) {
+  async runTarget({ contract, method, params, value, keyPair }: RunTargetParams) {
     let body = '';
-    
+
     if (method !== undefined) {
       const extendedParams = params === undefined ? {} : params;
-  
+
       if (this.autoAnswerIdOnCall) {
-        if (contract.abi.functions.find(e => e.name === method).inputs.find(e => e.name === '_answer_id')) {
+        if (contract.abi.functions?.find(e => e.name === method)?.inputs.find(e => e.name === '_answer_id')) {
           extendedParams._answer_id = extendedParams._answer_id === undefined ? 1 : extendedParams._answer_id;
-        } else if (contract.abi.functions.find(e => e.name === method).inputs.find(e => e.name === 'answerId')) {
+        } else if (contract.abi.functions?.find(e => e.name === method)?.inputs.find(e => e.name === 'answerId')) {
           extendedParams.answerId = extendedParams.answerId === undefined ? 1 : extendedParams.answerId;
         }
       }
-  
+
       const message = await this.locklift.ton.client.abi.encode_message_body({
-        address: contract.address,
         abi: {
           type: "Contract",
           value: contract.abi,
@@ -46,16 +51,16 @@ class Account extends Contract {
         },
         is_internal: true,
       });
-      
+
       body = message.body;
     }
-    
+
     return this.run({
       method: 'sendTransaction',
       params: {
         dest: contract.address,
         value: value === undefined ?
-          this.locklift.utils.convertCrystal('2', 'nano') : value,
+          this.locklift.utils.convertCrystal('2', this.locklift.utils.Dimensions.Nano) : value,
         bounce: true,
         flags: 0,
         payload: body,
@@ -66,4 +71,4 @@ class Account extends Contract {
 }
 
 
-module.exports = Account;
+export default Account;
