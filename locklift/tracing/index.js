@@ -104,7 +104,46 @@ class Tracing {
     }
 
     async buildMsgTree(in_msg_id) {
-        const msg_query = `{messages(filter:{id:{eq:"${in_msg_id}"}}){id,body,code_hash,src,msg_type,dst,dst_transaction{status,aborted,out_msgs,compute{exit_code,compute_type,success},action{result_code,success}},status,value,bounced,bounce}}`;
+        const msg_query = `{
+          messages(
+            filter: {
+              id: {
+                eq: "${in_msg_id}"
+              }
+            }
+          ) {
+            id
+            body
+            code_hash
+            src
+            msg_type
+            dst
+            dst_transaction {
+              status
+              total_fees
+              aborted
+              out_msgs
+              storage {
+                storage_fees_collected
+              }
+              compute {
+                exit_code
+                compute_type
+                success
+                gas_fees
+              }
+              action {
+                result_code
+                success
+                total_action_fees
+              }
+            }
+            status
+            value
+            bounced
+            bounce
+          }
+        }`;
         const msg = (await locklift.ton.client.net.query({ "query": msg_query })).result.data.messages[0];
         if (msg.dst === CONSOLE_ADDRESS) {
             await this.printConsoleMsg(msg);
@@ -172,9 +211,12 @@ class Tracing {
         return msg_tree;
     }
 
+    _convert(number, decimals=9, precision=4) {
+        return (number / 10**decimals).toPrecision(precision);
+    }
+
     throwErrorInConsole(reverted_branch) {
         for (const {total_actions, action_idx, trace} of reverted_branch) {
-            const msg_value = trace.msg.value / 10**9;
             const bounce = trace.msg.bounce;
             let name = 'undefinedContract';
             if (trace.contract) {
@@ -218,7 +260,11 @@ class Tracing {
                 console.log('-> Contract not deployed/Not recognized because build artifacts not provided')
             }
             // bold tag
-            console.log(`\x1b[1m${name}.${method}\x1b[22m{value: ${msg_value.toPrecision(4)}, bounce: ${bounce}}${params_str}`)
+            console.log(`\x1b[1m${name}.${method}\x1b[22m{value: ${this._convert(trace.msg.value)}, bounce: ${bounce}}${params_str}`)
+            console.log(`Storage fees: ${this._convert(trace.msg.dst_transaction.storage.storage_fees_collected)}`)
+            console.log(`Compute fees: ${this._convert(Number(trace.msg.dst_transaction.compute.gas_fees))}`)
+            console.log(`Action fees: ${this._convert(Number(trace.msg.dst_transaction.action.total_action_fees))}`)
+            console.log(`\x1b[1mTotal fees:\x1b[22m ${this._convert(Number(trace.msg.dst_transaction.total_fees))}`)
             if (trace.error && !trace.error.ignored) {
                 // red tag
                 console.log('\x1b[31m', `!!! Reverted with ${trace.error.code} error code on ${trace.error.phase} phase !!!`)
