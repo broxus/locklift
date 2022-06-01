@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 import { program } from 'commander';
-import packageJson from '../../package.json';
 
 import init from './commands/init';
 import build from './commands/build';
@@ -16,6 +15,6 @@ program.addCommand(test);
 program.addCommand(run);
 program.addCommand(gendoc);
 
-program.version(packageJson.version);
+program.version(require('../../package.json').version);
 
 program.parse(process.argv);

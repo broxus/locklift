@@ -3,18 +3,20 @@ import Giver from './giver';
 import Keys from './keys';
 import Ton from './ton';
 import * as utils from './utils';
+import { LockliftConfig } from './config';
+import { ValueOf } from './types';
 
 export class Locklift {
-  config: any;
-  network: string;
-  networkConfig: any;
-  utils = utils;
+  config: LockliftConfig;
+  networkConfig: ValueOf<LockliftConfig['networks']>;
+  network: keyof LockliftConfig['networks'];
   ton!: Ton;
   keys!: Keys;
   factory!: Factory;
   giver!: Giver;
+  utils = utils;
 
-  constructor(config: any, network: string) {
+  constructor(config: LockliftConfig, network = 'local') {
     this.config = config;
     this.network = network;
 

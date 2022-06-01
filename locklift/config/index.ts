@@ -16,9 +16,38 @@ import { libNode }from '@tonclient/lib-node';
 TonClient.useBinaryLibrary(libNode);
 
 
+export interface LockliftConfig {
+  compiler: {
+    path: string;
+  };
+  linker: {
+    path: string;
+    lib?: string;
+  };
+  networks: Record<'local' | string, {
+    giver: {
+      address: string;
+      abi: Record<string, unknown>;
+      key: string;
+    };
+    keys: {
+      path: string;
+      phrase: string;
+      amount: number;
+    };
+    ton_client?: {
+      network: {
+        server_address: string;
+      };
+    };
+  }>;
+}
+
+
 const Compiler = object({
   path: defaulted(string(), () => '/usr/bin/solc-ton'),
 });
+
 
 const Linker = object({
   path: defaulted(string(), () => '/usr/bin/tvm_linker'),

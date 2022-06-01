@@ -4,7 +4,7 @@ const getRandomNonce = () => Math.random() * 64000 | 0;
 async function main() {
   const Sample = await locklift.factory.getContract('Sample');
   const [keyPair] = await locklift.keys.getKeyPairs();
-  
+
   const sample = await locklift.giver.deployContract({
     contract: Sample,
     constructorParams: {
@@ -15,7 +15,7 @@ async function main() {
     },
     keyPair,
   });
-  
+
   console.log(`Sample deployed at: ${sample.address}`);
 }
 

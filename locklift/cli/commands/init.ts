@@ -33,8 +33,8 @@ program
     }
 
     const smapleProjectRelativePath = options.typescript
-      ? './../../../../sample-project-typescript'
-      : './../../../../sample-project'
+      ? './../../../sample-project-typescript'
+      : './../../../sample-project'
     const sampleProjectPath = path.resolve(__dirname, smapleProjectRelativePath);
 
     fs.copy(sampleProjectPath, options.path, (err: Error) => {

@@ -1,4 +1,4 @@
-const { expect } = require('chai');
+import { expect } from 'chai';
 
 
 let Sample;
@@ -11,16 +11,16 @@ describe('Test Sample contract', async function() {
   describe('Contracts', async function() {
     it('Load contract factory', async function() {
       Sample = await locklift.factory.getContract('Sample');
-      
+
       expect(Sample.code).not.to.equal(undefined, 'Code should be available');
       expect(Sample.abi).not.to.equal(undefined, 'ABI should be available');
     });
-    
+
     it('Deploy contract', async function() {
       this.timeout(20000);
 
       const [keyPair] = await locklift.keys.getKeyPairs();
-      
+
       sample = await locklift.giver.deployContract({
         contract: Sample,
         constructorParams: {
@@ -31,7 +31,7 @@ describe('Test Sample contract', async function() {
         },
         keyPair,
       });
-  
+
       expect(sample.address).to.be.a('string')
         .and.satisfy(s => s.startsWith('0:'), 'Bad future address');
     });

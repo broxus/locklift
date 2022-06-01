@@ -29,7 +29,7 @@ class Keys {
    */
   async setup(): Promise<void> {
     const keysHDPaths = [...Array(this.locklift.networkConfig.keys.amount).keys()]
-      .map(i => this.locklift.networkConfig.keys.path.replace('INDEX', i));
+      .map(i => this.locklift.networkConfig.keys.path.replace('INDEX', `${i}`));
 
     if (process.platform !== "darwin") {
       this.keyPairs = await Promise.all(keysHDPaths.map(async (path) => {
