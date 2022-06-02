@@ -264,10 +264,18 @@ class Tracing {
             }
             // bold tag
             console.log(`\x1b[1m${name}.${method}\x1b[22m{value: ${this._convert(trace.msg.value)}, bounce: ${bounce}}${params_str}`)
-            console.log(`Storage fees: ${this._convert(trace.msg.dst_transaction.storage.storage_fees_collected)}`)
-            console.log(`Compute fees: ${this._convert(Number(trace.msg.dst_transaction.compute.gas_fees))}`)
-            console.log(`Action fees: ${this._convert(Number(trace.msg.dst_transaction.action.total_action_fees))}`)
-            console.log(`\x1b[1mTotal fees:\x1b[22m ${this._convert(Number(trace.msg.dst_transaction.total_fees))}`)
+            if (trace.msg.dst_transaction) {
+                if (trace.msg.dst_transaction.storage) {
+                    console.log(`Storage fees: ${this._convert(trace.msg.dst_transaction.storage.storage_fees_collected)}`)
+                }
+                if (trace.msg.dst_transaction.compute) {
+                    console.log(`Compute fees: ${this._convert(Number(trace.msg.dst_transaction.compute.gas_fees))}`)
+                }
+                if (trace.msg.dst_transaction.action) {
+                    console.log(`Action fees: ${this._convert(Number(trace.msg.dst_transaction.action.total_action_fees))}`)
+                }
+                console.log(`\x1b[1mTotal fees:\x1b[22m ${this._convert(Number(trace.msg.dst_transaction.total_fees))}`)
+            }
             if (trace.error && !trace.error.ignored) {
                 // red tag
                 console.log('\x1b[31m', `!!! Reverted with ${trace.error.code} error code on ${trace.error.phase} phase !!!`)
