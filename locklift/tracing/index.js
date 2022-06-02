@@ -212,6 +212,9 @@ class Tracing {
     }
 
     _convert(number, decimals=9, precision=4) {
+        if (number === null) {
+            return null;
+        }
         return (number / 10**decimals).toPrecision(precision);
     }
 
