@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
 import { Locklift } from '../index';
-import Contract from '../contract';
+import { Contract } from '../contract';
 import { TonClient, AbiContract, KeyPair, ParamsOfEncodeMessage } from '@tonclient/core';
 import { libNode } from '@tonclient/lib-node';
 
@@ -24,7 +24,7 @@ export type CreateRunMessageParams = {
 /**
  * TON wrapper, using TonClient from TON labs SDK
  */
-class Ton {
+export class Ton {
   private locklift: Locklift;
   zero_address: string;
   client: TonClient;
@@ -197,6 +197,3 @@ class Ton {
     }
   }
 }
-
-
-export default Ton;

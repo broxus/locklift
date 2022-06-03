@@ -5,7 +5,7 @@ import { KeyPair } from '@tonclient/core';
 /**
  * Simple keys manager. Initialize keys from the
  */
-class Keys {
+export class Keys {
   private locklift: Locklift;
   private keyPairs: KeyPair[];
 
@@ -53,6 +53,3 @@ class Keys {
     }
   }
 }
-
-
-export default Keys;

@@ -1,1 +1,5 @@
-declare const locklift: import('locklift').Locklift;
+declare global {
+  const locklift: import('locklift').Locklift;
+}
+
+export {}

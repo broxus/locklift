@@ -1,10 +1,10 @@
-import Factory from './factory';
-import Giver from './giver';
-import Keys from './keys';
-import Ton from './ton';
-import * as utils from './utils';
+import { Factory } from './factory';
+import { Giver } from './giver';
+import { Keys } from './keys';
+import { Ton } from './ton';
 import { LockliftConfig } from './config';
 import { ValueOf } from './types';
+import * as utils from './utils';
 
 export class Locklift {
   config: LockliftConfig;

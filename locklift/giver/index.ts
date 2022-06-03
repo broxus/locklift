@@ -1,4 +1,4 @@
-import Contract, { ContractConstructorParams } from './../contract';
+import { Contract, ContractConstructorParams } from './../contract';
 import { CreateDeployMessageParams } from '../ton';
 import { Locklift } from '../index';
 
@@ -7,7 +7,7 @@ import { Locklift } from '../index';
  * Locklift plugin for working with classic givers.
  * Supports giver from local-node and any compatible one
  */
-class Giver {
+export class Giver {
   private locklift: Locklift;
   private giver!: Contract;
 
@@ -111,6 +111,3 @@ class Giver {
     }
   }
 }
-
-
-export default Giver;

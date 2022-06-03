@@ -1,17 +1,17 @@
 import BigNumber from 'bignumber.js';
-import Contract from './index';
+import { Contract } from './index';
 import { CreateRunMessageParams } from '../ton';
 
 export type RunTargetParams = Partial<CreateRunMessageParams> & {
   contract: Contract;
-  value?: string | BigNumber
+  value?: string | BigNumber;
 }
 
 /**
  * Account contract wrapping. Extending Contract object. Implements method
  * for internal calling other contracts by calling sendTransaction method.
  */
-class Account extends Contract {
+export class Account extends Contract {
   /**
    * Run another contracts method as internal message
    * If method and params not specified - sends value without payload.
@@ -69,6 +69,3 @@ class Account extends Contract {
     });
   }
 }
-
-
-export default Account;

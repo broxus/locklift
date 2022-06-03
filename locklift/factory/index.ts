@@ -1,6 +1,5 @@
 import path from 'path';
-import Contract from './../contract';
-import Account from './../contract/account';
+import { Contract, Account } from './../contract';
 import { Locklift } from '../index';
 import * as utils from './../utils';
 
@@ -8,7 +7,7 @@ import * as utils from './../utils';
 /**
  * Factory object for generating initializing Contract objects.
  */
-class Factory {
+export class Factory {
   private locklift: Locklift;
 
   constructor(locklift: Locklift) {
@@ -74,6 +73,3 @@ class Factory {
 
   }
 }
-
-
-export default Factory;

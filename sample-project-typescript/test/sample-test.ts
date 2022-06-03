@@ -1,8 +1,9 @@
+import { Contract } from 'locklift/contract';
 import { expect } from 'chai';
 
 
-let Sample;
-let sample;
+let Sample: Contract;
+let sample: Contract;
 
 const getRandomNonce = () => Math.random() * 64000 | 0;
 
@@ -33,7 +34,7 @@ describe('Test Sample contract', async function() {
       });
 
       expect(sample.address).to.be.a('string')
-        .and.satisfy(s => s.startsWith('0:'), 'Bad future address');
+        .and.satisfy((s: string) => s.startsWith('0:'), 'Bad future address');
     });
 
     it('Interact with contract', async function() {

@@ -1,6 +1,7 @@
 import { Command } from 'commander';
 import path from 'path';
 import fs from 'fs-extra';
+import childProcess from 'child_process';
 import * as utils from './../utils';
 
 const program = new Command();
@@ -9,7 +10,7 @@ const program = new Command();
 program
   .name('init')
   .description('Initialize sample Locklift project in a directory')
-  .requiredOption(
+  .option(
     '-p, --path <path>',
     'Path to the project folder',
     '.'
@@ -22,6 +23,11 @@ program
   .option(
     '-ts, --typescript',
     'Initialize typescript project',
+    false,
+  )
+  .option(
+    '-i, --installDeps',
+    'Install required dependencies',
     false,
   )
   .action((options) => {
@@ -43,8 +49,25 @@ program
         return;
       }
 
-      console.log(`New Locklift project initialized in ${options.path}`);
+      console.log(`New Locklift ${options.typescript ? 'typescript' : ''} project initialized in ${options.path}`);
     });
+
+    if (options.installDeps) {
+      if (!options.typescript) {
+        console.log('Install required dependencies is available for typescript project only');
+        return;
+      }
+
+      console.log('Installing required dependencies...');
+
+      if (options.path) {
+        childProcess.execSync(`cd ${options.path}`);
+      }
+
+      childProcess.execSync('npm i --save-dev typescript @types/chai @types/mocha @types/node');
+    } else if (options.typescript) {
+      console.log('You should install the following dependencies by yourself: npm i --save-dev typescript @types/chai @types/mocha @types/node');
+    }
   });
 
 export default program;

@@ -26,7 +26,7 @@ export type RunContractParams = {
 /**
  * Smart contract object.
  */
-class Contract {
+export class Contract {
   protected locklift: Locklift;
   protected keyPair: KeyPair | undefined;
   protected autoAnswerIdOnCall: boolean;
@@ -247,4 +247,4 @@ class Contract {
 }
 
 
-export default Contract;
+export { Account } from './account';
