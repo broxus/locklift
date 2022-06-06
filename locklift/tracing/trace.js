@@ -85,7 +85,11 @@ class Trace {
         }
     }
 
-    async decodeMsg() {
+    async decodeMsg(contract=null) {
+        if (contract === null) {
+            contract = this.contract;
+        }
+
         if (this.msg.dst === CONSOLE_ADDRESS) {
             return;
         }
@@ -102,7 +106,7 @@ class Trace {
         }
 
         // function call, but we dont have contract here => we cant decode msg
-        if (this.type === TraceType.FUNCTION_CALL && !this.contract) {
+        if (this.type === TraceType.FUNCTION_CALL && !contract) {
             return;
         }
 
@@ -111,7 +115,7 @@ class Trace {
             return;
         }
 
-        if (!this.contract) {
+        if (!contract) {
             return;
         }
 
@@ -119,39 +123,42 @@ class Trace {
         this.decoded_msg = await this.tracing.locklift.ton.client.abi.decode_message_body({
             abi: {
                 type: 'Contract',
-                value: this.contract.abi
+                value: contract.abi
             },
             body: this.msg.body,
             is_internal: is_internal
         });
 
+
         // determine more precisely is it an event or function return
         if (this.type === TraceType.EVENT_OR_FUNCTION_RETURN) {
-            const is_function_return = this.contract.abi.functions.find(({ name }) => name === this.decoded_msg.name);
+            const is_function_return = contract.abi.functions.find(({ name }) => name === this.decoded_msg.name);
             if (is_function_return) {
                 this.type = TraceType.FUNCTION_RETURN;
             } else {
                 this.type = TraceType.EVENT;
             }
         }
-        this.decoded_params = OutputDecoder.autoDecode(this.decoded_msg, this.contract.abi);
+        this.decoded_params = OutputDecoder.autoDecode(this.decoded_msg, contract.abi);
 
-        if (this.type === TraceType.DEPLOY && (this.contract.name === 'Platform' || this.contract.name === 'DexPlatform')) {
+        if (this.type === TraceType.DEPLOY && (contract.name === 'Platform' || contract.name === 'DexPlatform')) {
             // replace with real contract
-            const platform_type = this.contract.name;
+            const platform_type = contract.name;
             await this.initContractByCode(this.decoded_msg.value.code);
             this.contract.platform = platform_type;
         }
     }
 
-
     // find which contract is deployed in this msg by code hash
     async initContract() {
+        this.contract = await this.getContractByCodeHash(this.msg.code_hash);
+        this.contract.setAddress(this.msg.dst);
+    }
+
+    async getContractByCodeHash(code_hash) {
         for (const contract_data of Object.values(this.tracing.locklift.factory.artifacts)) {
-            if (contract_data.code_hash === this.msg.code_hash) {
-                this.contract = await this.tracing.locklift.factory.getContract(contract_data.name, contract_data.build);
-                this.contract.setAddress(this.msg.dst); // added to context automatically
-                return;
+            if (contract_data.code_hash === code_hash) {
+                return await this.tracing.locklift.factory.getContract(contract_data.name, contract_data.build);
             }
         }
     }
@@ -167,9 +174,16 @@ class Trace {
     }
 
     async decode() {
+        let contract = null;
         switch (this.type) {
             case TraceType.DEPLOY:
-                await this.initContract();
+                // dont init contract if error occured, just try to decode msg
+                // we dont want to add to context non-existent contract
+                if (this.error) {
+                    contract = await this.getContractByCodeHash(this.msg.code_hash);
+                } else {
+                    await this.initContract();
+                }
                 break;
             case TraceType.FUNCTION_CALL:
                 // get contract from context
@@ -184,7 +198,8 @@ class Trace {
             case TraceType.BOUNCE:
                 this.contract = this.tracing.getFromContext(this.msg.dst);
         }
-        await this.decodeMsg();
+        // if contract is null, will take this.contract by default
+        await this.decodeMsg(contract);
     }
 
     setMsgType() {
