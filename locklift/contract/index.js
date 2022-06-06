@@ -199,17 +199,19 @@ class Contract {
     const {
       result
     } = (await this.locklift.ton.client.net.query_collection({
-        collection: 'messages',
-        filter: {
-          src: {
-            eq: this.address
+          collection: 'messages',
+          filter: {
+            src: {
+              eq: this.address
+            },
+            msg_type: {
+              eq: messageType
+            }
           },
-          msg_type: {
-            eq: messageType
-          }
-        },
-        result: 'body id src created_at',
-      }
+          result: 'body id src created_at',
+          limit: 1000,
+          order: [{path: 'created_at', direction: 'DESC'}]
+        }
     ));
     
     return this.decodeMessages(result, internal, 'output');
