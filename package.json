@@ -17,13 +17,27 @@
   "types": "build/index.d.ts",
   "typesVersions": {
     "*": {
-      ".": ["build/index.d.ts"],
-      "config": ["build/config/index.d.ts"],
-      "contract": ["build/contract/index.d.ts"],
-      "factory": ["build/factory/index.d.ts"],
-      "giver": ["build/giver/index.d.ts"],
-      "ton": ["build/ton/index.d.ts"],
-      "utils": ["build/utils/index.d.ts"]
+      ".": [
+        "build/index.d.ts"
+      ],
+      "config": [
+        "build/config/index.d.ts"
+      ],
+      "contract": [
+        "build/contract/index.d.ts"
+      ],
+      "factory": [
+        "build/factory/index.d.ts"
+      ],
+      "giver": [
+        "build/giver/index.d.ts"
+      ],
+      "ton": [
+        "build/ton/index.d.ts"
+      ],
+      "utils": [
+        "build/utils/index.d.ts"
+      ]
     }
   },
   "repository": {

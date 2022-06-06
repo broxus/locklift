@@ -13,7 +13,12 @@ Locklift is a development environment aiming to help you with FreeTON contracts 
 
 ```
 npm install -g locklift
+```  
+or local project installation
 ```
+npm install locklift
+```
+Note: with local installation, locklift should be called using npx (ex. `npx locklift --version`).
 
 ## Get version
 
@@ -42,7 +47,19 @@ This command initialize new Locklift project, filled with samples:
 │   └── 1-deploy-sample.js
 └── test
     └── sample-test.js
+```  
+
+### Typescript package
+In order to initialize new locklift project with typescript support, run `init` command with `-ts` (or `--typescript`) flag:  
 ```
+$ locklift init --path typescript-locklift-project -ts
+New Locklift typescript project initialized in typescript-locklift-project
+You have to install the following dependencies by yourself: npm i --save-dev typescript @types/chai @types/mocha @types/node
+```  
+
+### Other flags
+`-f, --force` - force run the init command (in case you have any files in target directory);  
+`-i, --installDeps` - automatically install all required dependencies for the project (currently works only for typescript projects).
 
 ## Configuration
 

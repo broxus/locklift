@@ -66,7 +66,7 @@ program
 
       childProcess.execSync('npm i --save-dev typescript @types/chai @types/mocha @types/node');
     } else if (options.typescript) {
-      console.log('You should install the following dependencies by yourself: npm i --save-dev typescript @types/chai @types/mocha @types/node');
+      console.log('You have to install the following dependencies by yourself: npm i --save-dev typescript @types/chai @types/mocha @types/node');
     }
   });
 
