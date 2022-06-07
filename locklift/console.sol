@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma ton-solidity ^0.57.1;
+pragma ton-solidity >=0.57.1;
 
 
 interface Console {
