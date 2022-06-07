@@ -103,7 +103,7 @@ class Tracing {
         console.log(decoded_msg.value._log);
     }
 
-    async buildMsgTree(in_msg_id) {
+    async buildMsgTree(in_msg_id, only_root=false) {
         const msg_query = `{
           messages(
             filter: {
@@ -145,6 +145,9 @@ class Tracing {
           }
         }`;
         const msg = (await locklift.ton.client.net.query({ "query": msg_query })).result.data.messages[0];
+        if (only_root) {
+            return msg;
+        }
         if (msg.dst === CONSOLE_ADDRESS) {
             await this.printConsoleMsg(msg);
         }
@@ -157,7 +160,7 @@ class Tracing {
         return msg;
     }
 
-    async buildTracingTree(msg_tree, allowed_codes={compute: [], action: []}) {
+    async buildTracingTree(msg_tree, allowed_codes={compute: [], action: [], any: {compute: [], action: []}}) {
         const trace = new Trace(this, msg_tree);
         await trace.buildTree(allowed_codes);
         return trace;
@@ -168,13 +171,18 @@ class Tracing {
         in_msg_id,
         force_trace=false,
         disable_trace=false,
-        allowed_codes={compute: [], action: [], any: {compute: [], action: []}}}
-    ) {
+        no_wait=false,
+        allowed_codes={compute: [], action: [], any: {compute: [], action: []}}
+    }) {
         if (force_trace === true && disable_trace === true) {
             throw 'You cant force and disable tracing at the same time!'
         }
-        const msg_tree = await this.buildMsgTree(in_msg_id);
-        if (disable_trace) return;
+        if (force_trace === true && no_wait === true) {
+            throw 'You cant force tracing and use no-wait at the same time!'
+        }
+
+        const msg_tree = await this.buildMsgTree(in_msg_id, no_wait);
+        if (disable_trace || no_wait) return;
         if (this.enabled || force_trace) {
             // copy global allowed codes
             let allowed_codes_extended = JSON.parse(JSON.stringify(this.allowed_codes));
