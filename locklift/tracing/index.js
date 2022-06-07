@@ -182,7 +182,7 @@ class Tracing {
         }
 
         const msg_tree = await this.buildMsgTree(in_msg_id, no_wait);
-        if (disable_trace || no_wait) return;
+        if (disable_trace || no_wait) return msg_tree;
         if (this.enabled || force_trace) {
             // copy global allowed codes
             let allowed_codes_extended = JSON.parse(JSON.stringify(this.allowed_codes));
