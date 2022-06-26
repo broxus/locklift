@@ -1,28 +1,48 @@
-const BigNumber = require('bignumber.js');
+import BigNumber from 'bignumber.js';
+import { Locklift } from '../index';
+import { Contract } from '../contract';
+import { TonClient, AbiContract, KeyPair, ParamsOfEncodeMessage } from '@tonclient/core';
+import { libNode } from '@tonclient/lib-node';
 
-const { TonClient } = require("@tonclient/core");
-const { libNode } = require("@tonclient/lib-node");
 TonClient.useBinaryLibrary(libNode);
 
+
+export type CreateDeployMessageParams = {
+  contract: Contract;
+  constructorParams?: any;
+  initParams: any;
+  keyPair: KeyPair;
+}
+
+export type CreateRunMessageParams = {
+  contract: Contract;
+  method: string;
+  params: any;
+  keyPair: KeyPair;
+}
 
 /**
  * TON wrapper, using TonClient from TON labs SDK
  */
-class Ton {
+export class Ton {
+  private locklift: Locklift;
+  zero_address: string;
+  client: TonClient;
+
   /**
    * Initialize TON wrapper. All the configuration for TonClient should be placed in config.networks[network].ton_client
    * @param locklift
    */
-  constructor(locklift) {
+  constructor(locklift: Locklift) {
     this.locklift = locklift;
 
     this.client = new TonClient(this.locklift.config.networks[this.locklift.network].ton_client);
-    this.zero_address = '0:0000000000000000000000000000000000000000000000000000000000000000';
+    this.zero_address = locklift.utils.zeroAddress;
   }
-  
+
   async setup() {
   }
-  
+
   /**
    * Creates deploy message for Contract instance, by using deploy_set section.
    * @param contract Contract instance
@@ -31,7 +51,7 @@ class Ton {
    * @param keyPair Key pair to use
    * @returns {Promise<ResultOfEncodeMessage>}
    */
-  async createDeployMessage({ contract, constructorParams, initParams, keyPair }) {
+  async createDeployMessage({ contract, constructorParams, initParams, keyPair }: CreateDeployMessageParams) {
     const encodeParams = {
       abi: {
         type: "Contract",
@@ -49,17 +69,17 @@ class Ton {
         type: 'None',
       }
     };
-  
-    return this.locklift.ton.client.abi.encode_message(this.enrichMessageWithKeys(encodeParams, keyPair));
+
+    return this.client.abi.encode_message(this.enrichMessageWithKeys(encodeParams, keyPair));
   }
-  
+
   /**
    * Adds signer section to encoded message params if keyPair presented
    * @param encodeParams Encode message params
    * @param keyPair Key pair to use
    * @returns {{signer: {keys: *, type: string}}}
    */
-  enrichMessageWithKeys(encodeParams, keyPair) {
+  enrichMessageWithKeys(encodeParams: any, keyPair: KeyPair): ParamsOfEncodeMessage {
     return keyPair === undefined ? encodeParams : {
       ...encodeParams,
       signer: {
@@ -68,7 +88,7 @@ class Ton {
       }
     };
   }
-  
+
   /**
    * Creates run message for Contract instance by using call_set section
    * @param contract Contract instance
@@ -77,7 +97,9 @@ class Ton {
    * @param keyPair Key pair to use
    * @returns {Promise<ResultOfEncodeMessage>}
    */
-  async createRunMessage({ contract, method, params, keyPair }) {
+  async createRunMessage(
+    { contract, method, params, keyPair }: CreateRunMessageParams
+  ) {
     const encodeParams = {
       address: contract.address,
       abi: {
@@ -92,32 +114,30 @@ class Ton {
         type: 'None',
       }
     };
-  
-    return this.locklift.ton.client.abi.encode_message(this.enrichMessageWithKeys(encodeParams, keyPair));
+
+    return this.client.abi.encode_message(this.enrichMessageWithKeys(encodeParams, keyPair));
   }
-  
+
   /**
    * Sends message to the network and waits till it's confirmed
    * @param message Message to send
    * @param abi Contract's ABI, used to decode transaction
    * @returns {Promise<ResultOfProcessMessage>}
    */
-  async waitForRunTransaction({ message, abi }) {
+  async waitForRunTransaction(
+    { message, abi }: { message: { message: string }, abi: AbiContract }
+  ) {
     const {
       shard_block_id,
     } = await this
-      .locklift
-      .ton
       .client
       .processing
       .send_message({
         message: message.message,
         send_events: false,
       });
-  
+
     return this
-      .locklift
-      .ton
       .client
       .processing
       .wait_for_transaction({
@@ -130,13 +150,13 @@ class Ton {
         },
       });
   }
-  
+
   /**
    * Gets balance for specific address. Raise an error if address not found
    * @param address Contract address
    * @returns {Promise<BigNumber>}
    */
-  async getBalance(address) {
+  async getBalance(address: string): Promise<BigNumber> {
     const {
       result: [{
         balance
@@ -148,16 +168,16 @@ class Ton {
       },
       result: 'balance'
     });
-    
+
     return new BigNumber(balance);
   }
-  
+
   /**
    * Get account type for specific address. Raise an error if address not found
    * @param address
    * @returns {Promise<{acc_type: *, acc_type_name: *}>}
    */
-  async getAccountType(address) {
+  async getAccountType(address: string): Promise<{ acc_type: string; acc_type_name: string }> {
     const {
       result: [{
         acc_type,
@@ -170,13 +190,10 @@ class Ton {
       },
       result: 'acc_type acc_type_name'
     });
-    
+
     return {
       acc_type,
       acc_type_name
     }
   }
 }
-
-
-module.exports = Ton;

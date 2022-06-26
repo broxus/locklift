@@ -1,15 +1,20 @@
-const Contract = require('./../contract');
+import { Contract, ContractConstructorParams } from './../contract';
+import { CreateDeployMessageParams } from '../ton';
+import { Locklift } from '../index';
 
 
 /**
  * Locklift plugin for working with classic givers.
  * Supports giver from local-node and any compatible one
  */
-class Giver {
-  constructor(locklift) {
+export class Giver {
+  private locklift: Locklift;
+  private giver!: Contract;
+
+  constructor(locklift: Locklift) {
     this.locklift = locklift;
   }
-  
+
   /**
    * Deploys contract by using giver.
    * 1. Derives contract address
@@ -29,20 +34,20 @@ class Giver {
       constructorParams,
       initParams,
       keyPair
-    },
-    amount=this.locklift.utils.convertCrystal(10, 'nano')
+    }: CreateDeployMessageParams,
+    amount=this.locklift.utils.convertCrystal(10, this.locklift.utils.Dimensions.Nano)
   ) {
     // Extend init params with random _randomNonce if it's found in ABI and autoRandomNonce is enabled
     const extendedInitParams = initParams === undefined ? {} : initParams;
-    
+
     if (contract.autoRandomNonce) {
-      if (contract.abi.data.find(e => e.name === '_randomNonce')) {
+      if (contract.abi.data?.find(e => e.name === '_randomNonce')) {
         extendedInitParams._randomNonce = extendedInitParams._randomNonce === undefined
           ? this.locklift.utils.getRandomNonce()
           : extendedInitParams._randomNonce;
       }
     }
-    
+
     const {
       address,
     } = await this.locklift.ton.createDeployMessage({
@@ -51,7 +56,7 @@ class Giver {
       initParams: extendedInitParams,
       keyPair,
     });
-    
+
     await this.giver.run({
       method: 'sendGrams',
       params: {
@@ -59,7 +64,7 @@ class Giver {
         amount,
       }
     });
-    
+
     // Wait for receiving grams
     await this.locklift.ton.client.net.wait_for_collection({
       collection: 'accounts',
@@ -69,7 +74,7 @@ class Giver {
       },
       result: 'balance'
     });
-    
+
     // Send deploy transaction
     const message = await this.locklift.ton.createDeployMessage({
       contract,
@@ -77,22 +82,22 @@ class Giver {
       initParams: extendedInitParams,
       keyPair,
     });
-    
+
     await this.locklift.ton.waitForRunTransaction({ message, abi: contract.abi });
-    
+
     contract.setAddress(address);
-    
+
     return contract;
   }
-  
+
   async setup() {
     this.giver = new Contract({
       locklift: this.locklift,
       abi: this.locklift.networkConfig.giver.abi,
       address: this.locklift.networkConfig.giver.address,
       name: 'Giver',
-    });
-    
+    } as ContractConstructorParams);
+
     // Setup giver key in case of key-protected giver
     if (this.locklift.networkConfig.giver.key) {
       const keyPair = await this.locklift.ton.client.crypto.nacl_sign_keypair_from_secret_key({
@@ -106,6 +111,3 @@ class Giver {
     }
   }
 }
-
-
-module.exports = Giver;
