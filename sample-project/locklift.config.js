@@ -15,7 +15,8 @@ module.exports = {
       ton_client: {
         // See the TON client specification for all available options
         network: {
-          server_address: "http://localhost:8085/",
+          server_address: "http://localhost",
+          port: 80,
         },
       },
       // This giver is default local-node giver

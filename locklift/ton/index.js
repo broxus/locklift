@@ -14,6 +14,13 @@ class Ton {
    */
   constructor(locklift) {
     this.locklift = locklift;
+    const networkConfig = this.locklift.config.networks[this.locklift.network]
+      .ton_client.network;
+
+    this.locklift.config.networks[
+      this.locklift.network
+    ].ton_client.server_address = `${networkConfig.server_address}:${networkConfig.port}/`;
+
     this.client = new TonClient(
       this.locklift.config.networks[this.locklift.network].ton_client,
     );
