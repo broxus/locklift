@@ -106,11 +106,10 @@ module.exports = {
 
 If you leave `phrase` field value empty - new random seed will be generated each
 time you're running locklift. If you specify it explicitly - fill the `phrase`
-field with mnemonic. Install [tonos-cli](https://github.com/tonlabs/tonos-cli)
-and use the following command to create new phrase:
+field with mnemonic. Use the following command to create new phrase:
 
 ```
-$ tonos-cli genphrase
+$ locklift genphrase
 ```
 
 ## Build contracts
@@ -119,11 +118,150 @@ This command uses the specified TON Solidity compiler and TVM linker to build
 all project contracts.
 
 ```
-$ locklift build --config locklift.config.js
+$ locklift build
 Found 1 sources
 Building contracts/Sample.sol
 Compiled contracts/Sample.sol
 Linked contracts/Sample.sol
+```
+
+## Run sandbox
+
+This command starts a local node in Docker. Make sure you have Docker installed.
+
+```
+$ locklift runSandbox
+Sandbox launched successfully!
+```
+
+## Kill sandbox
+
+This command kills the sandbox container
+
+```
+$ locklift killSandbox
+The sandbox has been stopped!
+```
+
+## Deploy account
+
+This command deploys account. In the testnet, the account is deployed from the
+starting 100 EVERs on the account.
+
+```
+$ locklift deployAccount
+Wallet1: 0:7a0914bdf25d92bdcdc91e41173050ff1a2a022a74a0b2118247e1e6d56de22b
+```
+
+## Get balance
+
+This command used to get account balance.
+
+```
+$ locklift getBalance -a  0:7a0914bdf25d92bdcdc91e41173050ff1a2a022a74a0b2118247e1e6d56de22b --convert
+
+99.991592999
+```
+
+## Transfer
+
+This command is used to send evers to another account.
+
+```
+$ locklift transfer --to 0:dd014d1551a4587fe76c2c201873816b72847e1efd446b687b4118a9702d0946 -a 5000000
+{
+  transaction: {
+    json_version: 8,
+    id: '9f5fa319ecb3ce5c8dbe0fa347cff41cf79e5d89e173e7478d9a228edfb13d0c',
+    boc: 'te6ccgECCgEAAkcAA7V90BTRVRpFh/52wsIBhzgWtyhH4e/URraHtBGKlwLQlGAAAAAAAAAElfMoNL8rdFc5bhfgjbDuu0k9dZnXn0UFYLQajziVmKawAAAAAAAAA/YsS6iQADRumXmIBQQBAg8MRQYaxw9EQAMCAG/Jh6EgTBRYQAAAAAAAAgAAAAAAA76Dh3ldkTn2/bx3+HGqrZVTecSELSyBSk5ZeTRoVlBgQFAVzACdQtgjE4gAAAAAAAAAAB6AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIACCcoVFoAt2HwWN0ODfi70KG2rH6oO2fhu649hpHbUjZV7UZHseoMteEQ/mPL/cY/b/QStwru5pmg4dN1EwYjhOw9ACAeAIBgEB3wcAr2gBugKaKqNIsP/O2FhAMOcC1uUI/D36iNbQ9oIxUuBaEo0AN0BTRVRpFh/52wsIBhzgWtyhH4e/URraHtBGKlwLQlGM9CQABhRYYAAAAAAAAACUxYl1EkAB5YgBugKaKqNIsP/O2FhAMOcC1uUI/D36iNbQ9oIxUuBaEowHwbMU9Wq7iIpqZhNe2tgobd10/mMKkeL6UgDa8aIf0kstCPsaPgvzljS/OftlPg+HchqZ9u420ZYzG08LUnGwHAAABgdB4pUZixLqwMV75NYJAGOAG6Apoqo0iw/87YWEAw5wLW5Qj8PfqI1tD2gjFS4FoSjAAAAAAAAAAAAAAAAACYloGA==',
+    status: 3,
+    status_name: 'finalized',
+    storage: {
+      storage_fees_collected: '0x14',
+      status_change: 0,
+      status_change_name: 'unchanged'
+    },
+    compute: {
+      success: true,
+      msg_state_used: false,
+      account_activated: false,
+      gas_fees: '0x58e1e8',
+      gas_used: 5825,
+      gas_limit: 0,
+      gas_credit: 10000,
+      mode: 0,
+      exit_code: 0,
+      vm_steps: 122,
+      vm_init_state_hash: '0000000000000000000000000000000000000000000000000000000000000000',
+      vm_final_state_hash: '0000000000000000000000000000000000000000000000000000000000000000',
+      compute_type: 1,
+      compute_type_name: 'vm'
+    },
+    action: {
+      success: true,
+      valid: true,
+      no_funds: false,
+      status_change: 0,
+      total_fwd_fees: '0xf4240',
+      total_action_fees: '0x51610',
+      result_code: 0,
+      tot_actions: 1,
+      spec_actions: 0,
+      skipped_actions: 0,
+      msgs_created: 1,
+      action_list_hash: 'df41c3bcaec89cfb7ede3bfc38d556caa9bce242169640a5272cbc9a342b2830',
+      tot_msg_size_cells: 1,
+      tot_msg_size_bits: 697
+    },
+    credit_first: true,
+    aborted: false,
+    destroyed: false,
+    tr_type: 0,
+    tr_type_name: 'ordinary',
+    lt: '0x49',
+    prev_trans_hash: '5f32834bf2b7457396e17e08db0eebb493d7599d79f450560b41a8f389598a6b',
+    prev_trans_lt: '0x3f',
+    now: 1657059977,
+    outmsg_cnt: 1,
+    orig_status: 1,
+    orig_status_name: 'Active',
+    end_status: 1,
+    end_status_name: 'Active',
+    in_msg: '1945ddee32c0e505e2b6956fc594daf6e61d96767419dfe24a14219d7017eb5a',
+    ext_in_msg_fee: '0x16d3c0',
+    out_msgs: [
+      'b39df6c8cf45640762234da45c65aadbf08d8de71cffafb06d9498ec9e111c00'
+    ],
+    account_addr: '0:dd014d1551a4587fe76c2c201873816b72847e1efd446b687b4118a9702d0946',
+    workchain_id: 0,
+    total_fees: '0x74cbcc',
+    balance_delta: '-0xbc00fc',
+    old_hash: '8545a00b761f058dd0e0df8bbd0a1b6ac7ea83b67e1bbae3d8691db523655ed4',
+    new_hash: '647b1ea0cb5e110fe63cbfdc63f6ff412b70aeee699a0e1d37513062384ec3d0'
+  },
+  out_messages: [
+    'te6ccgEBAQEAWgAAr2gBugKaKqNIsP/O2FhAMOcC1uUI/D36iNbQ9oIxUuBaEo0AN0BTRVRpFh/52wsIBhzgWtyhH4e/URraHtBGKlwLQlGM9CQABhRYYAAAAAAAAACUxYl1EkA='
+  ],
+  decoded: { out_messages: [ null ], output: null },
+  fees: {
+    in_msg_fwd_fee: 1496000,
+    storage_fee: 20,
+    gas_fee: 5825000,
+    out_msgs_fwd_fee: 1000000,
+    total_account_fees: 8321020,
+    total_output: 4000000
+  }
+}
+```
+
+## Show code
+
+This command is used to display the contract code.
+
+```
+$ locklift showCode -cn Wallet
+Wallet code:
+te6ccgECDgEAAXoABCSK7VMg4wMgwP/jAiDA/uMC8gsLAgENApztRNDXScMB+GYh2zzTAAGOEoECANcYIPkBWPhCIPhl+RDyqN7TPwH4QyG58rQg+COBA+iogggbd0CgufK0+GPTHwH4I7zyudMfAds88jwFAwNK7UTQ10nDAfhmItDXCwOpOADcIccA4wIh1w0f8rwh4wMB2zzyPAoKAwIoIIIQMV75NbrjAiCCEGi1Xz+64wIHBAJIMPhCbuMA+Ebyc9H4QvLgZfhFIG6SMHDe+EK68uBm+ADbPPIABQgBPu1E0NdJwgGOFHDtRND0BYBA9A7yvdcL//hicPhj4w0GAB7tRNDT/9M/0wAx0fhj+GICMjD4RvLgTCGT1NHQ3vpA03/SANHbPOMA8gAJCAAc+EP4QsjL/8s/z4PJ7VQATPhFIG6SMHDe+EK68uBk+AASyM+FgMoAz4RAzgH6AoBrz0DJcPsAAAr4RvLgTAIK9KQg9KENDAAUc29sIDAuNTkuMAAA
 ```
 
 ## Test contracts
@@ -133,8 +271,7 @@ This command runs the project Mocha tests, `test` folder by default. The
 import it manually.
 
 ```
-$ locklift test --config locklift.config.js --network local
-
+$ locklift test
 
   Test Sample contract
     Contracts
@@ -152,7 +289,7 @@ This command runs an arbitrary Node JS script with already configured `locklift`
 module.
 
 ```
-$ locklift run --config locklift.config.js --network local --script scripts/1-deploy-sample.js
+$ locklift run --script scripts/1-deploy-sample.js
 Sample deployed at: 0:a56a1882231c9d901a1576ec2187575b01d1e33dd71108525b205784a41ae6d0
 ```
 
@@ -351,3 +488,59 @@ object.
 locklift.utils.convertCrystal(10, "nano"); // 10000000000
 locklift.utils.convertCrystal(10000000000, "ton"); // 10```
 ````
+
+#### `locklift.utils.getBalance(contract, convertCrystal)`
+
+Get contract balance.
+
+##### Example
+
+````javascript
+const contract = "0:dd4df10e1f64c03a075a77cab48c59cac6261710d2c0af9ca303fcd190b3652c"
+locklift.utils.getBalance(contract); // 10000000000
+locklift.utils.getBalance(contract, true); // 10
+````
+
+#### `locklift.utils.transfer(to, amount, keyPair)`
+
+Transfer EVER to another account. Returns txId.
+
+##### Example
+
+````javascript
+const to = "0:dd4df10e1f64c03a075a77cab48c59cac6261710d2c0af9ca303fcd190b3652c"
+locklift.utils.transfer(to, 10000000, 0);
+````
+
+#### `locklift.utils.deployAccount(keyNumber, balance)`
+
+Shortcut to deploy the contract by using locklift.giver.deployContract. Returns Wallet Object.
+
+##### Example
+
+````javascript
+locklift.utils.deployAccount(0, 1000000000);
+````
+
+#### `locklift.utils.showCode(contractName)`
+
+Returns the contract code.
+
+##### Example
+
+````javascript
+locklift.utils.showCode("Wallet");
+````
+
+#### `locklift.utils.validateAddress(address)`
+
+Validate everscale address. Returns bool.
+
+##### Example
+
+````javascript
+locklift.utils.validateAddress("0:dd014d1551a4587fe76c2c201873816b72847e1efd446b687b4118a9702d0946"); // true
+
+locklift.utils.validateAddress("0:dd014d1551a4587fe76c2c201873816b72847e1efd446b687b4118a9702d094642"); // false
+````
+
