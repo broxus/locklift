@@ -3,6 +3,7 @@ const BigNumber = require("bignumber.js");
 const ton = require("../ton");
 const { execSync } = require("child_process");
 const path = require("path");
+const { fail } = require("assert");
 module.exports = class Utils {
   /**
    * Initialize TON wrapper. All the configuration for TonClient should be placed in config.networks[network].ton_client
@@ -237,7 +238,8 @@ module.exports = class Utils {
         return true;
       })
       .catch(err => {
-        console.log(err);
+        console.log(err)
+        return false;
       });
   }
   log(text) {

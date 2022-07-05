@@ -74,8 +74,6 @@ async function loadConfig(configPath) {
     });
 
     keys.phrase = phrase.phrase;
-  } else {
-    keys = JSON.parse(keys);
   }
 
   configFile.networks[configFile.network].keys = {

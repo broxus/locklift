@@ -20,6 +20,8 @@ program
       `docker run -d -e USER_AGREEMENT=yes --rm --name local-node -p${port}:${port} tonlabs/local-node:0.29.1`,
     );
 
+    console.log("Sandbox launched successfully!");
+
     process.exit();
   });
 

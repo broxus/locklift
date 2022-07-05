@@ -8,7 +8,7 @@ program
   .description("Kill local ever node")
   .action(async options => {
     execSync("docker kill local-node");
-
+    console.log("The sandbox has been stopped!");
     process.exit();
   });
 
