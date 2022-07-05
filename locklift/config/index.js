@@ -65,35 +65,21 @@ async function loadConfig(configPath) {
   const configFile = require(resolvedConfigPath);
 
   const client = new TonClient();
-  let keys = require(`${process.cwd()}/ ./../keys.json`);
+  let keys = configFile.networks[configFile.network].keys;
 
-  if (keys.mnemonic === "") {
+  if (keys.phrase === "") {
     const phrase = await client.crypto.mnemonic_from_random({
       dictionary: 1,
       word_count: 12,
     });
 
-    keys.mnemonic = phrase.phrase;
-
-    fse.writeJSONSync(
-      `${process.cwd()}/keys.json`,
-      JSON.stringify(keys),
-      err => {
-        if (err) {
-          throw err;
-        }
-      },
-    );
-
-    console.log(
-      `A new mnemonic phrase has been generated in ${process.cwd()}/keys.json`,
-    );
+    keys.phrase = phrase.phrase;
   } else {
     keys = JSON.parse(keys);
   }
 
   configFile.networks[configFile.network].keys = {
-    phrase: keys.mnemonic,
+    phrase: keys.phrase,
     amount: 12,
   };
 
