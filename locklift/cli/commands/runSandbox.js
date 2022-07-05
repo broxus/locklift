@@ -14,7 +14,7 @@ program
     if (config === undefined) {
       config = await loadConfig(`${process.cwd()}/locklift.config.js`);
     }
-    const port = config.networks.local.ton_client.network.port;
+    const port = config.networks[config.network].ton_client.network.port;
 
     execSync(
       `docker run -d -e USER_AGREEMENT=yes --rm --name local-node -p${port}:${port} tonlabs/local-node:0.29.1`,
