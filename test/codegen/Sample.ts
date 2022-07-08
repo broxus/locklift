@@ -1,5 +1,9 @@
 import { Contract } from 'locklift/contract';
-import { BytesLike, ContractFunctions } from 'locklift/types';
+import {
+  BytesLike,
+  ContractFunctions,
+  ResultOfProcessMessage,
+} from 'locklift/types';
 
 const SampleAbi = {
 	"ABI version": 2,
@@ -64,7 +68,7 @@ export class Sample extends Contract {
       call(params: {_state: BytesLike}): void {
         return this.call({ method: 'setState', params });
       },
-      run(params: {_state: BytesLike}): void {
+      run(params: {_state: BytesLike}): ResultOfProcessMessage<void> {
         return this.run({ method: 'setState', params });
       },
     },
@@ -72,7 +76,7 @@ export class Sample extends Contract {
       call(): {_state: BytesLike} {
         return this.call({ method: 'getDetails' });
       },
-      run(): {_state: BytesLike} {
+      run(): ResultOfProcessMessage<{_state: BytesLike}> {
         return this.run({ method: 'getDetails' });
       },
     },

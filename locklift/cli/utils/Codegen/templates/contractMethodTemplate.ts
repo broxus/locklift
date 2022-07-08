@@ -14,7 +14,7 @@ export function contractMethodTemplate({
       call(${params}): ${returns} {
         return this.call({ method: '${name}'${!!params ? ', params ' : ' '}});
       },
-      run(${params}): ${returns} {
+      run(${params}): ResultOfProcessMessage<${returns}> {
         return this.run({ method: '${name}'${!!params ? ', params ' : ' '}});
       },
     },

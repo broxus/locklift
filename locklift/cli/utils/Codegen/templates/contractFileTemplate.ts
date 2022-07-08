@@ -13,7 +13,11 @@ export function contractFileTemplate({
 }: TemplateProps): string {
   const template =
 `import { Contract } from 'locklift/contract';
-import { BytesLike, ContractFunctions } from 'locklift/types';
+import {
+  BytesLike,
+  ContractFunctions,
+  ResultOfProcessMessage,
+} from 'locklift/types';
 
 const ${contractName}Abi = ${abi}
 
@@ -39,7 +43,8 @@ ${contractMethods}
   }
 }
 
-export default ${contractName};`
+export default ${contractName};
+`
 
   return template;
 }

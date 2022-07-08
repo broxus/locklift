@@ -1,4 +1,4 @@
-import { AbiFunction, KeyPair, ResultOfProcessMessage } from '@tonclient/core';
+import { AbiFunction, KeyPair, ResultOfProcessMessage, DecodedMessageBody } from '@tonclient/core';
 
 export type ValueOf<T> = T[keyof T];
 
@@ -12,7 +12,16 @@ export type RunContractParams<P> = {
   keyPair?: KeyPair;
 }
 
- export interface ContractMethod<P> {
+interface ResultOfProcessMessageGeneric<O> extends ResultOfProcessMessage {
+  decoded?: {
+    out_messages: DecodedMessageBody | null[];
+    output: O
+  }
+}
+
+export { ResultOfProcessMessageGeneric as ResultOfProcessMessage };
+
+export interface ContractMethod<P> {
   /**
    * Run smart contract method. Create run message and wait for transaction.
    *
