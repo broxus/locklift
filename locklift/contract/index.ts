@@ -1,7 +1,7 @@
 //@ts-ignore no types for ton-client-js
 import { QMessageType } from 'ton-client-js';
-import { AbiContract, KeyPair, ResultOfProcessMessage } from '@tonclient/core';
-import { RunContractParams } from '../types';
+import { AbiContract, KeyPair } from '@tonclient/core';
+import { RunContractParams, ResultOfProcessMessage } from '../types';
 import OutputDecoder from './output-decoder';
 import { Locklift } from '../index';
 
@@ -92,12 +92,12 @@ export class Contract {
    * @param [keyPair=this.keyPair] Key pair to use
    * @returns {Promise<ResultOfProcessMessage>}
    */
-  async run({ method, params, keyPair }: RunContractParams<any>): Promise<ResultOfProcessMessage> {
-    const message = await this.locklift.ton.createRunMessage({
+  async run<R extends any = any, P extends any = any>({ method, params, keyPair }: RunContractParams<P>): Promise<ResultOfProcessMessage<R>> {
+    const message = await this.locklift.ton.createRunMessage<P>({
       contract: this,
       method,
       params: params === undefined ? {} : params,
-      keyPair: keyPair === undefined ? this.keyPair! : keyPair,
+      keyPair: keyPair || this.keyPair!,
     });
 
     const tx = this.locklift.ton.waitForRunTransaction({ message, abi: this.abi });
@@ -116,7 +116,7 @@ export class Contract {
    * @param [keyPair=this.keyPair] Keypair to use
    * @returns {Promise<void>} Decoded output
    */
-  async call({ method, params, keyPair }: RunContractParams<any>): Promise<any> {
+  async call<R extends any = any, P extends any = any>({ method, params, keyPair }: RunContractParams<P>): Promise<R> {
     const extendedParams = params === undefined ? {} : params;
 
     if (this.autoAnswerIdOnCall) {
@@ -129,7 +129,7 @@ export class Contract {
 
     const {
       message
-    } = await this.locklift.ton.createRunMessage({
+    } = await this.locklift.ton.createRunMessage<P>({
       contract: this,
       method,
       params: extendedParams,
@@ -234,7 +234,7 @@ export class Contract {
    * @param eventName Event name
    * @returns {Promise<*>} List of emitted events
    */
-  async getEvents(eventName: string) {
+  async getEvents<T extends string>(eventName: T) {
     const sentMessages = await this.getSentMessages(QMessageType.extOut, false);
 
     return sentMessages.filter((message) => message.name === eventName);

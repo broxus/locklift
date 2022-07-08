@@ -2,7 +2,11 @@ import fs from 'fs';
 import { resolve } from 'path';
 import { AbiFunction, AbiParam } from '@tonclient/core';
 import { ContractFunctions } from '../../../types';
-import { contractFileTemplate, contractMethodTemplate } from './templates';
+import {
+  contractFileTemplate,
+  contractMethodTemplate,
+  contractDeployMethodTemplate,
+} from './templates';
 import { Types } from '../../../contract/output-decoder';
 import { AbiData, DEFAULT_OUTPUT_FOLDER_NAME } from './';
 
@@ -15,7 +19,7 @@ class ContractFile {
 
     this.contractName = abiData.name.split('.')[0];
 
-    const contractFunctions = JSON.stringify(this.getFunctionObject(abiData)) || '';
+    const contractFunctions = JSON.stringify(this.getFunctionsObject(abiData)) || '';
 
     const contractMethods = abiData.abi.functions?.reduce((acc, abiFunction) => {
       //skip constructor
@@ -25,10 +29,13 @@ class ContractFile {
       return acc + this.getMethodFromAbiFunction(abiFunction);
     }, '') || '';
 
+    const contractDeployMethod = this.getContractDeployMethod(abiData);
+
     this.contractFile = contractFileTemplate({
       contractName: this.contractName,
       contractFunctions,
       contractMethods,
+      contractDeployMethod,
       abi: abiData.original,
     });
   }
@@ -38,19 +45,12 @@ class ContractFile {
   }
 
   private getMethodFromAbiFunction(abiFunction: AbiFunction): string {
-    const reducer = (acc: string, value: AbiParam, index: number, array: AbiParam[]) => {
-      const isLast = array.length - 1 === index;
-      const lastModifier = isLast ? '' : ', ';
+    const inputs = abiFunction.inputs.reduce(this.abiParamToTypeReducer, '');
 
-      return acc + this.getParamFromAbiParam(value) + lastModifier;
-    };
+    const outputs = abiFunction.outputs.reduce(this.abiParamToTypeReducer, '');
 
-    const inputs = abiFunction.inputs.reduce(reducer, '');
-
-    const outputs = abiFunction.outputs.reduce(reducer, '');
-
-    const methodParams = !!inputs ? `params: {${inputs}}` : '';
-    const methodReturns = !!outputs ? `{${outputs}}` : 'void';
+    const methodParams = !!inputs ? `{${inputs}}` : '';
+    const methodReturns = !!outputs ? `{${outputs}}` : 'undefined';
 
     return contractMethodTemplate({
       name: abiFunction.name,
@@ -58,6 +58,13 @@ class ContractFile {
       returns: methodReturns,
     });
   }
+
+  private abiParamToTypeReducer = (acc: string, value: AbiParam, index: number, array: AbiParam[]) => {
+    const isLast = array.length - 1 === index;
+    const lastModifier = isLast ? '' : ', ';
+
+    return acc + this.getParamFromAbiParam(value) + lastModifier;
+  };
 
   private getParamFromAbiParam(abiParam: AbiParam): string {
     return `${abiParam.name}: ${this.getTypeFromAbiType(abiParam.type)}`;
@@ -112,7 +119,7 @@ class ContractFile {
     }
   }
 
-  private getFunctionObject(abiData: AbiData): ContractFunctions | undefined {
+  private getFunctionsObject(abiData: AbiData): ContractFunctions | undefined {
     if (!abiData.abi.functions)
       return;
 
@@ -123,6 +130,14 @@ class ContractFile {
     }, {} as ContractFunctions);
 
     return functionsObject;
+  }
+
+  private getContractDeployMethod(abiData: AbiData): string {
+    const constructorAbiFunction = abiData.abi.functions?.find(func => func.name === 'constructor');
+    const constructorParams = constructorAbiFunction?.inputs.reduce(this.abiParamToTypeReducer, '');
+    const initParams = abiData.abi.data?.reduce(this.abiParamToTypeReducer, '') || 'undefined';
+
+    return contractDeployMethodTemplate({ constructorParams, initParams });
   }
 }
 

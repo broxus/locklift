@@ -1,6 +1,7 @@
 import { Contract } from 'locklift/contract';
 import {
   BytesLike,
+  BigNumber,
   ContractFunctions,
   ResultOfProcessMessage,
 } from 'locklift/types';
@@ -65,19 +66,19 @@ export class Sample extends Contract {
 
   private _methods = {
     setState: {
-      call(params: {_state: BytesLike}): void {
-        return this.call({ method: 'setState', params });
+      call(params: {_state: BytesLike}): undefined {
+        return this.call<undefined, {_state: BytesLike}>({ method: 'setState', params });
       },
-      run(params: {_state: BytesLike}): ResultOfProcessMessage<void> {
-        return this.run({ method: 'setState', params });
+      run(params: {_state: BytesLike}): ResultOfProcessMessage<undefined> {
+        return this.run<undefined, {_state: BytesLike}>({ method: 'setState', params });
       },
     },
     getDetails: {
       call(): {_state: BytesLike} {
-        return this.call({ method: 'getDetails' });
+        return this.call<{_state: BytesLike}, unknown>({ method: 'getDetails' });
       },
       run(): ResultOfProcessMessage<{_state: BytesLike}> {
-        return this.run({ method: 'getDetails' });
+        return this.run<{_state: BytesLike}, unknown>({ method: 'getDetails' });
       },
     },
 
@@ -93,6 +94,28 @@ export class Sample extends Contract {
 
   public get methods() {
     return this._methods;
+  }
+
+ public async deploy({
+    initParams,
+    constructorParams,
+  }: {
+    initParams: {_nonce: BytesLike};
+    constructorParams: {_state: BytesLike};
+  }) {
+    return await this.locklift.giver.deployContract<{_state: BytesLike}, {_nonce: BytesLike}>({
+      contract: this,
+      keyPair: this.keyPair,
+      initParams,
+      constructorParams,
+    });
+  }
+
+  public async getBalance(): Promise<BigNumber> {
+    if (!this.address)
+      throw 'Sample is not deployed.'
+
+    return await this.locklift.ton.getBalance(this.address);
   }
 }
 

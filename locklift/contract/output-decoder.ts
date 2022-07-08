@@ -61,7 +61,7 @@ class OutputDecoder {
     return outputDecoded;
   }
 
-  private decode_value(encoded_value: any, schema: AbiParam) {
+  private decode_value(encoded_value: any, schema: AbiParam): any {
     switch (schema.type) {
       case Types.Bytes:
         return this.decodeBytes(encoded_value);
@@ -109,27 +109,27 @@ class OutputDecoder {
     }
   }
 
-  private decodeBytes(value: string) {
+  private decodeBytes(value: string): Buffer {
     return Buffer.from(value, 'hex');
   }
 
-  private decodeBytesArray(value: string[]) {
+  private decodeBytesArray(value: string[]): Buffer[] {
     return value.map(v => this.decodeBytes(v));
   }
 
-  private decodeBool(value: string) {
+  private decodeBool(value: string): boolean {
     return Boolean(value);
   }
 
-  private decodeInt(value: string) {
+  private decodeInt(value: string): BigNumber {
     return new BigNumber(value);
   }
 
-  private decodeIntArray(value: string[]) {
+  private decodeIntArray(value: string[]): BigNumber[] {
     return value.map(hexInt => this.decodeInt(hexInt));
   }
 
-  private decodeTuple(value: Record<string, any>, schema?: AbiParam[]) {
+  private decodeTuple(value: Record<string, any>, schema?: AbiParam[]): Record<string, any> {
     const res_struct: Record<string, any> = {};
 
     if (schema) {

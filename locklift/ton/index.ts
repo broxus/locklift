@@ -7,18 +7,23 @@ import { libNode } from '@tonclient/lib-node';
 TonClient.useBinaryLibrary(libNode);
 
 
-export type CreateDeployMessageParams = {
+export type CreateDeployMessageParams<C extends any, I extends any> = {
   contract: Contract;
-  constructorParams?: any;
-  initParams: any;
+  constructorParams?: C | any;
+  initParams: I | any;
   keyPair: KeyPair;
 }
 
-export type CreateRunMessageParams = {
+export type CreateRunMessageParams<P extends any> = {
   contract: Contract;
   method: string;
-  params: any;
+  params: P | any;
   keyPair: KeyPair;
+}
+
+export type AccountType = {
+  acc_type: string;
+  acc_type_name: string
 }
 
 /**
@@ -51,7 +56,7 @@ export class Ton {
    * @param keyPair Key pair to use
    * @returns {Promise<ResultOfEncodeMessage>}
    */
-  async createDeployMessage({ contract, constructorParams, initParams, keyPair }: CreateDeployMessageParams) {
+  async createDeployMessage<C = any, I = any>({ contract, constructorParams, initParams, keyPair }: CreateDeployMessageParams<C, I>) {
     const encodeParams = {
       abi: {
         type: "Contract",
@@ -97,8 +102,8 @@ export class Ton {
    * @param keyPair Key pair to use
    * @returns {Promise<ResultOfEncodeMessage>}
    */
-  async createRunMessage(
-    { contract, method, params, keyPair }: CreateRunMessageParams
+  async createRunMessage<P = any>(
+    { contract, method, params, keyPair }: CreateRunMessageParams<P>
   ) {
     const encodeParams = {
       address: contract.address,
@@ -177,7 +182,7 @@ export class Ton {
    * @param address
    * @returns {Promise<{acc_type: *, acc_type_name: *}>}
    */
-  async getAccountType(address: string): Promise<{ acc_type: string; acc_type_name: string }> {
+  async getAccountType(address: string): Promise<AccountType> {
     const {
       result: [{
         acc_type,

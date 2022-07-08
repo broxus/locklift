@@ -1,4 +1,5 @@
 import { AbiFunction, KeyPair, ResultOfProcessMessage, DecodedMessageBody } from '@tonclient/core';
+import BigNumber from 'bignumber.js';
 
 export type ValueOf<T> = T[keyof T];
 
@@ -8,14 +9,14 @@ export type BytesLike = string | Bytes;
 
 export type RunContractParams<P> = {
   method: string;
-  params?: P;
+  params?: P | any;
   keyPair?: KeyPair;
 }
 
 interface ResultOfProcessMessageGeneric<O> extends ResultOfProcessMessage {
   decoded?: {
     out_messages: DecodedMessageBody | null[];
-    output: O
+    output?: O
   }
 }
 
@@ -38,4 +39,12 @@ export interface ContractMethod<P> {
   call(args: Omit<RunContractParams<P>, 'method'>): Promise<any>;
 }
 
-export type ContractFunctions = Record<string, Omit<AbiFunction, 'name'>>
+export type ContractFunctions = Record<string, Omit<AbiFunction, 'name'>>;
+
+export { BigNumber };
+
+export {
+  CreateDeployMessageParams,
+  CreateRunMessageParams,
+  AccountType,
+} from '../ton';

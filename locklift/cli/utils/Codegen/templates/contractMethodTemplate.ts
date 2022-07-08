@@ -11,11 +11,11 @@ export function contractMethodTemplate({
 }: TemplateProps): string {
   const template =
 `    ${name}: {
-      call(${params}): ${returns} {
-        return this.call({ method: '${name}'${!!params ? ', params ' : ' '}});
+      call(${!!params ? `params: ${params}` : ''}): ${returns} {
+        return this.call<${returns}, ${params || 'unknown'}>({ method: '${name}'${!!params ? ', params ' : ' '}});
       },
-      run(${params}): ResultOfProcessMessage<${returns}> {
-        return this.run({ method: '${name}'${!!params ? ', params ' : ' '}});
+      run(${!!params ? `params: ${params}` : ''}): ResultOfProcessMessage<${returns}> {
+        return this.run<${returns}, ${params || 'unknown'}>({ method: '${name}'${!!params ? ', params ' : ' '}});
       },
     },
 `

@@ -2,7 +2,7 @@ import BigNumber from 'bignumber.js';
 import { Contract } from './index';
 import { CreateRunMessageParams } from '../ton';
 
-export type RunTargetParams = Partial<CreateRunMessageParams> & {
+export type RunTargetParams<P = any> = Partial<CreateRunMessageParams<P>> & {
   contract: Contract;
   value?: string | BigNumber;
 }

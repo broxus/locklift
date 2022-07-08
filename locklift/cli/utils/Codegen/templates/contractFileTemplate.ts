@@ -2,6 +2,7 @@ type TemplateProps = {
   contractName: string;
   contractFunctions: string;
   contractMethods: string;
+  contractDeployMethod: string;
   abi: string;
 }
 
@@ -9,12 +10,14 @@ export function contractFileTemplate({
   contractName,
   contractFunctions,
   contractMethods,
+  contractDeployMethod,
   abi,
 }: TemplateProps): string {
   const template =
 `import { Contract } from 'locklift/contract';
 import {
   BytesLike,
+  BigNumber,
   ContractFunctions,
   ResultOfProcessMessage,
 } from 'locklift/types';
@@ -40,6 +43,15 @@ ${contractMethods}
 
   public get methods() {
     return this._methods;
+  }
+
+${contractDeployMethod}
+
+  public async getBalance(): Promise<BigNumber> {
+    if (!this.address)
+      throw '${contractName} is not deployed.'
+
+    return await this.locklift.ton.getBalance(this.address);
   }
 }
 

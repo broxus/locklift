@@ -28,13 +28,13 @@ export class Giver {
    * @param [amount=locklift.utils.convertCrystal(10, 'nano')] Amount in nano TONs to request from giver
    * @returns {Promise<*>}
    */
-  async deployContract(
+  async deployContract<C = any, I = any>(
     {
       contract,
       constructorParams,
       initParams,
       keyPair
-    }: CreateDeployMessageParams,
+    }: CreateDeployMessageParams<C, I>,
     amount=this.locklift.utils.convertCrystal(10, this.locklift.utils.Dimensions.Nano)
   ) {
     // Extend init params with random _randomNonce if it's found in ABI and autoRandomNonce is enabled
