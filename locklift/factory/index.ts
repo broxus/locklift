@@ -21,7 +21,7 @@ export class Factory {
    * @param resolvedPath
    * @returns {Promise<Contract>}
    */
-  async initializeContract(name: string, resolvedPath: string) {
+  protected async initializeContract(name: string, resolvedPath: string) {
     const base64 = utils.loadBase64FromFile(`${resolvedPath}/${name}.base64`);
     const abi = utils.loadJSONFromFile(`${resolvedPath}/${name}.abi.json`);
 

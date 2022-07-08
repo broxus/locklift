@@ -4,7 +4,8 @@
   "description": "Node JS framework for working with FreeTON contracts. Inspired by Truffle and Hardhat. Helps you to build, test, run and maintain your smart contracts.",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc"
+    "build": "tsc",
+    "dev": "tsc --watch"
   },
   "bin": {
     "locklift": "build/cli/index.js"
@@ -37,6 +38,9 @@
       ],
       "utils": [
         "build/utils/index.d.ts"
+      ],
+      "types": [
+        "build/types/index.d.ts"
       ]
     }
   },

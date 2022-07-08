@@ -1,6 +1,7 @@
 //@ts-ignore no types for ton-client-js
 import { QMessageType } from 'ton-client-js';
 import { AbiContract, KeyPair, ResultOfProcessMessage } from '@tonclient/core';
+import { RunContractParams } from '../types';
 import OutputDecoder from './output-decoder';
 import { Locklift } from '../index';
 
@@ -15,12 +16,6 @@ export type ContractConstructorParams = {
   autoAnswerIdOnCall?: boolean;
   autoRandomNonce?: boolean;
   afterRun?: Function;
-}
-
-export type RunContractParams = {
-  method: string;
-  params: any;
-  keyPair?: KeyPair;
 }
 
 /**
@@ -97,7 +92,7 @@ export class Contract {
    * @param [keyPair=this.keyPair] Key pair to use
    * @returns {Promise<ResultOfProcessMessage>}
    */
-  async run({ method, params, keyPair }: RunContractParams): Promise<ResultOfProcessMessage> {
+  async run({ method, params, keyPair }: RunContractParams<any>): Promise<ResultOfProcessMessage> {
     const message = await this.locklift.ton.createRunMessage({
       contract: this,
       method,
@@ -121,7 +116,7 @@ export class Contract {
    * @param [keyPair=this.keyPair] Keypair to use
    * @returns {Promise<void>} Decoded output
    */
-  async call({ method, params, keyPair }: RunContractParams): Promise<any> {
+  async call({ method, params, keyPair }: RunContractParams<any>): Promise<any> {
     const extendedParams = params === undefined ? {} : params;
 
     if (this.autoAnswerIdOnCall) {

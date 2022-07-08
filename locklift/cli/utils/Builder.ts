@@ -1,53 +1,18 @@
 import fs from 'fs';
-import dirTree, { DirectoryTree } from 'directory-tree';
-import { execSync } from 'child_process';
 import _ from 'underscore';
+import dirTree from 'directory-tree';
+import { execSync } from 'child_process';
 import { resolve } from 'path';
 import ejs from 'ejs';
 //@ts-ignore no types for tablemark
 import tablemark from 'tablemark';
-
-
-export function checkDirEmpty(dir: fs.PathLike): fs.PathLike | boolean {
-  if (!fs.existsSync(dir)) {
-    return dir;
-  }
-
-  return fs.readdirSync(dir).length === 0;
-}
-
-
-export function initializeDirIfNotExist(dir: fs.PathLike): void {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir);
-  }
-}
-
-
-export function flatDirTree(tree: DirectoryTree): DirectoryTree[] | undefined {
-  return tree.children?.reduce((acc: DirectoryTree[], current: DirectoryTree) => {
-    if (current.children === undefined) {
-      return [
-        ...acc,
-        current,
-      ];
-    }
-
-    const flatChild = flatDirTree(current);
-
-    if (!flatChild)
-      return acc;
-
-    return [...acc, ...flatChild];
-  }, []);
-}
+import { flatDirTree } from './flatDirTree';
 
 export type ParsedDoc = {
   path: string,
   name: string,
   doc: any,
 }
-
 
 export class Builder {
   private options: any;

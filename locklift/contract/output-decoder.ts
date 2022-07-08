@@ -63,46 +63,46 @@ class OutputDecoder {
 
   private decode_value(encoded_value: any, schema: AbiParam) {
     switch (schema.type) {
-      case 'bytes':
+      case Types.Bytes:
         return this.decodeBytes(encoded_value);
-      case 'bytes[]':
+      case Types.BytesArray:
         return this.decodeBytesArray(encoded_value);
-      case 'cell':
+      case Types.Cell:
         return encoded_value;
-      case 'uint256':
-      case 'uint160':
-      case 'uint128':
-      case 'uint64':
-      case 'uint32':
-      case 'uint16':
-      case 'uint8':
-      case 'int256':
-      case 'int160':
-      case 'int128':
-      case 'int64':
-      case 'int32':
-      case 'int16':
-      case 'int8':
+      case Types.Uint256:
+      case Types.Uint160:
+      case Types.Uint128:
+      case Types.Uint64:
+      case Types.Uint32:
+      case Types.Uint16:
+      case Types.Uint8:
+      case Types.Int256:
+      case Types.Int160:
+      case Types.Int128:
+      case Types.Int64:
+      case Types.Int32:
+      case Types.Int16:
+      case Types.Int8:
         return this.decodeInt(encoded_value);
-      case 'uint256[]':
-      case 'uint128[]':
-      case 'uint64[]':
-      case 'uint32[]':
-      case 'uint16[]':
-      case 'uint8[]':
-      case 'int256[]':
-      case 'int128[]':
-      case 'int64[]':
-      case 'int32[]':
-      case 'int16[]':
-      case 'int8[]':
+      case Types.Uint256Array:
+      case Types.Uint128Array:
+      case Types.Uint64Array:
+      case Types.Uint32Array:
+      case Types.Uint16Array:
+      case Types.Uint8Array:
+      case Types.Int256Array:
+      case Types.Int128Array:
+      case Types.Int64Array:
+      case Types.Int32Array:
+      case Types.Int16Array:
+      case Types.Int8Array:
         return this.decodeIntArray(encoded_value);
-      case 'bool':
+      case Types.Bool:
         return this.decodeBool(encoded_value);
-      case 'address':
-      case 'address[]':
+      case Types.Address:
+      case Types.AddressArray:
         return encoded_value;
-      case 'tuple':
+      case Types.Tuple:
         return this.decodeTuple(encoded_value, schema.components);
       default:
         return encoded_value;
