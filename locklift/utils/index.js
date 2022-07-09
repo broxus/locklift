@@ -157,12 +157,7 @@ module.exports = class Utils {
    * @returns {Promise<{acc_type: *, acc_type_name: *}>}
    */
 
-  async deployAccount({
-    keyNumber,
-    balance,
-    contract = "Wallet",
-    buildPath = "build",
-  }) {
+  async deployAccount({ keyNumber, balance, buildPath = "build" }) {
     if (
       !fs.existsSync(`${process.cwd()}/${buildPath}/Wallet.abi.json`) ||
       !fs.existsSync(`${process.cwd()}/${buildPath}/Wallet.base64`) ||
@@ -175,8 +170,8 @@ module.exports = class Utils {
       const includePath = `--include-path ${nodeModules}`;
 
       const output = execSync(`cd ${buildPath} && \
-        ${this.locklift.config.compiler.path} ${includePath} ./../../locklift/contract/contracts/${contract}.sol`);
-      this.log(`Compiled ${contract}`);
+        ${this.locklift.config.compiler.path} ${includePath} ./../../locklift/contract/contracts/Wallet.sol`);
+      this.log(`Compiled Wallet`);
 
       // No code was compiled, probably interface compilation
       if (output.toString() === "") return;

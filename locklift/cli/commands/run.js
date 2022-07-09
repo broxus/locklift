@@ -65,6 +65,7 @@ program
     await locklift.setup();
 
     global.locklift = locklift;
+    global.config = config;
     global.__dirname = __dirname;
 
     global.require = p => {
