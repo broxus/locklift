@@ -23,7 +23,7 @@ class Factory {
     const base64 = utils.loadBase64FromFile(`${resolvedPath}/${name}.base64`);
     const abi = utils.loadJSONFromFile(`${resolvedPath}/${name}.abi.json`);
 
-    const { code } = await this.locklift.ton.client.boc.get_code_from_tvc({
+    const { code } = await this.locklift.ever.client.boc.get_code_from_tvc({
       tvc: base64,
     });
 

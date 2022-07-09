@@ -24,7 +24,7 @@ async function main() {
     });
   } catch (err) {
     wallet = await this.locklift.factory.getAccount("Wallet");
-    const { address } = await this.locklift.ton.createDeployMessage({
+    const { address } = await this.locklift.ever.createDeployMessage({
       contract: wallet,
       constructorParams: {},
       initParams: {

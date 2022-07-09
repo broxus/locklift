@@ -38,7 +38,7 @@ class Giver {
       }
     }
 
-    const { address } = await this.locklift.ton.createDeployMessage({
+    const { address } = await this.locklift.ever.createDeployMessage({
       contract,
       constructorParams,
       initParams: extendedInitParams,
@@ -54,7 +54,7 @@ class Giver {
     });
 
     // Wait for receiving grams
-    await this.locklift.ton.client.net.wait_for_collection({
+    await this.locklift.ever.client.net.wait_for_collection({
       collection: "accounts",
       filter: {
         id: { eq: address },
@@ -64,14 +64,14 @@ class Giver {
     });
 
     // Send deploy transaction
-    const message = await this.locklift.ton.createDeployMessage({
+    const message = await this.locklift.ever.createDeployMessage({
       contract,
       constructorParams,
       initParams: extendedInitParams,
       keyPair,
     });
 
-    await this.locklift.ton.waitForRunTransaction({
+    await this.locklift.ever.waitForRunTransaction({
       message,
       abi: contract.abi,
     });
@@ -91,7 +91,7 @@ class Giver {
 
     // Setup giver key in case of key-protected giver
     if (this.locklift.networkConfig.giver.key) {
-      const keyPair = await this.locklift.ton.client.crypto.nacl_sign_keypair_from_secret_key(
+      const keyPair = await this.locklift.ever.client.crypto.nacl_sign_keypair_from_secret_key(
         {
           secret: this.locklift.networkConfig.giver.key,
         },

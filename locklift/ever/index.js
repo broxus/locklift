@@ -5,24 +5,24 @@ const { libNode } = require("@tonclient/lib-node");
 TonClient.useBinaryLibrary(libNode);
 
 /**
- * TON wrapper, using TonClient from TON labs SDK
+ * Everscale wrapper, using TonClient from TON labs SDK
  */
-class Ton {
+class Everscale {
   /**
-   * Initialize TON wrapper. All the configuration for TonClient should be placed in config.networks[network].ton_client
+   * Initialize Everscale wrapper. All the configuration for TonClient should be placed in config.networks[network].ever_client
    * @param locklift
    */
   constructor(locklift) {
     this.locklift = locklift;
     const networkConfig = this.locklift.config.networks[this.locklift.network]
-      .ton_client.network;
+      .ever_client.network;
 
     this.locklift.config.networks[
       this.locklift.network
-    ].ton_client.server_address = `${networkConfig.server_address}:${networkConfig.port}/`;
+    ].ever_client.server_address = `${networkConfig.server_address}:${networkConfig.port}/`;
 
     this.client = new TonClient(
-      this.locklift.config.networks[this.locklift.network].ton_client,
+      this.locklift.config.networks[this.locklift.network].ever_client,
     );
     this.zero_address =
       "0:0000000000000000000000000000000000000000000000000000000000000000";
@@ -62,7 +62,7 @@ class Ton {
       },
     };
 
-    return this.locklift.ton.client.abi.encode_message(
+    return this.locklift.ever.client.abi.encode_message(
       this.enrichMessageWithKeys(encodeParams, keyPair),
     );
   }
@@ -109,7 +109,7 @@ class Ton {
       },
     };
 
-    return this.locklift.ton.client.abi.encode_message(
+    return this.locklift.ever.client.abi.encode_message(
       this.enrichMessageWithKeys(encodeParams, keyPair),
     );
   }
@@ -123,12 +123,12 @@ class Ton {
   async waitForRunTransaction({ message, abi }) {
     const {
       shard_block_id,
-    } = await this.locklift.ton.client.processing.send_message({
+    } = await this.locklift.ever.client.processing.send_message({
       message: message.message,
       send_events: false,
     });
 
-    return this.locklift.ton.client.processing.wait_for_transaction({
+    return this.locklift.ever.client.processing.wait_for_transaction({
       message: message.message,
       shard_block_id,
       send_events: false,
@@ -181,4 +181,4 @@ class Ton {
   }
 }
 
-module.exports = Ton;
+module.exports = Everscale;

@@ -28,7 +28,7 @@ class Keys {
     if (process.platform !== "darwin") {
       this.keyPairs = await Promise.all(
         keysHDPaths.map(async path => {
-          return this.locklift.ton.client.crypto.mnemonic_derive_sign_keys({
+          return this.locklift.ever.client.crypto.mnemonic_derive_sign_keys({
             dictionary: 1,
             wordCount: 12,
             phrase: this.locklift.networkConfig.keys.phrase,
@@ -39,7 +39,7 @@ class Keys {
     } else {
       for (const path of keysHDPaths) {
         this.keyPairs.push(
-          await this.locklift.ton.client.crypto.mnemonic_derive_sign_keys({
+          await this.locklift.ever.client.crypto.mnemonic_derive_sign_keys({
             dictionary: 1,
             wordCount: 12,
             phrase: this.locklift.networkConfig.keys.phrase,

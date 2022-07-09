@@ -4,11 +4,9 @@ const { TonClient } = require("@tonclient/core");
 const { libNode } = require("@tonclient/lib-node");
 TonClient.useBinaryLibrary(libNode);
 const { Locklift } = require("../../index");
-const utils = require("../utils");
 const { loadConfig } = require("./../../config");
 const program = new Command();
 
-const Utils = require("../../utils/index");
 program
   .name("deployAccount")
   .description("Deploy account")

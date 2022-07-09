@@ -12,7 +12,7 @@ module.exports = {
   networks: {
     // You can use TON labs graphql endpoints or local node
     local: {
-      ton_client: {
+      ever_client: {
         // See the TON client specification for all available options
         network: {
           server_address: "http://localhost",

@@ -1,12 +1,12 @@
 const fs = require("fs");
 const BigNumber = require("bignumber.js");
-const ton = require("../ton");
+const ton = require("../ever");
 const { execSync } = require("child_process");
 const path = require("path");
 const { fail } = require("assert");
 module.exports = class Utils {
   /**
-   * Initialize TON wrapper. All the configuration for TonClient should be placed in config.networks[network].ton_client
+   * Initialize TON wrapper. All the configuration for TonClient should be placed in config.networks[network].ever_client
    * @param locklift
    */
   static EMPTY_TVM_CELL = "te6ccgEBAQEAAgAAAA==";
@@ -44,7 +44,7 @@ module.exports = class Utils {
     }
   }
   async logContract(contract) {
-    const balance = await this.locklift.ton.getBalance(contract.address);
+    const balance = await this.locklift.ever.getBalance(contract.address);
 
     logger.log(
       `${contract.name} (${contract.address}) - ${this.convertCrystal(
@@ -85,7 +85,7 @@ module.exports = class Utils {
       },
     };
 
-    return this.locklift.ton.client.abi.encode_message(
+    return this.locklift.ever.client.abi.encode_message(
       this.enrichMessageWithKeys(encodeParams, keyPair),
     );
   }
@@ -98,11 +98,11 @@ module.exports = class Utils {
   async getBalance(contract, convertCrystal = false) {
     if (convertCrystal) {
       return this.convertCrystal(
-        await this.locklift.ton.getBalance(contract),
+        await this.locklift.ever.getBalance(contract),
         "ton",
       ).toNumber();
     } else {
-      const balance = await this.locklift.ton.getBalance(contract);
+      const balance = await this.locklift.ever.getBalance(contract);
       return balance.toNumber();
     }
   }
@@ -123,7 +123,7 @@ module.exports = class Utils {
       value: amount,
       bounce: true,
     };
-    const { address } = await this.locklift.ton.createDeployMessage({
+    const { address } = await this.locklift.ever.createDeployMessage({
       contract: account,
       constructorParams: constructorParams,
       initParams: initParams,
@@ -223,7 +223,7 @@ module.exports = class Utils {
     return Contract.code;
   }
   async validateAddress(address) {
-    return await this.locklift.ton.client.utils
+    return await this.locklift.ever.client.utils
       .convert_address({
         address,
         output_format: {

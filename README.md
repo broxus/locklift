@@ -1,11 +1,11 @@
 # Locklift
 
-Locklift is a development environment aiming to help you with FreeTON contracts
-development. With Locklift, you get:
+Locklift is a development environment aiming to help you with Everscale
+contracts development. With Locklift, you get:
 
 - Network management for working with any networks (main, test, local, ...)
 - Automated contract testing with Mocha
-- Handy wrapper around FreeTON smart contract
+- Handy wrapper around Everscale smart contract
 - Custom givers support
 - Keys management
 - External script runner that executes scripts within specified environment
@@ -63,7 +63,7 @@ module.exports = {
   networks: {
     // You can use TON labs graphql endpoints or local node
     local: {
-      ton_client: {
+      ever_client: {
         // See the TON client specification for all available options
         network: {
           server_address: "http://localhost/",
@@ -114,8 +114,8 @@ $ locklift genphrase
 
 ## Build contracts
 
-This command uses the specified TON Solidity compiler and TVM linker to build
-all project contracts.
+This command uses the specified Everscale Solidity compiler and TVM linker to
+build all project contracts.
 
 ```
 $ locklift build
@@ -297,20 +297,20 @@ Sample deployed at: 0:a56a1882231c9d901a1576ec2187575b01d1e33dd71108525b205784a4
 
 This section describes the features of the `locklift` module.
 
-### TON (`locklift.ton`)
+### Everscale (`locklift.ton`)
 
 This module provides the set of objects and functions, for low level interacting
-with TON.
+with Everscale.
 
-#### `locklift.ton.client`
+#### `locklift.ever.client`
 
 The Locklift is built around TON Labs
 [ton-client-js](https://github.com/tonlabs/ton-client-js) module. By using
-`locklift.ton.client` you can access the already configured `TonClient` oject.
+`locklift.ever.client` you can access the already configured `TonClient` oject.
 The configuration should be stored in your config file at
-`networks[network].ton_client`.
+`networks[network].ever_client`.
 
-#### `locklift.ton.getBalance`
+#### `locklift.ever.getBalance`
 
 Wrapper around GraphQL account balance query. Throws an error if account not
 found.
@@ -318,19 +318,19 @@ found.
 ##### Example
 
 ```javascript
-const userBalance = await locklift.ton.getBalance(user.address);
+const userBalance = await locklift.ever.getBalance(user.address);
 
 expect(userBalance.toNumber()).to.be.above(0, "Bad user balance");
 ```
 
-#### `locklift.ton.getAccountType`
+#### `locklift.ever.getAccountType`
 
 Wrapper around GraphQL account type query. Throws an error if account not found.
 
 ##### Example
 
 ```javascript
-const { acc_type_name } = await locklift.ton.getAccountType(user.address);
+const { acc_type_name } = await locklift.ever.getAccountType(user.address);
 
 expect(acc_type_name).to.be.equal("Active", "User account not active");
 ```
@@ -495,11 +495,12 @@ Get contract balance.
 
 ##### Example
 
-````javascript
-const contract = "0:dd4df10e1f64c03a075a77cab48c59cac6261710d2c0af9ca303fcd190b3652c"
+```javascript
+const contract =
+  "0:dd4df10e1f64c03a075a77cab48c59cac6261710d2c0af9ca303fcd190b3652c";
 locklift.utils.getBalance(contract); // 10000000000
 locklift.utils.getBalance(contract, true); // 10
-````
+```
 
 #### `locklift.utils.transfer(to, amount, keyPair)`
 
@@ -507,20 +508,21 @@ Transfer EVER to another account. Returns txId.
 
 ##### Example
 
-````javascript
-const to = "0:dd4df10e1f64c03a075a77cab48c59cac6261710d2c0af9ca303fcd190b3652c"
+```javascript
+const to = "0:dd4df10e1f64c03a075a77cab48c59cac6261710d2c0af9ca303fcd190b3652c";
 locklift.utils.transfer(to, 10000000, 0);
-````
+```
 
 #### `locklift.utils.deployAccount(keyNumber, balance)`
 
-Shortcut to deploy the contract by using locklift.giver.deployContract. Returns Wallet Object.
+Shortcut to deploy the contract by using locklift.giver.deployContract. Returns
+Wallet Object.
 
 ##### Example
 
-````javascript
+```javascript
 locklift.utils.deployAccount(0, 1000000000);
-````
+```
 
 #### `locklift.utils.showCode(contractName)`
 
@@ -528,9 +530,9 @@ Returns the contract code.
 
 ##### Example
 
-````javascript
+```javascript
 locklift.utils.showCode("Wallet");
-````
+```
 
 #### `locklift.utils.validateAddress(address)`
 
@@ -538,9 +540,12 @@ Validate everscale address. Returns bool.
 
 ##### Example
 
-````javascript
-locklift.utils.validateAddress("0:dd014d1551a4587fe76c2c201873816b72847e1efd446b687b4118a9702d0946"); // true
+```javascript
+locklift.utils.validateAddress(
+  "0:dd014d1551a4587fe76c2c201873816b72847e1efd446b687b4118a9702d0946",
+); // true
 
-locklift.utils.validateAddress("0:dd014d1551a4587fe76c2c201873816b72847e1efd446b687b4118a9702d094642"); // false
-````
-
+locklift.utils.validateAddress(
+  "0:dd014d1551a4587fe76c2c201873816b72847e1efd446b687b4118a9702d094642",
+); // false
+```

@@ -69,14 +69,14 @@ class Contract {
    * @returns {Promise<*>}
    */
   async run({ method, params, keyPair }) {
-    const message = await this.locklift.ton.createRunMessage({
+    const message = await this.locklift.ever.createRunMessage({
       contract: this,
       method,
       params: params === undefined ? {} : params,
       keyPair: keyPair === undefined ? this.keyPair : keyPair,
     });
 
-    const tx = this.locklift.ton.waitForRunTransaction({
+    const tx = this.locklift.ever.waitForRunTransaction({
       message,
       abi: this.abi,
     });
@@ -118,7 +118,7 @@ class Contract {
       }
     }
 
-    const { message } = await this.locklift.ton.createRunMessage({
+    const { message } = await this.locklift.ever.createRunMessage({
       contract: this,
       method,
       params: extendedParams,
@@ -127,7 +127,7 @@ class Contract {
 
     const {
       result: [{ boc }],
-    } = await this.locklift.ton.client.net.query_collection({
+    } = await this.locklift.ever.client.net.query_collection({
       collection: "accounts",
       filter: {
         id: {
@@ -140,7 +140,7 @@ class Contract {
     // Get output of the method run execution
     const {
       decoded: { output },
-    } = await this.locklift.ton.client.tvm.run_tvm({
+    } = await this.locklift.ever.client.tvm.run_tvm({
       abi: {
         type: "Contract",
         value: this.abi,
@@ -168,7 +168,7 @@ class Contract {
    */
   async decodeMessages(messages, is_internal, messageDirection) {
     const decodedMessages = messages.map(async message => {
-      const decodedMessage = await this.locklift.ton.client.abi.decode_message_body(
+      const decodedMessage = await this.locklift.ever.client.abi.decode_message_body(
         {
           abi: {
             type: "Contract",
@@ -197,7 +197,7 @@ class Contract {
    * @returns {Promise<unknown[]>} List of messages
    */
   async getSentMessages(messageType, internal) {
-    const { result } = await this.locklift.ton.client.net.query_collection({
+    const { result } = await this.locklift.ever.client.net.query_collection({
       collection: "messages",
       filter: {
         src: {

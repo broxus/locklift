@@ -40,7 +40,7 @@ const Keys = object({
 });
 
 const Network = object({
-  ton_client: any(),
+  ever_client: any(),
   giver: Giver,
   keys: Keys,
 });

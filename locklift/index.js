@@ -1,7 +1,7 @@
 const Factory = require("./factory");
 const Giver = require("./giver");
 const Keys = require("./keys");
-const Ton = require("./ton");
+const Everscale = require("./ever");
 const Utils = require("./utils");
 
 class Locklift {
@@ -13,13 +13,13 @@ class Locklift {
   }
 
   async setup() {
-    this.ton = new Ton(this);
+    this.ever = new Everscale(this);
     this.factory = new Factory(this);
     this.giver = new Giver(this);
     this.keys = new Keys(this);
     this.utils = new Utils(this);
 
-    await this.ton.setup();
+    await this.ever.setup();
     await this.factory.setup();
     await this.giver.setup();
     await this.keys.setup();

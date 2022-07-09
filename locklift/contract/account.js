@@ -42,7 +42,7 @@ class Account extends Contract {
         }
       }
 
-      const message = await this.locklift.ton.client.abi.encode_message_body({
+      const message = await this.locklift.ever.client.abi.encode_message_body({
         address: contract.address,
         abi: {
           type: "Contract",
