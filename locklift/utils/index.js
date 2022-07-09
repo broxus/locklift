@@ -1,12 +1,10 @@
 const fs = require("fs");
 const BigNumber = require("bignumber.js");
-const ton = require("../ever");
 const { execSync } = require("child_process");
-const path = require("path");
-const { fail } = require("assert");
+
 module.exports = class Utils {
   /**
-   * Initialize TON wrapper. All the configuration for TonClient should be placed in config.networks[network].ever_client
+   * Initialize Everscale wrapper. All the configuration for TonClient should be placed in config.networks[network].ever_client
    * @param locklift
    */
   static EMPTY_TVM_CELL = "te6ccgEBAQEAAgAAAA==";
@@ -39,7 +37,7 @@ module.exports = class Utils {
 
     if (dimension === "nano") {
       return crystalBN.times(10 ** 9).toFixed(0);
-    } else if (dimension === "ton") {
+    } else if (dimension === "ever") {
       return crystalBN.div(new BigNumber(10).pow(9));
     }
   }
@@ -49,7 +47,7 @@ module.exports = class Utils {
     logger.log(
       `${contract.name} (${contract.address}) - ${this.convertCrystal(
         balance,
-        "ton",
+        "ever",
       )}`,
     );
   }
@@ -99,7 +97,7 @@ module.exports = class Utils {
     if (convertCrystal) {
       return this.convertCrystal(
         await this.locklift.ever.getBalance(contract),
-        "ton",
+        "ever",
       ).toNumber();
     } else {
       const balance = await this.locklift.ever.getBalance(contract);

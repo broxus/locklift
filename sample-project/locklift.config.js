@@ -10,7 +10,7 @@ module.exports = {
     lib: "/usr/bin/stdlib_sol.tvm", // optional default TVM_LINKER_LIB_PATH=/usr/bin/stdlib_sol.tvm; export TVM_LINKER_LIB_PATH
   },
   networks: {
-    // You can use TON labs graphql endpoints or local node
+    // You can use EverX graphql endpoints or local node
     local: {
       ever_client: {
         // See the TON client specification for all available options

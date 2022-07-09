@@ -61,7 +61,7 @@ module.exports = {
     path: "/usr/bin/tvm_linker",
   },
   networks: {
-    // You can use TON labs graphql endpoints or local node
+    // You can use EverX graphql endpoints or local node
     local: {
       ever_client: {
         // See the TON client specification for all available options
@@ -297,15 +297,15 @@ Sample deployed at: 0:a56a1882231c9d901a1576ec2187575b01d1e33dd71108525b205784a4
 
 This section describes the features of the `locklift` module.
 
-### Everscale (`locklift.ton`)
+### Everscale (`locklift.ever`)
 
 This module provides the set of objects and functions, for low level interacting
 with Everscale.
 
 #### `locklift.ever.client`
 
-The Locklift is built around TON Labs
-[ton-client-js](https://github.com/tonlabs/ton-client-js) module. By using
+The Locklift is built around EverX
+[ever-sdk-js](https://github.com/tonlabs/ever-sdk-js) module. By using
 `locklift.ever.client` you can access the already configured `TonClient` oject.
 The configuration should be stored in your config file at
 `networks[network].ever_client`.
@@ -357,17 +357,17 @@ This method returns the special [Account](#account) contract.
 
 ### Contract
 
-Basic object which wraps the TON smart contract. Allows to sends the run
+Basic object which wraps the Everscale smart contract. Allows to sends the run
 messages into the network, or run messages locally, to derive some data from the
 smart contract.
 
 ### Account
 
 This class extends the basic `Contract` functionality by adding special
-`runTarget` method, which allows to interact with TON contracts, by sending
-internal message from "Account" contract. It encodes the specified method +
-params into the internal message, according to the target contract's ABI and
-call the Account's external method.
+`runTarget` method, which allows to interact with Everscale contracts, by
+sending internal message from "Account" contract. It encodes the specified
+method + params into the internal message, according to the target contract's
+ABI and call the Account's external method.
 
 The basic Account contract is placed into the
 [Account.sol](contracts/contracts/Account.sol).
@@ -427,7 +427,7 @@ Locklift expects to see the following Giver external method:
 Deploys the contract by using giver contract.
 
 1. Derives the future contract address
-2. Sends the specified amount of TONs to it's address
+2. Sends the specified amount of EVERs to it's address
 3. Waits till the balance is sufficient
 4. Sends the contract deploy message
 
@@ -475,18 +475,18 @@ const [keyPair] = await locklift.keys.getKeyPairs();
 ### Utils
 
 This module provides some utility functionality for more convenient work with
-TON objects.
+EVER objects.
 
 #### `locklift.utils.convertCrystal(amount, dimension)`
 
-Converts amount of TONs / nanoTONs into nanoTONs / TONs. Returns `BigNumber`
+Converts amount of EVERs / nanoEVERs into nanoEVERs / EVERs. Returns `BigNumber`
 object.
 
 ##### Example
 
 ````javascript
 locklift.utils.convertCrystal(10, "nano"); // 10000000000
-locklift.utils.convertCrystal(10000000000, "ton"); // 10```
+locklift.utils.convertCrystal(10000000000, "ever"); // 10```
 ````
 
 #### `locklift.utils.getBalance(contract, convertCrystal)`

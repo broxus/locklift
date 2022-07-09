@@ -5,7 +5,7 @@ const { libNode } = require("@tonclient/lib-node");
 TonClient.useBinaryLibrary(libNode);
 
 /**
- * Everscale wrapper, using TonClient from TON labs SDK
+ * Everscale wrapper, using TonClient from EverX SDK
  */
 class Everscale {
   /**
