@@ -1,7 +1,11 @@
 //@ts-ignore no types for ton-client-js
 import { QMessageType } from 'ton-client-js';
 import { AbiContract, KeyPair } from '@tonclient/core';
-import { RunContractParams, ResultOfProcessMessage } from '../types';
+import {
+  RunContractParams,
+  ResultOfProcessMessage,
+  CodegenContractConstructorParams,
+} from '../types';
 import OutputDecoder from './output-decoder';
 import { Locklift } from '../index';
 
@@ -23,10 +27,10 @@ export type ContractConstructorParams = {
  */
 export class Contract {
   protected locklift: Locklift;
-  protected keyPair: KeyPair | undefined;
   protected autoAnswerIdOnCall: boolean;
   protected afterRun: Function;
   address: string | undefined;
+  keyPair: KeyPair | undefined;
   base64: string;
   code: string;
   name: string;
@@ -116,7 +120,7 @@ export class Contract {
    * @param [keyPair=this.keyPair] Keypair to use
    * @returns {Promise<void>} Decoded output
    */
-  async call<R extends any = any, P extends any = any>({ method, params, keyPair }: RunContractParams<P>): Promise<R> {
+  async call<R extends any, P extends any = any>({ method, params, keyPair }: RunContractParams<P>): Promise<R> {
     const extendedParams = params === undefined ? {} : params;
 
     if (this.autoAnswerIdOnCall) {
@@ -241,5 +245,8 @@ export class Contract {
   }
 }
 
+export interface CodegenContractConsturctor<C> {
+  new(params: CodegenContractConstructorParams): C;
+}
 
 export { Account } from './account';

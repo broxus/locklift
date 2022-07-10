@@ -1,5 +1,6 @@
 import { AbiFunction, KeyPair, ResultOfProcessMessage, DecodedMessageBody } from '@tonclient/core';
 import BigNumber from 'bignumber.js';
+import { ContractConstructorParams, CodegenContractConsturctor } from '../contract';
 
 export type ValueOf<T> = T[keyof T];
 
@@ -41,10 +42,18 @@ export interface ContractMethod<P> {
 
 export type ContractFunctions = Record<string, Omit<AbiFunction, 'name'>>;
 
-export { BigNumber };
-
 export {
   CreateDeployMessageParams,
   CreateRunMessageParams,
   AccountType,
 } from '../ton';
+
+type CodegenContractConstructorParams = Omit<ContractConstructorParams, 'name' | 'abi'>;
+
+export {
+  BigNumber,
+  KeyPair,
+  ContractConstructorParams,
+  CodegenContractConsturctor,
+  CodegenContractConstructorParams,
+};

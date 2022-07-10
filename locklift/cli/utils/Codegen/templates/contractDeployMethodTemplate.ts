@@ -9,13 +9,15 @@ export function contractDeployMethodTemplate({
 }: TemplateProps): string {
   const template =
 `  public async deploy({
+    keyPair,
     initParams,${!!constructorParams ? '\n    constructorParams,' : ''}
   }: {
+    keyPair?: KeyPair;
     initParams: {${initParams}};${!!constructorParams ? `\n    constructorParams: {${constructorParams}};` : ''}
   }) {
     return await this.locklift.giver.deployContract<${!!constructorParams ? `{${constructorParams}}` : 'undefined'}, {${initParams}}>({
       contract: this,
-      keyPair: this.keyPair,
+      keyPair: keyPair || this.keyPair!,
       initParams,${!!constructorParams ? '\n      constructorParams,' : ''}
     });
   }`

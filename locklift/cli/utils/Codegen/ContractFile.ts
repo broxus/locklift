@@ -52,10 +52,18 @@ class ContractFile {
     const methodParams = !!inputs ? `{${inputs}}` : '';
     const methodReturns = !!outputs ? `{${outputs}}` : 'undefined';
 
+    let callReturns = abiFunction.outputs.length === 1
+      ? this.getTypeFromAbiType(abiFunction.outputs[0].type)
+      : methodReturns;
+    callReturns = abiFunction.outputs.length === 1
+      ? callReturns.replace(/number/, 'BigNumber')
+      : callReturns.replace(/: number/g, ': BigNumber');
+
     return contractMethodTemplate({
       name: abiFunction.name,
       params: methodParams,
       returns: methodReturns,
+      callReturns: callReturns,
     });
   }
 
@@ -75,7 +83,7 @@ class ContractFile {
       case Types.Bytes:
         return 'BytesLike';
       case Types.BytesArray:
-        return 'BytesLike';
+        return 'BytesLike[]';
       case Types.Cell:
         return 'BytesLike';
       case Types.Uint256:
@@ -92,7 +100,7 @@ class ContractFile {
       case Types.Int32:
       case Types.Int16:
       case Types.Int8:
-        return 'BytesLike';
+        return 'number';
       case Types.Uint256Array:
       case Types.Uint128Array:
       case Types.Uint64Array:
@@ -105,7 +113,7 @@ class ContractFile {
       case Types.Int32Array:
       case Types.Int16Array:
       case Types.Int8Array:
-        return 'BytesLike';
+        return 'number';
       case Types.Bool:
         return 'boolean';
       case Types.Address:

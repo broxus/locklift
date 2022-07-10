@@ -92,7 +92,10 @@ export class Codegen {
   private getAbisTree(): DirectoryTree[] | undefined {
     const contractsNestedTree = dirTree(
       this.abiFolder,
-      { extensions: /\.(abi|json)$/ }
+      {
+        extensions: /\.(abi|json)$/,
+        exclude: /node_modules/,
+      }
     );
 
     return flatDirTree(contractsNestedTree);

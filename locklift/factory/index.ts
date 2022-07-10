@@ -1,8 +1,7 @@
 import path from 'path';
-import { Contract, Account } from './../contract';
+import { Contract, Account, CodegenContractConsturctor } from './../contract';
 import { Locklift } from '../index';
 import * as utils from './../utils';
-
 
 /**
  * Factory object for generating initializing Contract objects.
@@ -21,7 +20,7 @@ export class Factory {
    * @param resolvedPath
    * @returns {Promise<Contract>}
    */
-  protected async initializeContract(name: string, resolvedPath: string) {
+  async initializeContract(name: string, resolvedPath: string) {
     const base64 = utils.loadBase64FromFile(`${resolvedPath}/${name}.base64`);
     const abi = utils.loadJSONFromFile(`${resolvedPath}/${name}.abi.json`);
 
@@ -41,6 +40,33 @@ export class Factory {
       code,
       name,
     });
+  }
+
+  /**
+   * Initialize Codegen Contract object by it's constuctor and build path.
+   * Loads Base64 TVC encoded and derive code from base64 TVC.
+   * @param CodegenContract
+   * @param buildPath
+   * @returns {Promise<CodegenContract>}
+   */
+   async initializeCodegenContract<C>(CodegenContract: CodegenContractConsturctor<C>, buildPath = 'build'): Promise<C> {
+    const resolvedBuildPath = path.resolve(process.cwd(), buildPath);
+    const base64 = utils.loadBase64FromFile(`${resolvedBuildPath}/${CodegenContract.name}.base64`);
+
+    const {
+      code
+    } = await this.locklift.ton
+      .client
+      .boc
+      .get_code_from_tvc({
+        tvc: base64,
+      });
+
+    return new CodegenContract({
+      locklift: this.locklift,
+      base64,
+      code,
+    }) as unknown as C;
   }
 
   /**

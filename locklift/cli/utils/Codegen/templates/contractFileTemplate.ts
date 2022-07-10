@@ -16,25 +16,33 @@ export function contractFileTemplate({
   const template =
 `import { Contract } from 'locklift/contract';
 import {
+  Bytes,
   BytesLike,
   BigNumber,
-  ContractFunctions,
+  KeyPair,
   ResultOfProcessMessage,
+  CodegenContractConstructorParams,
 } from 'locklift/types';
 
 const ${contractName}Abi = ${abi}
 
 export class ${contractName} extends Contract {
-  private _abi = ${contractName}Abi;
+  public abi = ${contractName}Abi;
 
-  private _functions: ContractFunctions = ${contractFunctions};
+  constructor(params: CodegenContractConstructorParams) {
+    const extendedParams = {
+      ...params,
+      name: '${contractName}',
+      abi: ${contractName}Abi,
+    }
+
+    super(extendedParams);
+  }
+
+  private _functions = ${contractFunctions};
 
   private _methods = {
 ${contractMethods}
-  }
-
-  public get abi(): typeof ${contractName}Abi {
-    return this._abi;
   }
 
   public get functions(): typeof ${contractName}.prototype._functions {

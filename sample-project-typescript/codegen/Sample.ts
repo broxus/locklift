@@ -1,12 +1,11 @@
-import { Contract } from '@strafi/locklift/contract';
+import { Contract } from 'locklift/contract';
 import {
-  Bytes,
   BytesLike,
   BigNumber,
   KeyPair,
   ResultOfProcessMessage,
   CodegenContractConstructorParams,
-} from '@strafi/locklift/types';
+} from 'locklift/types';
 
 const SampleAbi = {
 	"ABI version": 2,
@@ -90,8 +89,8 @@ export class Sample extends Contract {
       },
     },
     getDetails: {
-      call(keyPair?: KeyPair): Promise<BigNumber> {
-        return Sample.prototype.call<BigNumber, unknown>({
+      call(keyPair?: KeyPair): Promise<{_state: number}> {
+        return Sample.prototype.call<{_state: number}, unknown>({
           method: 'getDetails', keyPair: keyPair || Sample.prototype.keyPair!
         });
       },
