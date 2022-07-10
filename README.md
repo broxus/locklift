@@ -149,6 +149,13 @@ $ locklift run --config locklift.config.js --network local --script scripts/1-de
 Sample deployed at: 0:a56a1882231c9d901a1576ec2187575b01d1e33dd71108525b205784a41ae6d0
 ```
 
+## Codegen wrappers for contracts (TypeScript only)
+With locklift you can generate a handy typed wrappers for builded contract according to contract ABI
+```
+$ locklift codegen --output wrappers --path build --config locklift.config.js
+```
+This command executes script that collects all ABIs inside `path` folder, generates TypeScript wrappers for every valid ABI and put them inside `output` folder.  
+See the usage example inside typescript codegen samples.
 ## Locklift docs
 
 This section describes the features of the `locklift` module.
