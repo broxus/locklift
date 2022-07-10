@@ -1,5 +1,6 @@
 import { Contract } from 'locklift/contract';
 import {
+  Bytes,
   BytesLike,
   BigNumber,
   KeyPair,
@@ -89,8 +90,8 @@ export class Sample extends Contract {
       },
     },
     getDetails: {
-      call(keyPair?: KeyPair): Promise<{_state: number}> {
-        return Sample.prototype.call<{_state: number}, unknown>({
+      call(keyPair?: KeyPair): Promise<BigNumber> {
+        return Sample.prototype.call<BigNumber, unknown>({
           method: 'getDetails', keyPair: keyPair || Sample.prototype.keyPair!
         });
       },
