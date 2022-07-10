@@ -6,7 +6,10 @@ module.exports = {
   linker: {
     // Path to your TVM Linker
     path: '/usr/bin/tvm_linker',
-    lib: '/usr/bin/stdlib_sol.tvm', // optional default TVM_LINKER_LIB_PATH=/usr/bin/stdlib_sol.tvm; export TVM_LINKER_LIB_PATH
+  },
+  lib: {
+    // Path to your TVM Linker
+    path: '/usr/bin/stdlib_sol.tvm',
   },
   networks: {
     // You can use TON labs graphql endpoints or local node

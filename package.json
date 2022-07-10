@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/broxus/ton-locklift.git"
+    "url": "git+https://github.com/EverscaleGuild/ton-locklift.git"
   },
   "keywords": [
     "FreeTON",
@@ -26,12 +26,11 @@
   "author": "pavlovdog_ <pavlovdog.moscow@gmail.com>",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/broxus/ton-locklift/issues"
+    "url": "https://github.com/EverscaleGuild/ton-locklift/issues"
   },
-  "homepage": "https://github.com/broxus/ton-locklift#readme",
+  "homepage": "https://github.com/EverscaleGuild/ton-locklift#readme",
   "dependencies": {
     "commander": "^7.2.0",
-    "@broxus/contracts": "^1.0.3",
     "@tonclient/core": "^1.28.0",
     "@tonclient/lib-node": "^1.28.0",
     "bignumber.js": "^9.0.1",
