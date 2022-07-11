@@ -150,7 +150,7 @@ Sample deployed at: 0:a56a1882231c9d901a1576ec2187575b01d1e33dd71108525b205784a4
 ```
 
 ## Codegen wrappers for contracts (TypeScript only)
-With locklift you can generate a handy typed wrappers for builded contract according to contract ABI
+With locklift you can generate handy typed wrappers for built contract according to contract ABI
 ```
 $ locklift codegen --output wrappers --path build --config locklift.config.js
 ```
