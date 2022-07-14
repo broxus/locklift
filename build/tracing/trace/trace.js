@@ -100,30 +100,21 @@ class Trace {
         if (!contract) {
             return;
         }
-        const isInternal = this.msg.msg_type === 0;
-        const parsedAbi = JSON.parse(contract.contract.abi);
-        const decodedMsg = await contract.contract.decodeInputMessage({
-            internal: isInternal,
-            body: this.msg.body,
-            methods: parsedAbi.functions.map((el) => el.name),
+        return await (0, utils_1.decoder)({
+            msgBody: this.msg.body,
+            msgType: this.msg.msg_type,
+            contract,
+            initialType: this.type,
         });
-        // determine more precisely is it an event or function return
-        if (this.type === types_1.TraceType.EVENT_OR_FUNCTION_RETURN) {
-            // @ts-ignore
-            const isFunctionReturn = parsedAbi.functions.find(({ name }) => name === decodedMsg.method);
-            if (isFunctionReturn) {
-                this.type = types_1.TraceType.FUNCTION_RETURN;
-            }
-            else {
-                this.type = types_1.TraceType.EVENT;
-            }
-        }
-        this.decodedMsg = decodedMsg;
     }
     async decode(contract) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         this.contract = contract;
-        await this.decodeMsg(contract);
+        const decoded = await this.decodeMsg(contract);
+        if (decoded) {
+            this.type = decoded.finalType;
+            this.decodedMsg = decoded.decoded;
+        }
     }
     setMsgType() {
         switch (this.msg.msg_type) {

@@ -94,7 +94,9 @@ class TracingInternal {
             const msgTree = await this.buildMsgTree(inMsgId, this.endPoint);
             const allowedCodesExtended = lodash_1.default.merge(lodash_1.default.cloneDeep(this._allowedCodes), allowedCodes);
             const traceTree = await this.buildTracingTree(msgTree, allowedCodesExtended);
+            debugger;
             const reverted = this.findRevertedBranch(traceTree);
+            debugger;
             if (reverted) {
                 (0, utils_1.throwErrorInConsole)(reverted);
             }
@@ -146,6 +148,7 @@ class TracingInternal {
         for (const [index, trace] of traceTree.outTraces.entries()) {
             const actionsNum = traceTree.outTraces.length;
             const corruptedBranch = this.depthSearch(trace, actionsNum, index);
+            debugger;
             if (corruptedBranch) {
                 // clean unnecessary structure
                 traceTree.outTraces = [];

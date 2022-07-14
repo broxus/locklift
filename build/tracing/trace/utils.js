@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.contractContractInformation = void 0;
+exports.contractContractInformation = exports.decoder = void 0;
 const types_1 = require("../types");
 var TargetType;
 (function (TargetType) {
@@ -28,6 +28,47 @@ const getCodeAndAddress = (msg, targetType) => {
     }
 };
 //
+const decoder = async ({ msgBody, msgType, contract, initialType, }) => {
+    const parsedAbi = JSON.parse(contract.contract.abi);
+    switch (msgType) {
+        case 0:
+        case 1: {
+            const isInternal = msgType === 0;
+            return {
+                decoded: await contract.contract
+                    .decodeInputMessage({
+                    internal: isInternal,
+                    body: msgBody,
+                    methods: parsedAbi.functions.map((el) => el.name),
+                })
+                    .then((decoded) => ({ method: decoded?.method, params: decoded?.input })),
+                finalType: initialType,
+            };
+        }
+        case 2: {
+            const outMsg = await contract.contract.decodeOutputMessage({
+                body: msgBody,
+                methods: parsedAbi.functions.map((el) => el.name),
+            });
+            if (outMsg) {
+                return {
+                    decoded: outMsg,
+                    finalType: types_1.TraceType.FUNCTION_RETURN,
+                };
+            }
+            return {
+                decoded: await contract.contract
+                    .decodeEvent({
+                    body: msgBody,
+                    events: parsedAbi.events.map((el) => el.name),
+                })
+                    .then((decoded) => ({ params: decoded?.data, method: decoded?.event })),
+                finalType: types_1.TraceType.EVENT,
+            };
+        }
+    }
+};
+exports.decoder = decoder;
 const contractContractInformation = ({ msg, type, }) => ({
     [types_1.TraceType.DEPLOY]: getCodeAndAddress(msg, TargetType.DEPLOY),
     [types_1.TraceType.FUNCTION_CALL]: getCodeAndAddress(msg, TargetType.DST),

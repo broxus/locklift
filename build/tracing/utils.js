@@ -69,6 +69,7 @@ const convert = (number, decimals = 9, precision = 4) => {
 };
 exports.convert = convert;
 const throwErrorInConsole = (revertedBranch) => {
+    debugger;
     for (const { totalActions, actionIdx, traceLog } of revertedBranch) {
         const bounce = traceLog.msg.bounce;
         let name = "undefinedContract";
@@ -76,7 +77,7 @@ const throwErrorInConsole = (revertedBranch) => {
             name = traceLog.contract.name;
         }
         let method = "undefinedMethod";
-        if (traceLog.decodedMsg) {
+        if (traceLog.decodedMsg?.method) {
             method = traceLog.decodedMsg.method;
         }
         else if (traceLog.type === types_1.TraceType.BOUNCE) {
@@ -84,12 +85,12 @@ const throwErrorInConsole = (revertedBranch) => {
         }
         let paramsStr = "()";
         if (traceLog.decodedMsg) {
-            if (Object.values(traceLog.decodedMsg.input).length === 0) {
+            if (Object.values(traceLog.decodedMsg.params || {}).length === 0) {
                 paramsStr = "()";
             }
             else {
                 paramsStr = "(\n";
-                for (const [key, value] of Object.entries(traceLog.decodedMsg.input)) {
+                for (const [key, value] of Object.entries(traceLog.decodedMsg.params || {})) {
                     paramsStr += `    ${key}: ${value}\n`;
                 }
                 paramsStr += ")";

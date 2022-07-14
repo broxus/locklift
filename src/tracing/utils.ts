@@ -64,6 +64,7 @@ export const convert = (number: number, decimals = 9, precision = 4) => {
 };
 
 export const throwErrorInConsole = <Abi>(revertedBranch: Array<RevertedBranch<Abi>>) => {
+  debugger;
   for (const { totalActions, actionIdx, traceLog } of revertedBranch) {
     const bounce = traceLog.msg.bounce;
     let name = "undefinedContract";
@@ -71,18 +72,18 @@ export const throwErrorInConsole = <Abi>(revertedBranch: Array<RevertedBranch<Ab
       name = traceLog.contract.name;
     }
     let method = "undefinedMethod";
-    if (traceLog.decodedMsg) {
+    if (traceLog.decodedMsg?.method) {
       method = traceLog.decodedMsg.method;
     } else if (traceLog.type === TraceType.BOUNCE) {
       method = "onBounce";
     }
     let paramsStr = "()";
     if (traceLog.decodedMsg) {
-      if (Object.values(traceLog.decodedMsg.input).length === 0) {
+      if (Object.values(traceLog.decodedMsg.params || {}).length === 0) {
         paramsStr = "()";
       } else {
         paramsStr = "(\n";
-        for (const [key, value] of Object.entries(traceLog.decodedMsg.input)) {
+        for (const [key, value] of Object.entries(traceLog.decodedMsg.params || {})) {
           paramsStr += `    ${key}: ${value}\n`;
         }
         paramsStr += ")";

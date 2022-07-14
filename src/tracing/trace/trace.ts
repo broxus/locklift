@@ -1,10 +1,9 @@
 import { CONSOLE_ADDRESS } from "../constances";
-import { AllowedCodes, MsgTree, TraceType } from "../types";
+import { AllowedCodes, DecodedMsg, MsgTree, TraceType } from "../types";
 import { Address } from "everscale-inpage-provider";
-import { AbiFunctionName } from "everscale-inpage-provider/dist/models";
-import { DecodedInput } from "everscale-inpage-provider/dist/contract";
+
 import { ContractWithName } from "../../types";
-import { contractContractInformation } from "./utils";
+import { contractContractInformation, decoder } from "./utils";
 import { TracingInternal } from "../tracingInternal";
 
 export class Trace<Abi = any> {
@@ -13,7 +12,7 @@ export class Trace<Abi = any> {
 
   type: TraceType | null = null;
   contract!: ContractWithName;
-  decodedMsg: DecodedInput<Abi, AbiFunctionName<Abi>> | undefined = undefined;
+  decodedMsg: DecodedMsg | undefined = undefined;
   hasErrorInTree = false;
   constructor(
     private readonly tracing: TracingInternal,
@@ -88,7 +87,13 @@ export class Trace<Abi = any> {
     }
   }
 
-  async decodeMsg(contract: ContractWithName | null = null) {
+  async decodeMsg(contract: ContractWithName | null = null): Promise<
+    | {
+        decoded: DecodedMsg;
+        finalType: TraceType | null;
+      }
+    | undefined
+  > {
     if (contract === null) {
       contract = this.contract;
     }
@@ -122,32 +127,22 @@ export class Trace<Abi = any> {
       return;
     }
 
-    const isInternal = this.msg.msg_type === 0;
-
-    const parsedAbi = JSON.parse(contract.contract.abi) as { functions: Array<{ name: AbiFunctionName<Abi> }> };
-    const decodedMsg = await contract.contract.decodeInputMessage({
-      internal: isInternal,
-      body: this.msg.body,
-      methods: parsedAbi.functions.map((el) => el.name),
+    return await decoder({
+      msgBody: this.msg.body,
+      msgType: this.msg.msg_type,
+      contract,
+      initialType: this.type,
     });
-    // determine more precisely is it an event or function return
-    if (this.type === TraceType.EVENT_OR_FUNCTION_RETURN) {
-      // @ts-ignore
-      const isFunctionReturn = parsedAbi.functions.find(({ name }) => name === decodedMsg.method);
-      if (isFunctionReturn) {
-        this.type = TraceType.FUNCTION_RETURN;
-      } else {
-        this.type = TraceType.EVENT;
-      }
-    }
-
-    this.decodedMsg = decodedMsg;
   }
 
   async decode(contract: ContractWithName<Abi> | undefined) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     this.contract = contract!;
-    await this.decodeMsg(contract);
+    const decoded = await this.decodeMsg(contract);
+    if (decoded) {
+      this.type = decoded.finalType;
+      this.decodedMsg = decoded.decoded;
+    }
   }
 
   setMsgType() {

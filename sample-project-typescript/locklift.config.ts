@@ -1,7 +1,7 @@
 import { LockliftConfig } from "locklift/config";
 import { FactorySource } from "./build/factorySource";
 import { Giver, GiverWallet } from "./giverSettings";
-import { NETWORK_PRESETS } from "everscale-standalone-client";
+import { NETWORK_PRESETS } from "everscale-standalone-client/nodejs";
 declare global {
   const locklift: import("locklift").Locklift<FactorySource>;
 }

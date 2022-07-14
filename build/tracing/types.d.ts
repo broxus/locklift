@@ -1,5 +1,8 @@
 import { Trace } from "./trace/trace";
 import { Optional } from "../types";
+import { DecodedEvent, DecodedOutput } from "everscale-inpage-provider";
+import { AbiEventName, AbiFunctionName } from "everscale-inpage-provider/dist/models";
+import { DecodedInput } from "everscale-inpage-provider/dist/contract";
 export declare enum TraceType {
     FUNCTION_CALL = "function_call",
     FUNCTION_RETURN = "function_return",
@@ -13,7 +16,7 @@ export declare type MsgTree = {
     outMessages: Array<any>;
     dst_transaction: any;
     dst: string;
-    msg_type: number;
+    msg_type: 0 | 1 | 2;
     body: string;
     bounce: boolean;
     bounced: boolean;
@@ -46,5 +49,10 @@ declare type AllowedCode = {
 };
 export declare type AllowedCodes = AllowedCode & {
     contracts: Record<string, AllowedCode>;
+};
+export declare type DecoderOutput<Abi> = DecodedOutput<Abi, AbiFunctionName<Abi>> | DecodedInput<Abi, AbiFunctionName<Abi>> | DecodedEvent<Abi, AbiEventName<Abi>> | undefined;
+export declare type DecodedMsg = {
+    method?: string;
+    params?: Record<string, any>;
 };
 export {};

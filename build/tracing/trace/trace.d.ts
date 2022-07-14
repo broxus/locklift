@@ -1,7 +1,5 @@
-import { AllowedCodes, MsgTree, TraceType } from "../types";
+import { AllowedCodes, DecodedMsg, MsgTree, TraceType } from "../types";
 import { Address } from "everscale-inpage-provider";
-import { AbiFunctionName } from "everscale-inpage-provider/dist/models";
-import { DecodedInput } from "everscale-inpage-provider/dist/contract";
 import { ContractWithName } from "../../types";
 import { TracingInternal } from "../tracingInternal";
 export declare class Trace<Abi = any> {
@@ -12,12 +10,15 @@ export declare class Trace<Abi = any> {
     error: any;
     type: TraceType | null;
     contract: ContractWithName;
-    decodedMsg: DecodedInput<Abi, AbiFunctionName<Abi>> | undefined;
+    decodedMsg: DecodedMsg | undefined;
     hasErrorInTree: boolean;
     constructor(tracing: TracingInternal, msg: MsgTree, srcTrace?: any);
     buildTree(allowedCodes: AllowedCodes | undefined, contractGetter: (codeHash: string, address: Address) => ContractWithName<Abi> | undefined): Promise<void>;
     checkForErrors(allowedCodes?: AllowedCodes): void;
-    decodeMsg(contract?: ContractWithName | null): Promise<void>;
+    decodeMsg(contract?: ContractWithName | null): Promise<{
+        decoded: DecodedMsg;
+        finalType: TraceType | null;
+    } | undefined>;
     decode(contract: ContractWithName<Abi> | undefined): Promise<void>;
     setMsgType(): void;
 }
