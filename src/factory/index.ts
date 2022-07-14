@@ -1,6 +1,6 @@
 import { Address, Contract, GetExpectedAddressParams, ProviderRpcClient } from "everscale-inpage-provider";
 import { GiverI } from "./giver";
-import { ConstructorParams, ContractWithName, Optional, TransactionWithOutput } from "../types";
+import { ConstructorParams, ContractWithName, DeployTransaction, Optional, TransactionWithOutput } from "../types";
 import { accountAbiBase, AccountFactory } from "./account";
 import { Deployer } from "./deployer";
 import * as utils from "../utils";
@@ -46,7 +46,7 @@ export class Factory<T extends FactoryType> {
     deployParams: Optional<GetExpectedAddressParams<T[ContractName]>, "tvc">,
     constructorParams: ConstructorParams<T[ContractName]>,
     value: string,
-  ): Promise<{ contract: Contract<T[ContractName]>; tx: TransactionWithOutput }> => {
+  ): Promise<{ contract: Contract<T[ContractName]> } & DeployTransaction> => {
     const { tvc, abi } = this.getContractArtifacts(contractName as ContractName);
     return this.deployer.deployContract(
       abi,
