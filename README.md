@@ -212,7 +212,7 @@ tracing will show the chain of calls that led to the error, as well as the error
 
 ```typescript
 // trace deploy
-const deployedTx = await locklift.tracing.trace(locklift.factory.deployContract(...))
+const {contract: deployedContractInstance, tx} = await locklift.tracing.trace(locklift.factory.deployContract(...))
 // trace simple transaction
 const changeStateTransaction = await locklift.tracing.trace(MyContract.methods.changeCounterState({newState: 10}).sendExternal({publicKey: signer.publicKey}))
 // trace runTarget
