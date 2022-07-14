@@ -75,7 +75,7 @@ program
         process.env.TS_NODE_PROJECT = config.mocha?.tsconfig;
         process.env.TS_CONFIG_PATHS = "true";
     }
-    const mocha = new mocha_1.default({ ...options.mocha });
+    const mocha = new mocha_1.default({ ...config.mocha });
     // Run all .js files in tests or only specified tests
     let testFiles;
     if (Array.isArray(options.tests)) {

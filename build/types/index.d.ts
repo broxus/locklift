@@ -18,4 +18,7 @@ export declare type TransactionWithOutput = {
 export declare type TransactionParameter = TransactionWithOutput | {
     tx: TransactionWithOutput;
 };
+export declare type DeployTransaction = Extract<TransactionParameter, {
+    tx: TransactionWithOutput;
+}>;
 export {};
