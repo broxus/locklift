@@ -2,4 +2,3 @@ node_modules/
 .idea
 sample-project/build
 sample-project-typescript/build
-build/

@@ -1,29 +1,42 @@
-# Locklift 
+<p align="center">
+    <h3 align="center">Locklift</h3>
+    <p align="center">Development environment for Everscale blockchain.</p>
+    <p align="center">
+        <a href="/LICENSE">
+            <img alt="GitHub" src="https://img.shields.io/badge/license-Apache--2.0-orange" />
+        </a>
+        <a href="https://www.npmjs.com/package/locklift">
+            <img alt="npm" src="https://img.shields.io/badge/npm-v2.0.0-red">
+        </a>
+    </p>
+</p>
 
-Locklift is a development environment aiming to help you with FreeTON contracts development. With Locklift, you get:
+
+Locklift is a development environment aiming to help you with Everscale contracts development. With Locklift, you get:
 
 - Network management for working with any networks (main, test, local, ...)
 - Automated contract testing with Mocha
-- Handy wrapper around FreeTON smart contract
+- Handy wrapper around Everscale smart contract
 - Custom givers support
 - Keys management
 - External script runner that executes scripts within specified environment
 
-## Install
-
+## Quick start
+To install Locklift you need node 14 or later. Go to an empty folder, initialize an npm project (i.e. npm init), and run
 ```
-npm install -g locklift
-```  
-or local project installation
+$ npm install --save-dev locklift
 ```
-npm install locklift
+Once it's installed you can initialize project
 ```
-Note: with local installation, locklift should be called using npx (ex. `npx locklift --version`).
-
+// initialize in current directory
+$ npx locklift init -f
+// or specify new one
+$ npx locklift init --path amazing-locklift-project
+```
 ## Get version
 
 ```
-locklift --version
+$ npx locklift --version
 ```
 
 ## CLI docs
@@ -33,7 +46,7 @@ This section describes the set of commands, supported by the `locklift` package.
 ### Initialize Locklift package
 
 ```
-$ locklift init --path amazing-locklift-project
+$ npx locklift init --path amazing-locklift-project
 New Locklift project initialized in amazing-locklift-project
 ```
 
@@ -42,71 +55,102 @@ This command initialize new Locklift project, filled with samples:
 ```
 ├── contracts
 │   └── Sample.sol
-├── locklift.config.js
+├── locklift.config.ts
 ├── scripts
-│   └── 1-deploy-sample.js
+│   └── 1-deploy-sample.ts
+├── giverSettings
+|   └── index.ts
 └── test
-    └── sample-test.js
-```  
-
-### Typescript package
-In order to initialize new locklift project with typescript support, run `init` command with `-ts` (or `--typescript`) flag:  
+    └── sample-test.ts
 ```
-$ locklift init --path typescript-locklift-project -ts
-New Locklift typescript project initialized in typescript-locklift-project
-You have to install the following dependencies by yourself: npm i --save-dev typescript @types/chai @types/mocha @types/node
-```  
 
 ### Other flags
-`-f, --force` - force run the init command (in case you have any files in target directory);  
-`-i, --installDeps` - automatically install all required dependencies for the project (currently works only for typescript projects).
+
+`-f, --force` - force run the init command (in case you have any files in target directory);
 
 ## Configuration
 
-By default, the configuration file is called `locklift.config.js`. Here's the basic layout:
+By default, the configuration file is called `locklift.config.ts`. Here's the basic layout:
 
-```javascript
-module.exports = {
+```typescript
+const LOCAL_NETWORK_ENDPOINT = "http://localhost:5000/graphql";
+const config: LockliftConfig = {
   compiler: {
     // Specify path to your TON-Solidity-Compiler
-    path: '/usr/bin/solc-ton',
+    // path: "/mnt/o/projects/broxus/TON-Solidity-Compiler/build/solc/solc",
+
+    // Or specify version of compiler
+    version: "0.61.2",
+
+    // Specify config for extarnal contracts as in exapmple
+    // externalContracts: {
+    //   "node_modules/broxus-ton-tokens-contracts/build": ['TokenRoot', 'TokenWallet']
+    // }
   },
   linker: {
-    // Path to your TVM Linker
-    path: '/usr/bin/tvm_linker',
+    // Specify path to your stdlib
+    // lib: "/mnt/o/projects/broxus/TON-Solidity-Compiler/lib/stdlib_sol.tvm",
+    // // Specify path to your Linker
+    // path: "/mnt/o/projects/broxus/TVM-linker/target/release/tvm_linker",
+
+    // Or specify version of linker
+    version: "0.15.43",
   },
   networks: {
-    // You can use TON labs graphql endpoints or local node
     local: {
-      ton_client: {
-        // See the TON client specification for all available options
-        network: {
-          server_address: 'http://localhost/',
+      // Specify connection settings for https://github.com/broxus/everscale-standalone-client/
+      connection: {
+        group: "localnet",
+        // @ts-ignore
+        type: "graphql",
+        data: {
+          // @ts-ignore
+          endpoints: [LOCAL_NETWORK_ENDPOINT],
+          latencyDetectionInterval: 1000,
+          local: true,
         },
       },
-      // This giver is default local-node giver
+      // This giver is default local-node giverV2
       giver: {
-        address: '0:841288ed3b55d9cdafa806807f02a0ae0c169aa5edfe88a789a6482429756a94',
-        abi: { "ABI version": 1, "functions": [ { "name": "constructor", "inputs": [], "outputs": [] }, { "name": "sendGrams", "inputs": [ {"name":"dest","type":"address"}, {"name":"amount","type":"uint64"} ], "outputs": [] } ], "events": [], "data": [] },
-        key: '',
+        // Check if you need provide custom giver
+        giverFactory: (ever, keyPair, address) => new Giver(ever, keyPair, address),
+        address: "0:ece57bcc6c530283becbbd8a3b24d3c5987cdddc3c8b7b33be6e4a6312490415",
+        key: "172af540e43a524763dd53b26a066d472a97c4de37d5498170564510608250c3",
       },
-      // Use tonos-cli to generate your phrase
-      // !!! Never commit it in your repos !!!
+      tracing: {
+        endPoint: LOCAL_NETWORK_ENDPOINT,
+      },
       keys: {
-        phrase: '',
+        // Use everdev to generate your phrase
+        // !!! Never commit it in your repos !!!
+        // phrase: "action inject penalty envelope rabbit element slim tornado dinner pizza off blood",
         amount: 20,
-      }
+      },
+    },
+    mainnet: {
+      // Specify connection settings for https://github.com/broxus/everscale-standalone-client/
+      connection: NETWORK_PRESETS.mainnet,
+      // Here, default SafeMultisig wallet is used as a giver
+      giver: {
+        giverFactory: (ever, keyPair, address) => new GiverWallet(ever, keyPair, address),
+        address: "0:ece57bcc6c530283becbbd8a3b24d3c5987cdddc3c8b7b33be6e4a6312490415",
+        // you can use bip39 phrase instead of key
+        phrase: "action inject penalty envelope rabbit element slim tornado dinner pizza off blood",
+        account_id: 0
+      },
+      keys: {
+        // Use everdev to generate your phrase
+        // !!! Never commit it in your repos !!!
+        // phrase: "action inject penalty envelope rabbit element slim tornado dinner pizza off blood",
+        amount: 20,
+      },
     },
   },
+  // you can use any settings that mocha framework support
+  mocha: {
+    timeout: 2000000,
+  },
 };
-```
-
-### Set up mnemonic phrase
-
-If you leave `phrase` field value empty - new random seed will be generated each time you're running locklift. If you specify it explicitly - fill the `phrase` field with mnemonic. Install [tonos-cli](https://github.com/tonlabs/tonos-cli) and use the following command to create new phrase:
-
-```
-$ tonos-cli genphrase
 ```
 
 ## Build contracts
@@ -114,7 +158,7 @@ $ tonos-cli genphrase
 This command uses the specified TON Solidity compiler and TVM linker to build all project contracts.
 
 ```
-$ locklift build --config locklift.config.js
+$ npx locklift build
 Found 1 sources
 Building contracts/Sample.sol
 Compiled contracts/Sample.sol
@@ -127,7 +171,7 @@ This command runs the project Mocha tests, `test` folder by default. The `lockli
 set up and included automatically, you don't need to import it manually.
 
 ```
-$ locklift test --config locklift.config.js --network local
+$ npx locklift test --network local
 
 
   Test Sample contract
@@ -140,12 +184,132 @@ $ locklift test --config locklift.config.js --network local
   3 passing (3s)
 ```
 
+### Debugging
+
+You can print to console in contracts with special library:
+
+```
+import "locklift/src/console.sol";
+
+contract Sample {
+    function testFunc(uint input) external {
+        tvm.accept();
+        
+        console.log(format("You called testFunc with input = {}", input));
+    }
+}
+```
+
+Note that `console.log` use internal msg spending 0.01 ever.
+
+### Tracing
+
+The tracing module scans the message tree, determines which contracts have been deployed,
+and decodes all method calls. In case of an error in some section of the execution graph,
+tracing will show the chain of calls that led to the error, as well as the error itself.
+
+#### **_Note: If you want to use tracing be sure to provide a tracing endpoint to the config that supports graphql_**
+
+```typescript
+// trace deploy
+const {contract: contract_instance, deploy_tx} = await locklift.tracing.trace(locklift.factory.deployContract(...))
+await locklift.tracing.trace(deploy_tx);
+// trace simple transaction
+const changeStateTransaction = await locklift.tracing.trace(MyContract.methods.changeCounterState({newState: 10}).sendExternal({publicKey: signer.publicKey}))
+// trace runTarget
+const accountTransaction = await locklift.tracing.trace(myAccount.runTarget(...))
+```
+example with tracing output
+```bash
+npx locklift test -n local
+
+...
+
+	#1 action out of 1
+Addr: 0:785ea492db0bc46e370d9ef3a0cc23fb86f7a734ac7948bb50e25b51b2455de0
+MsgId: 963a963f227d69f2845265335ecee99052411204b767be441755796cc28482f4
+-----------------------------------------------------------------
+TokenWallet.transfer{value: 4.998, bounce: true}(
+    amount: 100
+    recipient: 0:5d0075f4d3b14edb87f78c5928fbaff7aa769a49eedc7368c33c95a6d63bbf17
+    deployWalletValue: 0
+    remainingGasTo: 0:bb0e7143ca4c16a717733ff4a943767efcb4796dd1d808e027f39e7712745efc
+    notify: true
+    payload: te6ccgEBAQEAKAAAS4AXvOIJRF0kuLdJrf7QNzLzvROSLywJoUpcj6w7WfXqVCAAAAAQ
+)
+		⬇
+		⬇
+	#1 action out of 1
+Addr: 0:b00ef94c1a23a48e14cdd12a689a3f942e8b616d061d74a017385f6edc704588
+MsgId: bcbe2fb9efd98efe02a6cb6452f38f3dce364b5480b7352000a32f7bdfde949a
+-----------------------------------------------------------------
+TokenWallet.acceptTransfer{value: 4.978, bounce: true}(
+    amount: 100
+    sender: 0:bb0e7143ca4c16a717733ff4a943767efcb4796dd1d808e027f39e7712745efc
+    remainingGasTo: 0:bb0e7143ca4c16a717733ff4a943767efcb4796dd1d808e027f39e7712745efc
+    notify: true
+    payload: te6ccgEBAQEAKAAAS4AXvOIJRF0kuLdJrf7QNzLzvROSLywJoUpcj6w7WfXqVCAAAAAQ
+)
+		⬇
+		⬇
+	#1 action out of 1
+Addr: 0:5d0075f4d3b14edb87f78c5928fbaff7aa769a49eedc7368c33c95a6d63bbf17
+MsgId: 99034783340906fb5b9eb9a379e1fcb08887992ed0183da78e363ef694ba7c52
+-----------------------------------------------------------------
+EverFarmPool.onAcceptTokensTransfer{value: 4.952, bounce: false}(
+    tokenRoot: 0:c87f8def8ff9ab121eeeb533dc813908ec69e420101bda70d64e33e359f13e75
+    amount: 100
+    sender: 0:bb0e7143ca4c16a717733ff4a943767efcb4796dd1d808e027f39e7712745efc
+    senderWallet: 0:785ea492db0bc46e370d9ef3a0cc23fb86f7a734ac7948bb50e25b51b2455de0
+    remainingGasTo: 0:bb0e7143ca4c16a717733ff4a943767efcb4796dd1d808e027f39e7712745efc
+    payload: te6ccgEBAQEAKAAAS4AXvOIJRF0kuLdJrf7QNzLzvROSLywJoUpcj6w7WfXqVCAAAAAQ
+)
+ !!! Reverted with 1233 error code on compute phase !!!
+```
+
+### Ignoring errors
+
+By default tracing will throw error on any non-zero code in execution graph, but
+sometimes in contract we can expect some specific errors that could be processed later with bounced msgs.
+In this cases we dont want tracing to throw errors, because such behaviour is expected.
+We can tell tracing to ignore specific errors on compute or action phases.
+
+We can ignore errors on specific call:
+
+```
+// Tracing will ignore all 51 and 60 errors on compute phase + 30 error on action phase
+// Here 51 compute and 30 action errors will be ignored for all transacions in msg chain and 60 compute error
+// will be ignored only on specific address
+const transaction = await locklift.tracing.trace(
+  tokenRoot.methods.sendTokens({walletOwner: ''}).sendExternal({publicKey: signer.publicKey}),
+  {
+    allowedCodes: {
+      compute: [40]
+    }
+  })
+```
+
+Or set ignoring by default for all further calls:
+
+```
+// ignore compute phase erros for all transactions
+locklift.tracing.allowCodes({compute: [51, 60]})
+// ignore more errors for specific address
+locklift.tracing.allowCodesForAddress(SOME_ADDRESS, {compute: [123], action: [111]})
+
+// remove code from default list of ignored errors, so that only 51 erros will be ignored
+// this affects only global rules, per-address rules are not modified
+locklift.tracing.removeAllowedCodes({compute: [60]})
+// remove code from deault list of ignored errors for specific address
+locklift.tracing.removeAllowedCodesForAddress(SOME_ADDRESS, {compute: [123]})
+```
+
 ## Run script
 
 This command runs an arbitrary Node JS script with already configured `locklift` module.
 
 ```
-$ locklift run --config locklift.config.js --network local --script scripts/1-deploy-sample.js 
+$ npx locklift run --network local --script scripts/1-deploy-sample.ts
 Sample deployed at: 0:a56a1882231c9d901a1576ec2187575b01d1e33dd71108525b205784a41ae6d0
 ```
 
@@ -153,170 +317,196 @@ Sample deployed at: 0:a56a1882231c9d901a1576ec2187575b01d1e33dd71108525b205784a4
 
 This section describes the features of the `locklift` module.
 
-### TON (`locklift.ton`)
+#### `locklift.provider.keyStore`
 
-This module provides the set of objects and functions, for low level interacting with TON.
-
-#### `locklift.ton.client`
-
-The Locklift is built around TON Labs [ton-client-js](https://github.com/tonlabs/ton-client-js) module.
-By using `locklift.ton.client` you can access the already configured `TonClient` oject.
-The configuration should be stored in your config file at `networks[network].ton_client`.
-
-#### `locklift.ton.getBalance`
-
-Wrapper around GraphQL account balance query. Throws an error if account not found.
+Module provides access to keyStore
 
 ##### Example
-```javascript
-const userBalance = await locklift.ton.getBalance(user.address);
 
-expect(userBalance.toNumber()).to.be.above(0, 'Bad user balance');
+```typescript
+const signer = await locklift.provider.keyStore.getSigner("0");
 ```
 
-#### `locklift.ton.getAccountType`
+#### `locklift.provider.getBalance`
 
-Wrapper around GraphQL account type query. Throws an error if account not found.
+Get balance of account
 
 ##### Example
-```javascript
-const {
-  acc_type_name
-} = await locklift.ton.getAccountType(user.address);
 
-expect(acc_type_name).to.be.equal('Active', 'User account not active');
+```javascript
+const userBalance = await locklift.provider.getBalance(user.address);
+
+expect(Number(userBalance)).to.be.above(0, "Bad user balance");
+```
+
+#### `locklift.provider.transactions`
+
+Module provides access to high-level control of transaction flow.
+
+This method allows you to wait until all transaction in chain are finalized.
+```typescript
+const transaction = await locklift.transactions.waitFinalized(tokenRoot.methods.deployWallet({...))
+```
+
+#### `locklift.provider.ever.getFullContractState`
+
+Get full account state
+
+##### Example
+
+```typescript
+expect(await locklift.provider.ever.getFullContractState({address: addr}).then((res) => res.state?.isDeployed)).to.be.true;
 ```
 
 ### Factory (`locklift.factory`)
 
-This module provides the factory for creating the contract objects from the project Solidity sources.
+This module provides the factory for getting sources of the contract and functionality for deploy contracts.
+From factory you can receive contract objects from the project Solidity sources and contracts provided
+in `config.extarnalContracts`.
 
-#### `locklift.factory.getContract`
+#### `locklift.factory.getContractArtifacts`
 
-This contract returns the [Contract](#contract) instance, based on the .sol file name.
+Returns all compilation artifacts based on the .sol file name or name from value `config.extarnalContracts[pathToLib]`.
 
-##### Example
-
-```javascript
-const Sample = await locklift.factory.getContract('Sample');
+```typescript
+const myContractData = await locklift.factory.getContractArtifacts("MyContract");
 ```
 
-#### `locklift.factory.getAccount`
+#### `locklift.factory.deployContract`
+Deploy specified contract and returns contract instance and transaction.
 
-This method returns the special [Account](#account) contract.
+```typescript
+// Deploy
+const {contract: DeployedMyContract, tx} = locklift.factory.deployContract(
+  "MyContractName", // name of your contract
+  {
+      // static parameters of contract
+      initParams: {},
+      publicKey: signer.publicKey,
+  },
+  {...constructoParams},
+  // this value will be transfered from giver to deployable contract
+  locklift.utils.convertCrystal(2, Dimensions.Nano),
+);
+// Ot you can get instance of already deployed contract
+const GettedMyContract = await locklift.factory.getDeployedContract(
+  'Wallet', // name of your contract
+  new Address('NyAddress')
+)
+// In this example 'DeployedMyContract' and 'GettedMyContract' are the same contract
+```
 
 ### Contract
 
-Basic object which wraps the TON smart contract. Allows to sends the run messages into the network,
-or run messages locally, to derive some data from the smart contract.
+Contract object includes all methods based on built sources (Abi). It is based on https://github.com/broxus/everscale-inpage-provider
+
+```typescript
+const MyContract = locklift.factory.getDeployedContract(
+  'Wallet',//name infered from your contracts
+  new Address('NyAddress')
+)
+// Send External
+await MyContract.methods.changeCounterState({newState: 10}).sendExternal({publicKey: signer.publicKey});
+// Run getter or view method
+const counterSatate = await MyContract.methods.getCounterState({}).call();
+// Await event that is still not emitted
+const futureEvent = await MyContract.waitForEvent({filter: (event) => event.event === "StateChanged"});
+// Get past events
+const pastEvents = await MyContract.getPastEvents({filter: (event) => event.event === "Deposit"});
+```
+
+### AccountFactory (`locklift.factory.getAccountsFactory`)
+
+This module provides the generic accountFactory. You can provide your own implementation of account if needed,
+there is only one constraint - custom contract should include this method
+
+```typescript
+accountAbiBase = {
+  functions: [
+    {
+      name: "sendTransaction",
+      inputs: [
+        {name: "dest", type: "address"},
+        {name: "value", type: "uint128"},
+        {name: "bounce", type: "bool"},
+        {name: "flags", type: "uint8"},
+        {name: "payload", type: "cell"},
+      ],
+      outputs: [],
+    },
+  ],
+};
+```
+
+##### Example
+
+```typescript
+let accountsFactory = locklift.factory.getAccountsFactory(
+  'Wallet' // name of contract used as a wallet
+);
+```
+Now you can use it for deploying contract or getting deployed ones
+
+#### Deploy
+
+```typescript
+const {contract: MyAccount, tx} = accountsFactory.deployNewAccount(
+  signer.publicKey,
+  locklift.utils.convertCrystal(100000, Dimensions.Nano).toString(),
+  {
+    initParams: {
+      _randomNonce: locklift.utils.getRandomNonce(),
+    },
+    publicKey: signer.publicKey,
+  },
+  {...constructoParams},
+);
+```
+
+#### Get account by address
+
+```typescript
+const Account = accountsFactory.getAccount(new Address("MyAddress"), signer.publicKey);
+```
 
 ### Account
 
+In most cases users interact with your contract through wallets with internal messages. 
+To make testing realistic we added `Account` class that allows you to imitate user and send all
+transactions to contracts through wallet contract.
+
 This class extends the basic `Contract` functionality by adding special `runTarget` method,
-which allows to interact with TON contracts, by sending internal message from "Account" contract.
+which allows to interact with another contracts, by sending internal message from "Account" contract.
 It encodes the specified method + params into the internal message, according to the
 target contract's ABI and call the Account's external method.
 
-The basic Account contract is placed into the [Account.sol](contracts/contracts/Account.sol).
+The basic Account contract can be found here [Account.sol](https://github.com/broxus/ton-contracts/blob/master/contracts/wallets/Account.sol).
 
-```
-const Account = await locklift.factory.getAccount();
-const [,userKeys] = await locklift.keys.getKeyPairs();
-
-const user = await locklift.giver.deployContract({
-  contract: Account,
-  constructorParams: {},
-  initParams: {
-    _randomNonce: getRandomNonce(),
+```typescript
+const userAccount1 = accountsFactory.getAccount(new Address("MyAddress"), signer.publicKey);
+// send tokens by interacting with tokenWallet contract
+await userAccount1.runTarget(
+  {
+    contract: tokenWallet,
+    value: locklift.utils.convertCrystal(5, Dimensions.Nano),
   },
-  keyPair: userKeys,
-});
-
-user.setKeyPair(userKeys);
-
-await user.runTarget({
-  contract: root,
-  method: 'deployEmptyWallet',
-  params: {
-    deploy_grams: convertCrystal(1, 'nano'),
-    wallet_public_key_: 0,
-    owner_address_: user.address,
-    gas_back_address: user.address,
-  },
-  value: convertCrystal(2, 'nano'),
-});
+  (tokenWallet) =>
+    tokenWallet.methods.transfer({
+      amount: DEPOSIT_AMOUNT,
+      payload: "",
+      notify: true,
+      remainingGasTo: userAccount1.address,
+      recipient: bankContract.address,
+      deployWalletValue: 0,
+    }),
+);
 ```
 
 ### Giver (`locklift.giver`)
 
-This module allows you to deploy your contracts by using the Giver functionality.
-Default configuration consists, all the details for local giver. Locklift expects to see the following
-Giver external method:
-
-```
-{
-   "name":"sendGrams",
-   "inputs":[
-      {
-         "name":"dest",
-         "type":"address"
-      },
-      {
-         "name":"amount",
-         "type":"uint64"
-      }
-   ]
-}
-```
-
-#### `locklift.giver.deployContract`
-
-Deploys the contract by using giver contract.
-
-1. Derives the future contract address
-2. Sends the specified amount of TONs to it's address
-3. Waits till the balance is sufficient
-4. Sends the contract deploy message
-
-##### Example
-
-```
-const Account = await locklift.factory.getAccount();
-const [,userKeys] = await locklift.keys.getKeyPairs();
-
-user = await locklift.giver.deployContract({
-  contract: Account,
-  constructorParams: {},
-  initParams: {
-    _randomNonce: getRandomNonce(),
-  },
-  keyPair: userKeys,
-});
-```
-
-### Keys (`locklift.keys`)
-
-This module provides basic keystore functionality. The keys will be derived
-from your configuration `networks[network].keys`. You can also specify custom derivation path:
-
-```
-      keys: {
-        phrase: '...',
-        path: 'm/44\'/396\'/0\'/0/INDEX',
-        amount: 20,
-      }
-```
-
-#### `locklift.keys.getKeyPairs()`
-
-Returns the list of key pairs.
-
-##### Example
-
-```
-const [keyPair] = await locklift.keys.getKeyPairs();
-// { secret: '...', public: '...' }
-```
+This module allows you to send tokens. LockLift using GiverV2 by default, but you can use everything you want, just
+reimplement it in giverSettings/index.ts.
+`locklift.factory` is using the giver under the hood, for deploying contracts
 
 ### Utils
 
@@ -324,10 +514,11 @@ This module provides some utility functionality for more convenient work with TO
 
 #### `locklift.utils.convertCrystal(amount, dimension)`
 
-Converts amount of TONs / nanoTONs into nanoTONs / TONs. Returns `BigNumber` object.
+Converts amount of TONs / nanoTONs into nanoTONs / TONs. Returns `string`.
 
 ##### Example
 
-```javascript
-locklift.utils.convertCrystal(10, 'nano'); // 10000000000
-locklift.utils.convertCrystal(10000000000, 'ton'); // 10```
+````typescript
+locklift.utils.convertCrystal(10, Dimensions.Nano); // 10000000000
+locklift.utils.convertCrystal(10000000000, Dimensions.Ton); // 10```
+````

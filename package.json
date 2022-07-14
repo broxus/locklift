@@ -1,10 +1,12 @@
 {
   "name": "locklift",
-  "version": "1.5.4",
-  "description": "Node JS framework for working with FreeTON contracts. Inspired by Truffle and Hardhat. Helps you to build, test, run and maintain your smart contracts.",
+  "version": "2.0.0",
+  "description": "Node JS framework for working with Ever contracts. Inspired by Truffle and Hardhat. Helps you to build, test, run and maintain your smart contracts.",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc"
+    "build": "tsc",
+    "dev-deploy-local": "npm run build && npm publish --registry http://localhost:4873/",
+    "dev-deploy": "npm run build && npm publish --registry http://95.216.205.173:4873/"
   },
   "bin": {
     "locklift": "build/cli/index.js"
@@ -32,9 +34,6 @@
       "giver": [
         "build/giver/index.d.ts"
       ],
-      "ton": [
-        "build/ton/index.d.ts"
-      ],
       "utils": [
         "build/utils/index.d.ts"
       ]
@@ -45,7 +44,7 @@
     "url": "git+https://github.com/broxus/ton-locklift.git"
   },
   "keywords": [
-    "FreeTON",
+    "Everscale",
     "TON",
     "blockchain",
     "smart-contracts",
@@ -55,33 +54,50 @@
     "ethereum"
   ],
   "author": "pavlovdog_ <pavlovdog.moscow@gmail.com>",
+  "contributors": ["30mb1 <steam.30mb1@gmail.com>"],
   "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/broxus/ton-locklift/issues"
   },
   "homepage": "https://github.com/broxus/ton-locklift#readme",
   "dependencies": {
-    "@broxus/contracts": "^1.0.3",
     "@tonclient/core": "^1.28.0",
     "@tonclient/lib-node": "^1.28.0",
+    "@types/download": "^8.0.1",
+    "@types/lodash": "^4.14.182",
+    "@types/node-gzip": "^1.1.0",
+    "axios": "^0.27.2",
     "bignumber.js": "^9.0.1",
     "commander": "^7.2.0",
+    "cross-env": "^7.0.3",
     "directory-tree": "^2.2.7",
+    "download": "^8.0.0",
     "ejs": "^3.1.6",
+    "env-paths": "^2.2.1",
+    "everscale-crypto": "^0.1.1",
+    "everscale-inpage-provider": "^0.3.25",
+    "everscale-standalone-client": "^2.0.15",
     "execa": "^5.0.0",
     "fs-extra": "^9.1.0",
+    "lodash": "^4.17.21",
     "mocha": "^8.3.2",
+    "node-gzip": "^1.1.2",
+    "prettier": "^2.7.1",
+    "rxjs": "^7.5.6",
     "superstruct": "^0.14.2",
     "tablemark": "^2.0.0",
-    "ton-client-js": "^0.28.1",
+    "ts-mocha": "^10.0.0",
+    "tsconfig-paths": "^4.0.0",
+    "tsdx": "^0.14.1",
     "underscore": "^1.13.1"
   },
   "devDependencies": {
+    "@types/chai": "^4.3.1",
     "@types/ejs": "^3.1.1",
     "@types/fs-extra": "^9.0.13",
     "@types/mocha": "^9.1.1",
-    "@types/node": "^17.0.35",
+    "@types/node": "^17.0.45",
     "@types/underscore": "^1.11.4",
-    "typescript": "^4.7.2"
+    "typescript": "^4.7.4"
   }
 }

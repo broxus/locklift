@@ -1,0 +1,219 @@
+import { LockliftConfig } from "../../config";
+import { exec } from "child_process";
+import { copyExternalFiles, typeGenerator } from "../../generators";
+import ejs from "ejs";
+import fs from "fs";
+import { resolve, parse } from "path";
+import _ from "underscore";
+import dirTree from "directory-tree";
+import { execSyncWrapper, extractContractName, flatDirTree, tryToGetNodeModules, tvcToBase64 } from "./utils";
+const tablemark = require("tablemark");
+import { ParsedDoc } from "../types";
+import { promisify } from "util";
+import { catchError, concat, defer, filter, from, map, mergeMap, tap, throwError, toArray } from "rxjs";
+export type BuilderConfig = {
+  includesPath?: string;
+  compilerPath: string;
+  linkerLibPath: string;
+  linkerPath: string;
+  externalContracts: LockliftConfig["compiler"]["externalContracts"];
+};
+
+export class Builder {
+  private options: any;
+  private nameRegex = /======= (?<contract>.*) =======/g;
+  private docRegex = /(?<doc>^{(\s|.)*?^})/gm;
+
+  constructor(private readonly config: BuilderConfig, options: any) {
+    this.options = options;
+  }
+
+  async buildContracts(): Promise<boolean> {
+    const contractsTree = this.getContractsTree()!;
+
+    try {
+      this.log(`Found ${contractsTree.length} sources`);
+      await from(contractsTree)
+        .pipe(
+          map((el) => ({ ...el, path: resolve(el.path) })),
+          map((el) => ({
+            ...el,
+            contractFileName: extractContractName(el.path),
+          })),
+
+          mergeMap(({ path, contractFileName }) => {
+            const nodeModules = tryToGetNodeModules();
+            const additionalIncludesPath = `--include-path ${resolve(process.cwd(), "node_modules")}  ${
+              nodeModules ? `--include-path ${nodeModules}` : ""
+            }`;
+            const includePath = `${additionalIncludesPath}`;
+            return defer(async () =>
+              promisify(exec)(`cd ${this.options.build} && \
+          ${this.config.compilerPath} ${!this.options.disableIncludePath ? includePath : ""} ${path}`),
+            ).pipe(map((output) => ({ output, contractFileName: parse(contractFileName).name, path })));
+          }),
+          //Warnings
+          tap((output) => console.log(output.output.stderr.toString())),
+          //Errors
+          catchError((e) => {
+            console.log(e?.stderr?.toString() || e);
+            return throwError(undefined);
+          }),
+          filter(({ output }) => {
+            //Only contracts
+            return !!output?.stdout.toString();
+          }),
+          mergeMap(({ contractFileName, path }) => {
+            const lib = this.config.linkerLibPath ? ` --lib ${this.config.linkerLibPath} ` : "";
+            const resolvedPathCode = resolve(this.options.build, `${contractFileName}.code`);
+            const resolvedPathAbi = resolve(this.options.build, `${contractFileName}.abi.json`);
+            return defer(async () =>
+              promisify(exec)(`${this.config.linkerPath} compile "${resolvedPathCode}" -a "${resolvedPathAbi}" ${lib}`),
+            ).pipe(
+              map((tvmLinkerLog) => {
+                return tvmLinkerLog.stdout.toString().match(new RegExp("Saved contract to file (.*)"));
+              }),
+              catchError((e) => {
+                console.log(e?.stderr?.toString());
+                return throwError(undefined);
+              }),
+              map((matchResult) => {
+                if (!matchResult) {
+                  throw new Error("Linking error, noting linking");
+                }
+                return matchResult[1];
+              }),
+              mergeMap((tvcFile) => {
+                return concat(
+                  defer(() =>
+                    promisify(fs.writeFile)(
+                      resolve(this.options.build, `${contractFileName}.base64`),
+                      tvcToBase64(fs.readFileSync(tvcFile)),
+                    ),
+                  ),
+                  defer(() => promisify(fs.rename)(tvcFile, resolve(this.options.build, `${contractFileName}.tvc`))),
+                ).pipe(
+                  catchError((e) => {
+                    console.log(e?.stderr?.toString());
+                    return throwError(undefined);
+                  }),
+                );
+              }),
+            );
+          }),
+          toArray(),
+          tap(() => {
+            if (this.config.externalContracts) {
+              copyExternalFiles(this.config.externalContracts, this.options.build);
+            }
+          }),
+          tap(() => typeGenerator(this.options.build)),
+          tap(() => this.log("factorySource generated")),
+        )
+        .toPromise();
+      console.log("Built");
+    } catch (err) {
+      console.log("BUILD ERROR", err);
+      return false;
+    }
+    return true;
+  }
+
+  buildDocs(): boolean {
+    const contractsTree = this.getContractsTree()!;
+
+    try {
+      console.log(`Found ${contractsTree.length} sources`);
+
+      let docs: ParsedDoc[] = [];
+      contractsTree.map(({ path }) => {
+        this.log(`Building ${path}`);
+
+        const output = execSyncWrapper(
+          `cd ${this.options.build} && ${this.config.compilerPath} ./../${path} --${this.options.mode}`,
+        );
+
+        this.log(`Compiled ${path}`);
+
+        docs = [...docs, ...this.parseDocs(output.toString())];
+      });
+
+      // Filter duplicates by (path, name)
+      docs = docs.reduce((acc: ParsedDoc[], doc: ParsedDoc) => {
+        if (acc.find(({ path, name }) => path === doc.path && name === doc.name)) {
+          return acc;
+        }
+
+        return [...acc, doc];
+      }, []);
+
+      // Sort docs by name (A-Z)
+      docs = docs.sort((a, b) => (a.name < b.name ? -1 : 1));
+
+      // Save docs in markdown format
+      const render = ejs.render(
+        fs.readFileSync(resolve(__dirname, "./../templates/index.ejs")).toString(),
+        {
+          docs,
+          tablemark,
+        },
+        {
+          rmWhitespace: true,
+        },
+      );
+
+      fs.writeFileSync(resolve(process.cwd(), this.options.docs, "index.md"), render);
+
+      this.log("Docs generated successfully!");
+    } catch (e) {
+      console.log(e);
+      return false;
+    }
+
+    return true;
+  }
+
+  private parseDocs(output: string): ParsedDoc[] {
+    const contracts = [...output.matchAll(this.nameRegex)]
+      .map((m) => m.groups!.contract)
+      // For the target contracts compiler returns relative path
+      // and for dependency contracts paths are absolute
+      // Make them all absolute
+      .map((c) => resolve(process.cwd(), this.options.build, c));
+
+    const docs = [...output.matchAll(this.docRegex)].map((m) => JSON.parse(m.groups!.doc));
+
+    return _.zip(contracts, docs).reduce((acc: ParsedDoc[], [contract, doc]: string[]) => {
+      const [path, name] = contract.split(":");
+
+      // Check name matches the "include" pattern and contract is located in the "contracts" dir
+      if (
+        name.match(new RegExp(this.options.include)) !== null &&
+        path.startsWith(`${process.cwd()}/${this.options.contracts}`)
+      ) {
+        return [
+          ...acc,
+          {
+            path: path.replace(`${process.cwd()}/`, ""),
+            name,
+            doc,
+          },
+        ];
+      }
+
+      return acc;
+    }, []);
+  }
+
+  private getContractsTree() {
+    const contractsNestedTree = dirTree(this.options.contracts, {
+      extensions: /\.sol/,
+    });
+
+    return flatDirTree(contractsNestedTree);
+  }
+
+  private log(text: string): void {
+    console.log(text);
+  }
+}
