@@ -212,8 +212,7 @@ tracing will show the chain of calls that led to the error, as well as the error
 
 ```typescript
 // trace deploy
-const {contract: contract_instance, deploy_tx} = await locklift.tracing.trace(locklift.factory.deployContract(...))
-await locklift.tracing.trace(deploy_tx);
+const {contract: deployedContractInstance, tx} = await locklift.tracing.trace(locklift.factory.deployContract(...))
 // trace simple transaction
 const changeStateTransaction = await locklift.tracing.trace(MyContract.methods.changeCounterState({newState: 10}).sendExternal({publicKey: signer.publicKey}))
 // trace runTarget
@@ -403,7 +402,7 @@ Contract object includes all methods based on built sources (Abi). It is based o
 ```typescript
 const MyContract = locklift.factory.getDeployedContract(
   'Wallet',//name infered from your contracts
-  new Address('NyAddress')
+  new Address('MyAddress')
 )
 // Send External
 await MyContract.methods.changeCounterState({newState: 10}).sendExternal({publicKey: signer.publicKey});

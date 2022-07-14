@@ -9,3 +9,4 @@ export type ContractWithName<Abi = any> = { contract: Contract<Abi>; name: strin
 export type Optional<T extends Record<any, any>, K extends keyof T> = Omit<T, K> & { [key in K]?: T[K] };
 export type TransactionWithOutput = { transaction: Transaction; output?: {} | undefined };
 export type TransactionParameter = TransactionWithOutput | { tx: TransactionWithOutput };
+export type DeployTransaction = Extract<TransactionParameter, { tx: TransactionWithOutput }>;
