@@ -1,28 +1,27 @@
-const getRandomNonce = () => Math.random() * 64000 | 0;
-
+import { Dimensions } from "locklift";
 
 async function main() {
-  const Sample = await locklift.factory.getContract('Sample');
-  const [keyPair] = await locklift.keys.getKeyPairs();
-
-  const sample = await locklift.giver.deployContract({
-    contract: Sample,
-    constructorParams: {
-      _state: 123
+  const signer = (await locklift.provider.keyStore.getSigner("0"))!;
+  const {contract: sample, tx} = await locklift.factory.deployContract(
+    "Sample",
+    {
+      initParams: {
+        _nonce: locklift.utils.getRandomNonce(),
+      },
+      publicKey: signer.publicKey,
     },
-    initParams: {
-      _nonce: getRandomNonce(),
+    {
+      _state: 0,
     },
-    keyPair,
-  });
+    locklift.utils.convertCrystal(3, Dimensions.Nano),
+  );
 
-  console.log(`Sample deployed at: ${sample.address}`);
+  console.log(`Sample deployed at: ${sample.address.toString()}`);
 }
-
 
 main()
   .then(() => process.exit(0))
-  .catch(e => {
+  .catch((e) => {
     console.log(e);
     process.exit(1);
   });

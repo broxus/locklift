@@ -1,54 +1,52 @@
-import { Contract } from 'locklift/contract';
-import { expect } from 'chai';
+import { expect } from "chai";
+import { Contract, Dimensions } from "locklift";
+import { FactorySource } from "../build/factorySource";
+import { Signer } from "everscale-standalone-client";
 
+let sample: Contract<FactorySource["Sample"]>;
+let signer: Signer;
 
-let Sample: Contract;
-let sample: Contract;
+describe("Test Sample contract", async function () {
+  before(async () => {
+    signer = (await locklift.provider.keyStore.getSigner("0"))!;
+  });
+  describe("Contracts", async function () {
+    it("Load contract factory", async function () {
+      const sampleData = await locklift.factory.getContractArtifacts("Sample");
 
-const getRandomNonce = () => Math.random() * 64000 | 0;
-
-
-describe('Test Sample contract', async function() {
-  describe('Contracts', async function() {
-    it('Load contract factory', async function() {
-      Sample = await locklift.factory.getContract('Sample');
-
-      expect(Sample.code).not.to.equal(undefined, 'Code should be available');
-      expect(Sample.abi).not.to.equal(undefined, 'ABI should be available');
+      expect(sampleData.code).not.to.equal(undefined, "Code should be available");
+      expect(sampleData.abi).not.to.equal(undefined, "ABI should be available");
+      expect(sampleData.tvc).not.to.equal(undefined, "tvc should be available");
     });
 
-    it('Deploy contract', async function() {
-      this.timeout(20000);
-
-      const [keyPair] = await locklift.keys.getKeyPairs();
-
-      sample = await locklift.giver.deployContract({
-        contract: Sample,
-        constructorParams: {
-          _state: 123
+    it("Deploy contract", async function () {
+      const INIT_STATE = 0;
+      const { contract, tx } = await locklift.factory.deployContract(
+        "Sample",
+        {
+          initParams: {
+            _nonce: locklift.utils.getRandomNonce(),
+          },
+          publicKey: signer.publicKey,
         },
-        initParams: {
-          _nonce: getRandomNonce(),
+        {
+          _state: INIT_STATE,
         },
-        keyPair,
-      });
+        locklift.utils.convertCrystal(2, Dimensions.Nano),
+      );
+      sample = contract;
 
-      expect(sample.address).to.be.a('string')
-        .and.satisfy((s: string) => s.startsWith('0:'), 'Bad future address');
+      expect(await locklift.provider.getBalance(sample.address).then((balance) => Number(balance))).to.be.above(0);
     });
 
-    it('Interact with contract', async function() {
-      await sample.run({
-        method: 'setState',
-        params: { _state: 111 },
-      });
+    it("Interact with contract", async function () {
+      const NEW_STATE = 1;
 
-      const response = await sample.call({
-        method: 'getDetails',
-        params: {},
-      });
+      await sample.methods.setState({ _state: NEW_STATE }).sendExternal({ publicKey: signer.publicKey });
 
-      expect(response.toNumber()).to.be.equal(111, 'Wrong state');
+      const response = await sample.methods.getDetails({}).call();
+
+      expect(Number(response._state)).to.be.equal(NEW_STATE, "Wrong state");
     });
   });
 });
