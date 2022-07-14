@@ -12,7 +12,7 @@ export enum TraceType {
 }
 
 export type MsgTree = {
-  out_messages: Array<any>;
+  outMessages: Array<any>;
   dst_transaction: any;
   dst: string;
   msg_type: number;
@@ -33,7 +33,7 @@ export type MsgTree = {
   };
 };
 
-export type RevertedBranch<Abi = any> = { totalActions: number; traceLog: Trace<Abi>; actionIdx: number };
+export type RevertedBranch<Abi = unknown> = { totalActions: number; traceLog: Trace<Abi>; actionIdx: number };
 export type TraceParams = {
   inMsgId: string;
   allowedCodes?: AllowedCodes;

@@ -8,17 +8,17 @@ import { contractContractInformation } from "./utils";
 import { TracingInternal } from "../tracingInternal";
 
 export class Trace<Abi = any> {
-  out_traces: Array<any> = [];
+  outTraces: Array<any> = [];
   error: any = null;
 
   type: TraceType | null = null;
   contract!: ContractWithName;
-  decodedMsg: DecodedInput<Abi, AbiFunctionName<Abi>> | null = null;
-  has_error_in_tree = false;
+  decodedMsg: DecodedInput<Abi, AbiFunctionName<Abi>> | undefined = undefined;
+  hasErrorInTree = false;
   constructor(
     private readonly tracing: TracingInternal,
     readonly msg: MsgTree,
-    private readonly src_trace: any = null,
+    private readonly srcTrace: any = null,
   ) {}
 
   async buildTree(
@@ -26,18 +26,19 @@ export class Trace<Abi = any> {
     contractGetter: (codeHash: string, address: Address) => ContractWithName<Abi> | undefined,
   ) {
     this.setMsgType();
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const { codeHash, address } = contractContractInformation({ msg: this.msg, type: this.type! });
     const contract = contractGetter(codeHash || "", new Address(address));
 
     this.checkForErrors(allowedCodes);
     await this.decode(contract);
-    for (const msg of this.msg.out_messages) {
+    for (const msg of this.msg.outMessages) {
       const trace = new Trace(this.tracing, msg, this);
       await trace.buildTree(allowedCodes, contractGetter);
-      if (trace.has_error_in_tree) {
-        this.has_error_in_tree = true;
+      if (trace.hasErrorInTree) {
+        this.hasErrorInTree = true;
       }
-      this.out_traces.push(trace);
+      this.outTraces.push(trace);
     }
   }
 
@@ -51,17 +52,17 @@ export class Trace<Abi = any> {
       return;
     }
 
-    let skip_compute_check = false;
+    let skipComputeCheck = false;
     if (tx && (tx.compute.success || tx.compute.compute_type === 0) && !tx.aborted) {
-      skip_compute_check = true;
+      skipComputeCheck = true;
     }
-    let skip_action_check = false;
+    let skipActionCheck = false;
     if (tx && tx.action && tx.action.success) {
-      skip_action_check = true;
+      skipActionCheck = true;
     }
 
     // error occured during compute phase
-    if (!skip_compute_check && tx && tx.compute.exit_code !== 0) {
+    if (!skipComputeCheck && tx && tx.compute.exit_code !== 0) {
       this.error = { phase: "compute", code: tx.compute.exit_code };
       // we didnt expect this error, save error
       if (
@@ -71,7 +72,7 @@ export class Trace<Abi = any> {
       ) {
         this.error.ignored = true;
       }
-    } else if (!skip_action_check && tx && tx.action && tx.action.result_code !== 0) {
+    } else if (!skipActionCheck && tx && tx.action && tx.action.result_code !== 0) {
       this.error = { phase: "action", code: tx.action.result_code };
       // we didnt expect this error, save error
       if (
@@ -83,7 +84,7 @@ export class Trace<Abi = any> {
       }
     }
     if (this.error && !this.error.ignored) {
-      this.has_error_in_tree = true;
+      this.hasErrorInTree = true;
     }
   }
 
@@ -100,9 +101,9 @@ export class Trace<Abi = any> {
       return;
     }
 
-    if (this.type === TraceType.FUNCTION_CALL && this.src_trace) {
+    if (this.type === TraceType.FUNCTION_CALL && this.srcTrace) {
       // this is responsible callback with answerId = 0, we cant decode it, however contract doesnt need it too
-      if (this.src_trace.decoded_msg && this.src_trace.decoded_msg.value?.answerId === "0") {
+      if (this.srcTrace.decoded_msg && this.srcTrace.decoded_msg.value?.answerId === "0") {
         return;
       }
     }
@@ -121,19 +122,19 @@ export class Trace<Abi = any> {
       return;
     }
 
-    const is_internal = this.msg.msg_type === 0;
+    const isInternal = this.msg.msg_type === 0;
 
     const parsedAbi = JSON.parse(contract.contract.abi) as { functions: Array<{ name: AbiFunctionName<Abi> }> };
-    const decodedMsg = (await contract.contract.decodeInputMessage({
-      internal: is_internal,
+    const decodedMsg = await contract.contract.decodeInputMessage({
+      internal: isInternal,
       body: this.msg.body,
       methods: parsedAbi.functions.map((el) => el.name),
-    }))!;
+    });
     // determine more precisely is it an event or function return
     if (this.type === TraceType.EVENT_OR_FUNCTION_RETURN) {
       // @ts-ignore
-      const is_function_return = parsedAbi.functions.find(({ name }) => name === decodedMsg.method);
-      if (is_function_return) {
+      const isFunctionReturn = parsedAbi.functions.find(({ name }) => name === decodedMsg.method);
+      if (isFunctionReturn) {
         this.type = TraceType.FUNCTION_RETURN;
       } else {
         this.type = TraceType.EVENT;
@@ -144,6 +145,7 @@ export class Trace<Abi = any> {
   }
 
   async decode(contract: ContractWithName<Abi> | undefined) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     this.contract = contract!;
     await this.decodeMsg(contract);
   }
@@ -176,7 +178,7 @@ export class Trace<Abi = any> {
       // extOut - event or return
       case 2:
         // if this msg was produced by extIn msg, this can be return or event
-        if (this.src_trace !== null && this.src_trace.msg.msg_type === 1) {
+        if (this.srcTrace !== null && this.srcTrace.msg.msg_type === 1) {
           this.type = TraceType.EVENT_OR_FUNCTION_RETURN;
         } else {
           this.type = TraceType.EVENT;

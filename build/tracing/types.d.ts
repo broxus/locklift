@@ -10,7 +10,7 @@ export declare enum TraceType {
     TRANSFER = "transfer"
 }
 export declare type MsgTree = {
-    out_messages: Array<any>;
+    outMessages: Array<any>;
     dst_transaction: any;
     dst: string;
     msg_type: number;
@@ -30,7 +30,7 @@ export declare type MsgTree = {
         code_hash: string;
     };
 };
-export declare type RevertedBranch<Abi = any> = {
+export declare type RevertedBranch<Abi = unknown> = {
     totalActions: number;
     traceLog: Trace<Abi>;
     actionIdx: number;

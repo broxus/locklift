@@ -21,7 +21,7 @@ export const getComponent = async ({
   }
   console.log(`Start download ${component} version ${version}`);
   const downloadLink = downloadLinks[component]({ version });
-  await download(downloadLink, tempFilePath).catch(async (e: any) => {
+  await download(downloadLink, tempFilePath).catch(async () => {
     const supportedVersions = await getSupportedVersions({ component });
     throw new Error(
       `Can't download ${component} version ${version}, supported versions: ${supportedVersions.map((el) => ` ${el}`)}`,

@@ -9,7 +9,7 @@ import init from "./commands/init";
 import build from "./commands/build";
 import test from "./commands/test";
 import run from "./commands/run";
-import gendoc from "./commands/gendoc";
+// import gendoc from "./commands/gendoc";
 
 program.addCommand(init);
 program.addCommand(test);

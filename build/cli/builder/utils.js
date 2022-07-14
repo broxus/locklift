@@ -48,7 +48,7 @@ const compilerConfigResolver = async ({ compiler, linker, }) => {
     }
     if ("version" in linker) {
         if (!("version" in compiler)) {
-            throw new Error(`You can't provide linker version without compiler version!`);
+            throw new Error("You can't provide linker version without compiler version!");
         }
         builderConfig.linkerPath = await (0, compilerComponentsStore_1.getComponent)({
             version: linker.version,
@@ -64,7 +64,9 @@ const compilerConfigResolver = async ({ compiler, linker, }) => {
 exports.compilerConfigResolver = compilerConfigResolver;
 const tvcToBase64 = (tvc) => tvc.toString("base64");
 exports.tvcToBase64 = tvcToBase64;
-const extractContractName = (pathToFile) => pathToFile.match(new RegExp("contracts(.*).sol"))[1].slice(1);
+const extractContractName = (pathToFile) => 
+// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+pathToFile.match(new RegExp("contracts(.*).sol"))[1].slice(1);
 exports.extractContractName = extractContractName;
 function execSyncWrapper(command, options) {
     try {

@@ -9,7 +9,7 @@ export declare const convertCrystal: (amount: number | string, dimension: Dimens
 export declare const getRandomNonce: () => number;
 export declare const errorExtractor: <T extends {
     transaction: Transaction<Address>;
-    output?: {} | undefined;
+    output?: Record<string, unknown> | undefined;
 }>(transactionResult: Promise<T>) => Promise<T>;
 export declare const getKeyPairFromSecret: (secretKey: string) => KeyPair;
 export declare const extractTransactionFromParams: (transaction: TransactionParameter) => Transaction;

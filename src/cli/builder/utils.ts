@@ -12,7 +12,7 @@ import {
   ExecSyncOptionsWithBufferEncoding,
   ExecSyncOptionsWithStringEncoding,
 } from "child_process";
-import path, { resolve } from "path";
+import { resolve } from "path";
 
 export function checkDirEmpty(dir: fs.PathLike): fs.PathLike | boolean {
   if (!fs.existsSync(dir)) {
@@ -58,7 +58,7 @@ export const compilerConfigResolver = async ({
   }
   if ("version" in linker) {
     if (!("version" in compiler)) {
-      throw new Error(`You can't provide linker version without compiler version!`);
+      throw new Error("You can't provide linker version without compiler version!");
     }
     builderConfig.linkerPath = await getComponent({
       version: linker.version,
@@ -75,6 +75,7 @@ export const compilerConfigResolver = async ({
 export const tvcToBase64 = (tvc: Buffer) => tvc.toString("base64");
 
 export const extractContractName = (pathToFile: string): string =>
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   pathToFile.match(new RegExp("contracts(.*).sol"))![1].slice(1);
 
 export function execSyncWrapper(command: string): Buffer;

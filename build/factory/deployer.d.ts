@@ -5,7 +5,7 @@ export declare class Deployer {
     private readonly ever;
     private readonly giver;
     constructor(ever: ProviderRpcClient, giver: GiverI);
-    deployContract: <Abi extends unknown, T extends [keyof Contract<Abi>]>(abi: Abi, deployParams: GetExpectedAddressParams<Abi>, constructorParams: ConstructorParams<Abi>, value: string) => Promise<{
+    deployContract: <Abi>(abi: Abi, deployParams: GetExpectedAddressParams<Abi>, constructorParams: ConstructorParams<Abi>, value: string) => Promise<{
         contract: Contract<Abi>;
         tx: TransactionWithOutput;
     }>;

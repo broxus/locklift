@@ -8,12 +8,12 @@ export declare type ContractWithName<Abi = any> = {
     contract: Contract<Abi>;
     name: string;
 };
-export declare type Optional<T extends Record<any, any>, K extends keyof T> = Omit<T, K> & {
+export declare type Optional<T extends Record<string, unknown>, K extends keyof T> = Omit<T, K> & {
     [key in K]?: T[K];
 };
 export declare type TransactionWithOutput = {
     transaction: Transaction;
-    output?: {} | undefined;
+    output?: Record<string, unknown> | undefined;
 };
 export declare type TransactionParameter = TransactionWithOutput | {
     tx: TransactionWithOutput;

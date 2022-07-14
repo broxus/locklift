@@ -84,6 +84,7 @@ class Factory {
             tvc: base64,
             code: (await this.ever.splitTvc(base64)).code,
             abi,
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             hashCode: decoded.code_hash,
         };
     };
@@ -108,7 +109,7 @@ class Factory {
         }));
     };
     getContractByCodeHash = (codeHash, address) => {
-        const contractArtifacts = this.getAllArtifacts().find(({ artifacts, contractName }) => artifacts.hashCode === codeHash);
+        const contractArtifacts = this.getAllArtifacts().find(({ artifacts }) => artifacts.hashCode === codeHash);
         return (contractArtifacts && {
             contract: this.getDeployedContract(contractArtifacts.contractName, address),
             name: contractArtifacts.contractName,

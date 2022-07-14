@@ -1,5 +1,5 @@
 import { Ed25519KeyPair, EverscaleStandaloneClient, SimpleKeystore } from "everscale-standalone-client/nodejs";
-import { ProviderRpcClient, Address, WalletContractType } from "everscale-inpage-provider";
+import { ProviderRpcClient, Address } from "everscale-inpage-provider";
 import { ClientProperties, Clock } from "everscale-standalone-client/nodejs";
 
 type ProviderConfig = {

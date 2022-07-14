@@ -4,7 +4,7 @@ import { Factory } from "../factory";
 import { TracingInternal } from "./tracingInternal";
 import { Transactions } from "../utils";
 import { TransactionParameter } from "../types";
-export declare class Tracing<Abi = any> {
+export declare class Tracing {
     private readonly ever;
     private readonly tracingInternal;
     private readonly features;

@@ -7,7 +7,7 @@ exports.throwErrorInConsole = exports.convert = exports.fetchMsgData = void 0;
 const axios_1 = __importDefault(require("axios"));
 const types_1 = require("./types");
 const fetchMsgData = async (msgId, endPoint) => {
-    const msg_query = `{
+    const msgQuery = `{
           messages(
             filter: {
               id: {
@@ -56,7 +56,7 @@ const fetchMsgData = async (msgId, endPoint) => {
           }
         }`;
     const response = await axios_1.default
-        .post(endPoint, { query: msg_query })
+        .post(endPoint, { query: msgQuery })
         .then((res) => res.data.data);
     return response.messages[0];
 };
@@ -82,17 +82,17 @@ const throwErrorInConsole = (revertedBranch) => {
         else if (traceLog.type === types_1.TraceType.BOUNCE) {
             method = "onBounce";
         }
-        let params_str = "()";
+        let paramsStr = "()";
         if (traceLog.decodedMsg) {
             if (Object.values(traceLog.decodedMsg.input).length === 0) {
-                params_str = `()`;
+                paramsStr = "()";
             }
             else {
-                params_str = `(\n`;
+                paramsStr = "(\n";
                 for (const [key, value] of Object.entries(traceLog.decodedMsg.input)) {
-                    params_str += `    ${key}: ${value}\n`;
+                    paramsStr += `    ${key}: ${value}\n`;
                 }
-                params_str += ")";
+                paramsStr += ")";
             }
         }
         console.log("\t\t⬇\n\t\t⬇");
@@ -111,7 +111,7 @@ const throwErrorInConsole = (revertedBranch) => {
             console.log("-> Contract not deployed/Not recognized because build artifacts not provided");
         }
         // bold tag
-        console.log(`\x1b[1m${name}.${method}\x1b[22m{value: ${(0, exports.convert)(traceLog.msg.value)}, bounce: ${bounce}}${params_str}`);
+        console.log(`\x1b[1m${name}.${method}\x1b[22m{value: ${(0, exports.convert)(traceLog.msg.value)}, bounce: ${bounce}}${paramsStr}`);
         if (traceLog.msg.dst_transaction) {
             if (traceLog.msg.dst_transaction.storage) {
                 console.log(`Storage fees: ${(0, exports.convert)(traceLog.msg.dst_transaction.storage.storage_fees_collected)}`);

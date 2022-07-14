@@ -15,16 +15,6 @@ var ConfigState;
     ConfigState[ConfigState["EXTERNAL"] = 0] = "EXTERNAL";
     ConfigState[ConfigState["INTERNAL"] = 1] = "INTERNAL";
 })(ConfigState = exports.ConfigState || (exports.ConfigState = {}));
-const Giver = (0, superstruct_1.object)({
-    address: (0, superstruct_1.string)(),
-    key: (0, superstruct_1.string)(),
-    giverFactory: (0, superstruct_1.any)(),
-});
-const Keys = (0, superstruct_1.object)({
-    phrase: (0, superstruct_1.string)(),
-    amount: (0, superstruct_1.defaulted)((0, superstruct_1.integer)(), () => 25),
-    path: (0, superstruct_1.defaulted)((0, superstruct_1.string)(), () => "m/44'/396'/0'/0/INDEX"),
-});
 const MochaConfig = (0, superstruct_1.object)();
 const Config = (0, superstruct_1.object)({
     compiler: (0, superstruct_1.any)(),

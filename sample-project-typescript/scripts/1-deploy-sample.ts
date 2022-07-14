@@ -2,7 +2,7 @@ import { Dimensions } from "locklift";
 
 async function main() {
   const signer = (await locklift.provider.keyStore.getSigner("0"))!;
-  const {contract: sample, tx} = await locklift.factory.deployContract(
+  const { contract: sample, tx } = await locklift.factory.deployContract(
     "Sample",
     {
       initParams: {

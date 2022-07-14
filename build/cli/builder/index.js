@@ -25,6 +25,7 @@ class Builder {
         this.options = options;
     }
     async buildContracts() {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const contractsTree = this.getContractsTree();
         try {
             this.log(`Found ${contractsTree.length} sources`);
@@ -48,7 +49,7 @@ class Builder {
             }), (0, rxjs_1.filter)(({ output }) => {
                 //Only contracts
                 return !!output?.stdout.toString();
-            }), (0, rxjs_1.mergeMap)(({ contractFileName, path }) => {
+            }), (0, rxjs_1.mergeMap)(({ contractFileName }) => {
                 const lib = this.config.linkerLibPath ? ` --lib ${this.config.linkerLibPath} ` : "";
                 const resolvedPathCode = (0, path_1.resolve)(this.options.build, `${contractFileName}.code`);
                 const resolvedPathAbi = (0, path_1.resolve)(this.options.build, `${contractFileName}.abi.json`);
@@ -83,6 +84,7 @@ class Builder {
         return true;
     }
     buildDocs() {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const contractsTree = this.getContractsTree();
         try {
             console.log(`Found ${contractsTree.length} sources`);
@@ -120,11 +122,13 @@ class Builder {
     }
     parseDocs(output) {
         const contracts = [...output.matchAll(this.nameRegex)]
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             .map((m) => m.groups.contract)
             // For the target contracts compiler returns relative path
             // and for dependency contracts paths are absolute
             // Make them all absolute
             .map((c) => (0, path_1.resolve)(process.cwd(), this.options.build, c));
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const docs = [...output.matchAll(this.docRegex)].map((m) => JSON.parse(m.groups.doc));
         return underscore_1.default.zip(contracts, docs).reduce((acc, [contract, doc]) => {
             const [path, name] = contract.split(":");

@@ -11,7 +11,6 @@
     </p>
 </p>
 
-
 Locklift is a development environment aiming to help you with Everscale contracts development. With Locklift, you get:
 
 - Network management for working with any networks (main, test, local, ...)
@@ -22,17 +21,22 @@ Locklift is a development environment aiming to help you with Everscale contract
 - External script runner that executes scripts within specified environment
 
 ## Quick start
+
 To install Locklift you need node 14 or later. Go to an empty folder, initialize an npm project (i.e. npm init), and run
+
 ```
 $ npm install --save-dev locklift
 ```
+
 Once it's installed you can initialize project
+
 ```
 // initialize in current directory
 $ npx locklift init -f
 // or specify new one
 $ npx locklift init --path amazing-locklift-project
 ```
+
 ## Get version
 
 ```
@@ -136,7 +140,7 @@ const config: LockliftConfig = {
         address: "0:ece57bcc6c530283becbbd8a3b24d3c5987cdddc3c8b7b33be6e4a6312490415",
         // you can use bip39 phrase instead of key
         phrase: "action inject penalty envelope rabbit element slim tornado dinner pizza off blood",
-        account_id: 0
+        account_id: 0,
       },
       keys: {
         // Use everdev to generate your phrase
@@ -194,7 +198,7 @@ import "locklift/src/console.sol";
 contract Sample {
     function testFunc(uint input) external {
         tvm.accept();
-        
+
         console.log(format("You called testFunc with input = {}", input));
     }
 }
@@ -218,7 +222,9 @@ const changeStateTransaction = await locklift.tracing.trace(MyContract.methods.c
 // trace runTarget
 const accountTransaction = await locklift.tracing.trace(myAccount.runTarget(...))
 ```
+
 example with tracing output
+
 ```bash
 npx locklift test -n local
 
@@ -343,6 +349,7 @@ expect(Number(userBalance)).to.be.above(0, "Bad user balance");
 Module provides access to high-level control of transaction flow.
 
 This method allows you to wait until all transaction in chain are finalized.
+
 ```typescript
 const transaction = await locklift.transactions.waitFinalized(tokenRoot.methods.deployWallet({...))
 ```
@@ -354,7 +361,8 @@ Get full account state
 ##### Example
 
 ```typescript
-expect(await locklift.provider.ever.getFullContractState({address: addr}).then((res) => res.state?.isDeployed)).to.be.true;
+expect(await locklift.provider.ever.getFullContractState({ address: addr }).then((res) => res.state?.isDeployed)).to.be
+  .true;
 ```
 
 ### Factory (`locklift.factory`)
@@ -372,26 +380,27 @@ const myContractData = await locklift.factory.getContractArtifacts("MyContract")
 ```
 
 #### `locklift.factory.deployContract`
+
 Deploy specified contract and returns contract instance and transaction.
 
 ```typescript
 // Deploy
-const {contract: DeployedMyContract, tx} = locklift.factory.deployContract(
+const { contract: DeployedMyContract, tx } = locklift.factory.deployContract(
   "MyContractName", // name of your contract
   {
-      // static parameters of contract
-      initParams: {},
-      publicKey: signer.publicKey,
+    // static parameters of contract
+    initParams: {},
+    publicKey: signer.publicKey,
   },
-  {...constructoParams},
+  { ...constructoParams },
   // this value will be transfered from giver to deployable contract
   locklift.utils.convertCrystal(2, Dimensions.Nano),
 );
 // Ot you can get instance of already deployed contract
 const GettedMyContract = await locklift.factory.getDeployedContract(
-  'Wallet', // name of your contract
-  new Address('NyAddress')
-)
+  "Wallet", // name of your contract
+  new Address("NyAddress"),
+);
 // In this example 'DeployedMyContract' and 'GettedMyContract' are the same contract
 ```
 
@@ -401,17 +410,17 @@ Contract object includes all methods based on built sources (Abi). It is based o
 
 ```typescript
 const MyContract = locklift.factory.getDeployedContract(
-  'Wallet',//name infered from your contracts
-  new Address('MyAddress')
-)
+  "Wallet", //name infered from your contracts
+  new Address("MyAddress"),
+);
 // Send External
-await MyContract.methods.changeCounterState({newState: 10}).sendExternal({publicKey: signer.publicKey});
+await MyContract.methods.changeCounterState({ newState: 10 }).sendExternal({ publicKey: signer.publicKey });
 // Run getter or view method
 const counterSatate = await MyContract.methods.getCounterState({}).call();
 // Await event that is still not emitted
-const futureEvent = await MyContract.waitForEvent({filter: (event) => event.event === "StateChanged"});
+const futureEvent = await MyContract.waitForEvent({ filter: (event) => event.event === "StateChanged" });
 // Get past events
-const pastEvents = await MyContract.getPastEvents({filter: (event) => event.event === "Deposit"});
+const pastEvents = await MyContract.getPastEvents({ filter: (event) => event.event === "Deposit" });
 ```
 
 ### AccountFactory (`locklift.factory.getAccountsFactory`)
@@ -425,11 +434,11 @@ accountAbiBase = {
     {
       name: "sendTransaction",
       inputs: [
-        {name: "dest", type: "address"},
-        {name: "value", type: "uint128"},
-        {name: "bounce", type: "bool"},
-        {name: "flags", type: "uint8"},
-        {name: "payload", type: "cell"},
+        { name: "dest", type: "address" },
+        { name: "value", type: "uint128" },
+        { name: "bounce", type: "bool" },
+        { name: "flags", type: "uint8" },
+        { name: "payload", type: "cell" },
       ],
       outputs: [],
     },
@@ -441,15 +450,16 @@ accountAbiBase = {
 
 ```typescript
 let accountsFactory = locklift.factory.getAccountsFactory(
-  'Wallet' // name of contract used as a wallet
+  "Wallet", // name of contract used as a wallet
 );
 ```
+
 Now you can use it for deploying contract or getting deployed ones
 
 #### Deploy
 
 ```typescript
-const {contract: MyAccount, tx} = accountsFactory.deployNewAccount(
+const { contract: MyAccount, tx } = accountsFactory.deployNewAccount(
   signer.publicKey,
   locklift.utils.convertCrystal(100000, Dimensions.Nano).toString(),
   {
@@ -458,7 +468,7 @@ const {contract: MyAccount, tx} = accountsFactory.deployNewAccount(
     },
     publicKey: signer.publicKey,
   },
-  {...constructoParams},
+  { ...constructoParams },
 );
 ```
 
@@ -470,7 +480,7 @@ const Account = accountsFactory.getAccount(new Address("MyAddress"), signer.publ
 
 ### Account
 
-In most cases users interact with your contract through wallets with internal messages. 
+In most cases users interact with your contract through wallets with internal messages.
 To make testing realistic we added `Account` class that allows you to imitate user and send all
 transactions to contracts through wallet contract.
 

@@ -95,7 +95,7 @@ const giverWallet = {
         { name: "payload", type: "cell" },
       ],
       outputs: [],
-    }
+    },
   ],
-  events: []
+  events: [],
 } as const;

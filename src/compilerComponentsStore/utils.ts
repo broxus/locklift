@@ -1,8 +1,12 @@
 import { ComponentType } from "./constances";
 import axios from "axios";
-const isWin32 = process.platform === "win32";
-const isLinux = process.platform === "linux";
-const isDarwin = process.platform === "darwin";
+
+const platforms = {
+  isWin32: process.platform === "win32",
+  isLinux: process.platform === "linux",
+  isDarwin: process.platform === "darwin",
+};
+
 export const getGzFileName = (fileName: string) => fileName + ".gz";
 const getLinkerUrl = ({ version }: { version: string }) =>
   `https://binaries.tonlabs.io/${getGzFileName(getLinkerFileName({ version }))}`;
@@ -33,14 +37,14 @@ export const fileNames: Record<ComponentType, (arg: { version: string }) => stri
 
 const getExecutableCompilerName = ({ version }: { version: string }): string => {
   const fileName = fileNames[ComponentType.COMPILER]({ version });
-  if (isWin32) {
+  if (platforms.isWin32) {
     return fileName + ".exe";
   }
   return fileName;
 };
 const getExecutableLinkerName = ({ version }: { version: string }): string => {
   const fileName = fileNames[ComponentType.LINKER]({ version });
-  if (isWin32) {
+  if (platforms.isWin32) {
     return fileName + ".exe";
   }
   return fileName;

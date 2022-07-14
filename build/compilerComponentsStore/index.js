@@ -18,7 +18,7 @@ const getComponent = async ({ version, component, }) => {
     }
     console.log(`Start download ${component} version ${version}`);
     const downloadLink = utils_1.downloadLinks[component]({ version });
-    await (0, download_1.default)(downloadLink, tempFilePath).catch(async (e) => {
+    await (0, download_1.default)(downloadLink, tempFilePath).catch(async () => {
         const supportedVersions = await (0, utils_1.getSupportedVersions)({ component });
         throw new Error(`Can't download ${component} version ${version}, supported versions: ${supportedVersions.map((el) => ` ${el}`)}`);
     });

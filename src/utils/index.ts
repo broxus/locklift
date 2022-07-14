@@ -26,7 +26,7 @@ export const convertCrystal = (amount: number | string, dimension: Dimensions): 
 
 export const getRandomNonce = (): number => (Math.random() * 64000) | 0;
 
-export const errorExtractor = async <T extends { transaction: Transaction<Address>; output?: {} }>(
+export const errorExtractor = async <T extends { transaction: Transaction<Address>; output?: Record<string, unknown> }>(
   transactionResult: Promise<T>,
 ): Promise<T> => {
   return transactionResult.then((res) => {

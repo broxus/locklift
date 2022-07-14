@@ -1,7 +1,7 @@
 import { ProviderRpcClient } from "everscale-inpage-provider";
 import { AllowedCodes, MsgTree, OptionalContracts, TraceParams } from "./types";
 import { Factory } from "../factory";
-export declare class TracingInternal<Abi = any> {
+export declare class TracingInternal {
     private readonly ever;
     private readonly factory;
     private readonly endPoint;

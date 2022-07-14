@@ -1,7 +1,7 @@
 import { Address, Contract, GetExpectedAddressParams, ProviderRpcClient } from "everscale-inpage-provider";
 import { GiverI } from "./giver";
-import { ConstructorParams, ContractWithName, DeployTransaction, Optional, TransactionWithOutput } from "../types";
-import { accountAbiBase, AccountFactory } from "./account";
+import { ConstructorParams, ContractWithName, DeployTransaction, Optional } from "../types";
+import { AccountFactory } from "./account";
 import { Deployer } from "./deployer";
 import * as utils from "../utils";
 import path from "path";
@@ -81,6 +81,7 @@ export class Factory<T extends FactoryType> {
       tvc: base64,
       code: (await this.ever.splitTvc(base64)).code,
       abi,
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       hashCode: decoded.code_hash!,
     };
   };
@@ -112,9 +113,7 @@ export class Factory<T extends FactoryType> {
   };
 
   getContractByCodeHash = (codeHash: string, address: Address): ContractWithName | undefined => {
-    const contractArtifacts = this.getAllArtifacts().find(
-      ({ artifacts, contractName }) => artifacts.hashCode === codeHash,
-    );
+    const contractArtifacts = this.getAllArtifacts().find(({ artifacts }) => artifacts.hashCode === codeHash);
 
     return (
       contractArtifacts && {

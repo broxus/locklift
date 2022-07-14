@@ -5,7 +5,7 @@ import { TracingInternal } from "./tracingInternal";
 import { extractTransactionFromParams, Transactions } from "../utils";
 import { TransactionParameter } from "../types";
 
-export class Tracing<Abi = any> {
+export class Tracing {
   constructor(
     private readonly ever: ProviderRpcClient,
     private readonly tracingInternal: TracingInternal,

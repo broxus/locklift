@@ -1,6 +1,5 @@
 import { deriveBip39Phrase, KeyPair } from "everscale-crypto";
-import { KeysConfig, LockliftConfig } from "../config";
-import Require = NodeJS.Require;
+import { KeysConfig } from "../config";
 
 /**
  * Simple keys manager. Initialize keys from the
@@ -33,11 +32,13 @@ export class Keys {
     if (process.platform !== "darwin") {
       this.keyPairs = await Promise.all(
         keysHDPaths.map(async (path) => {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           return deriveBip39Phrase(this.keysConfig.phrase, path!);
         }),
       );
     } else {
       for (const path of keysHDPaths) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         this.keyPairs.push(await deriveBip39Phrase(this.keysConfig.phrase, path!));
       }
     }

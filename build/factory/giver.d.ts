@@ -1,7 +1,7 @@
 import { Address, Transaction } from "everscale-inpage-provider";
-export interface GiverI<Abi = any> {
+export interface GiverI {
     sendTo(sendTo: Address, value: string): Promise<{
         transaction: Transaction;
-        output?: {};
+        output?: Record<string, unknown>;
     }>;
 }

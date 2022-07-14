@@ -91,14 +91,14 @@ class TracingInternal {
     // allowed_codes example - {compute: [100, 50, 12], action: [11, 12], "ton_addr": {compute: [60], action: [2]}}
     async trace({ inMsgId, allowedCodes = { compute: [], action: [], contracts: { any: { compute: [], action: [] } } }, }) {
         if (this.enabled) {
-            const msg_tree = await this.buildMsgTree(inMsgId, this.endPoint);
-            let allowedCodesExtended = lodash_1.default.merge(lodash_1.default.cloneDeep(this._allowedCodes), allowedCodes);
-            const trace_tree = await this.buildTracingTree(msg_tree, allowedCodesExtended);
-            const reverted = this.findRevertedBranch(trace_tree);
+            const msgTree = await this.buildMsgTree(inMsgId, this.endPoint);
+            const allowedCodesExtended = lodash_1.default.merge(lodash_1.default.cloneDeep(this._allowedCodes), allowedCodes);
+            const traceTree = await this.buildTracingTree(msgTree, allowedCodesExtended);
+            const reverted = this.findRevertedBranch(traceTree);
             if (reverted) {
                 (0, utils_1.throwErrorInConsole)(reverted);
             }
-            return msg_tree;
+            return msgTree;
         }
     }
     async printConsoleMsg(msg) {
@@ -109,30 +109,30 @@ class TracingInternal {
         });
         console.log(decoded?.input);
     }
-    async buildMsgTree(in_msg_id, endPoint, only_root = false) {
-        const msg = await (0, utils_1.fetchMsgData)(in_msg_id, endPoint);
-        if (only_root) {
+    async buildMsgTree(inMsgId, endPoint, onlyRoot = false) {
+        const msg = await (0, utils_1.fetchMsgData)(inMsgId, endPoint);
+        if (onlyRoot) {
             return msg;
         }
         if (msg.dst === constances_1.CONSOLE_ADDRESS) {
             await this.printConsoleMsg(msg);
         }
-        msg.out_messages = [];
+        msg.outMessages = [];
         if (msg.dst_transaction && msg.dst_transaction.out_msgs.length > 0) {
-            msg.out_messages = await Promise.all(msg.dst_transaction.out_msgs.map(async (msg_id) => {
-                return await this.buildMsgTree(msg_id, endPoint);
+            msg.outMessages = await Promise.all(msg.dst_transaction.out_msgs.map(async (msgId) => {
+                return await this.buildMsgTree(msgId, endPoint);
             }));
         }
         return msg;
     }
-    async buildTracingTree(msg_tree, allowedCodes = { compute: [], action: [], contracts: { any: { compute: [], action: [] } } }) {
-        const trace = new trace_1.Trace(this, msg_tree, null);
+    async buildTracingTree(msgTree, allowedCodes = { compute: [], action: [], contracts: { any: { compute: [], action: [] } } }) {
+        const trace = new trace_1.Trace(this, msgTree, null);
         await trace.buildTree(allowedCodes, this.factory.getContractByCodeHash);
         return trace;
     }
     // apply depth-first search on trace tree, return first found reverted branch
     findRevertedBranch(traceTree) {
-        if (!traceTree.has_error_in_tree) {
+        if (!traceTree.hasErrorInTree) {
             return;
         }
         return this.depthSearch(traceTree, 1, 0);
@@ -140,16 +140,16 @@ class TracingInternal {
     depthSearch(traceTree, totalActions, actionIdx) {
         if (traceTree.error && !traceTree.error.ignored) {
             // clean unnecessary structure
-            traceTree.out_traces = [];
+            traceTree.outTraces = [];
             return [{ totalActions, actionIdx: actionIdx, traceLog: traceTree }];
         }
-        for (const [index, trace] of traceTree.out_traces.entries()) {
-            const actionsNum = traceTree.out_traces.length;
-            const corrupted_branch = this.depthSearch(trace, actionsNum, index);
-            if (corrupted_branch) {
+        for (const [index, trace] of traceTree.outTraces.entries()) {
+            const actionsNum = traceTree.outTraces.length;
+            const corruptedBranch = this.depthSearch(trace, actionsNum, index);
+            if (corruptedBranch) {
                 // clean unnecessary structure
-                traceTree.out_traces = [];
-                return [{ totalActions, actionIdx, traceLog: traceTree }].concat(corrupted_branch);
+                traceTree.outTraces = [];
+                return [{ totalActions, actionIdx, traceLog: traceTree }].concat(corruptedBranch);
             }
         }
     }

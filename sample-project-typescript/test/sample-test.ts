@@ -21,7 +21,7 @@ describe("Test Sample contract", async function () {
 
     it("Deploy contract", async function () {
       const INIT_STATE = 0;
-      const { contract, tx } = await locklift.factory.deployContract(
+      const { contract } = await locklift.factory.deployContract(
         "Sample",
         {
           initParams: {

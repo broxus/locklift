@@ -5,7 +5,7 @@ import fs from "fs";
 import path from "path";
 import commander from "commander";
 import { generateBip39Phrase } from "everscale-crypto";
-import { object, string, defaulted, create, any, integer, record, number } from "superstruct";
+import { object, create, any } from "superstruct";
 import _ from "lodash";
 
 import { ConnectionProperties } from "everscale-standalone-client";
@@ -39,6 +39,7 @@ export type KeysConfig = {
   phrase?: string;
   amount: number;
 };
+
 export type Networks<T extends ConfigState = ConfigState.EXTERNAL> = Record<"local" | string, NetworkValue<T>>;
 export type NetworkValue<T extends ConfigState = ConfigState.EXTERNAL> = {
   giver: GiverConfig;
@@ -55,18 +56,6 @@ export type GiverConfig = {
   address: string;
   giverFactory: (ever: ProviderRpcClient, keyPair: Ed25519KeyPair, address: string) => GiverI;
 } & ({ key: string } | { phrase: string; accountId: number });
-
-const Giver = object({
-  address: string(),
-  key: string(),
-  giverFactory: any(),
-});
-
-const Keys = object({
-  phrase: string(),
-  amount: defaulted(integer(), () => 25),
-  path: defaulted(string(), () => "m/44'/396'/0'/0/INDEX"),
-});
 
 const MochaConfig = object();
 

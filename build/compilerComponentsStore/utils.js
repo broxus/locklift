@@ -6,9 +6,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getSupportedVersions = exports.executableFileName = exports.fileNames = exports.downloadLinks = exports.replaceDots = exports.getGzFileName = void 0;
 const constances_1 = require("./constances");
 const axios_1 = __importDefault(require("axios"));
-const isWin32 = process.platform === "win32";
-const isLinux = process.platform === "linux";
-const isDarwin = process.platform === "darwin";
+const platforms = {
+    isWin32: process.platform === "win32",
+    isLinux: process.platform === "linux",
+    isDarwin: process.platform === "darwin",
+};
 const getGzFileName = (fileName) => fileName + ".gz";
 exports.getGzFileName = getGzFileName;
 const getLinkerUrl = ({ version }) => `https://binaries.tonlabs.io/${(0, exports.getGzFileName)(getLinkerFileName({ version }))}`;
@@ -31,14 +33,14 @@ exports.fileNames = {
 };
 const getExecutableCompilerName = ({ version }) => {
     const fileName = exports.fileNames[constances_1.ComponentType.COMPILER]({ version });
-    if (isWin32) {
+    if (platforms.isWin32) {
         return fileName + ".exe";
     }
     return fileName;
 };
 const getExecutableLinkerName = ({ version }) => {
     const fileName = exports.fileNames[constances_1.ComponentType.LINKER]({ version });
-    if (isWin32) {
+    if (platforms.isWin32) {
         return fileName + ".exe";
     }
     return fileName;

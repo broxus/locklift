@@ -28,11 +28,13 @@ class Keys {
         const keysHDPaths = [...Array(this.keysConfig.amount).keys()].map((i) => this.keysConfig.path?.replace("INDEX", `${i}`));
         if (process.platform !== "darwin") {
             this.keyPairs = await Promise.all(keysHDPaths.map(async (path) => {
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 return (0, everscale_crypto_1.deriveBip39Phrase)(this.keysConfig.phrase, path);
             }));
         }
         else {
             for (const path of keysHDPaths) {
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 this.keyPairs.push(await (0, everscale_crypto_1.deriveBip39Phrase)(this.keysConfig.phrase, path));
             }
         }

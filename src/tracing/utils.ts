@@ -2,7 +2,7 @@ import axios from "axios";
 import { MsgTree, RevertedBranch, TraceType } from "./types";
 
 export const fetchMsgData = async (msgId: string, endPoint: string): Promise<MsgTree> => {
-  const msg_query = `{
+  const msgQuery = `{
           messages(
             filter: {
               id: {
@@ -51,7 +51,7 @@ export const fetchMsgData = async (msgId: string, endPoint: string): Promise<Msg
           }
         }`;
   const response = await axios
-    .post<{ data: { messages: Array<any> } }>(endPoint, { query: msg_query })
+    .post<{ data: { messages: Array<MsgTree> } }>(endPoint, { query: msgQuery })
 
     .then((res) => res.data.data);
   return response.messages[0];
@@ -76,16 +76,16 @@ export const throwErrorInConsole = <Abi>(revertedBranch: Array<RevertedBranch<Ab
     } else if (traceLog.type === TraceType.BOUNCE) {
       method = "onBounce";
     }
-    let params_str = "()";
+    let paramsStr = "()";
     if (traceLog.decodedMsg) {
       if (Object.values(traceLog.decodedMsg.input).length === 0) {
-        params_str = `()`;
+        paramsStr = "()";
       } else {
-        params_str = `(\n`;
+        paramsStr = "(\n";
         for (const [key, value] of Object.entries(traceLog.decodedMsg.input)) {
-          params_str += `    ${key}: ${value}\n`;
+          paramsStr += `    ${key}: ${value}\n`;
         }
-        params_str += ")";
+        paramsStr += ")";
       }
     }
 
@@ -106,7 +106,7 @@ export const throwErrorInConsole = <Abi>(revertedBranch: Array<RevertedBranch<Ab
     }
     // bold tag
     console.log(
-      `\x1b[1m${name}.${method}\x1b[22m{value: ${convert(traceLog.msg.value)}, bounce: ${bounce}}${params_str}`,
+      `\x1b[1m${name}.${method}\x1b[22m{value: ${convert(traceLog.msg.value)}, bounce: ${bounce}}${paramsStr}`,
     );
     if (traceLog.msg.dst_transaction) {
       if (traceLog.msg.dst_transaction.storage) {

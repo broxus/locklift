@@ -5,7 +5,7 @@ import { ConstructorParams, TransactionWithOutput } from "../types";
 
 export class Deployer {
   constructor(private readonly ever: ProviderRpcClient, private readonly giver: GiverI) {}
-  deployContract = async <Abi extends any, T extends [keyof Contract<Abi>]>(
+  deployContract = async <Abi>(
     abi: Abi,
     deployParams: GetExpectedAddressParams<Abi>,
     constructorParams: ConstructorParams<Abi>,

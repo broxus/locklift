@@ -29,6 +29,7 @@ export class Builder {
   }
 
   async buildContracts(): Promise<boolean> {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const contractsTree = this.getContractsTree()!;
 
     try {
@@ -63,7 +64,7 @@ export class Builder {
             //Only contracts
             return !!output?.stdout.toString();
           }),
-          mergeMap(({ contractFileName, path }) => {
+          mergeMap(({ contractFileName }) => {
             const lib = this.config.linkerLibPath ? ` --lib ${this.config.linkerLibPath} ` : "";
             const resolvedPathCode = resolve(this.options.build, `${contractFileName}.code`);
             const resolvedPathAbi = resolve(this.options.build, `${contractFileName}.abi.json`);
@@ -120,6 +121,7 @@ export class Builder {
   }
 
   buildDocs(): boolean {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const contractsTree = this.getContractsTree()!;
 
     try {
@@ -175,12 +177,13 @@ export class Builder {
 
   private parseDocs(output: string): ParsedDoc[] {
     const contracts = [...output.matchAll(this.nameRegex)]
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       .map((m) => m.groups!.contract)
       // For the target contracts compiler returns relative path
       // and for dependency contracts paths are absolute
       // Make them all absolute
       .map((c) => resolve(process.cwd(), this.options.build, c));
-
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const docs = [...output.matchAll(this.docRegex)].map((m) => JSON.parse(m.groups!.doc));
 
     return _.zip(contracts, docs).reduce((acc: ParsedDoc[], [contract, doc]: string[]) => {

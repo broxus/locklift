@@ -35,6 +35,7 @@ const init_1 = __importDefault(require("./commands/init"));
 const build_1 = __importDefault(require("./commands/build"));
 const test_1 = __importDefault(require("./commands/test"));
 const run_1 = __importDefault(require("./commands/run"));
+// import gendoc from "./commands/gendoc";
 commander_1.program.addCommand(init_1.default);
 commander_1.program.addCommand(test_1.default);
 commander_1.program.addCommand(build_1.default);
