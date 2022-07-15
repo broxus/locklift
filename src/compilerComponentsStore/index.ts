@@ -50,25 +50,21 @@ export async function download(fileUrl: string, outputLocationPath: string) {
     method: "get",
     url: fileUrl,
     responseType: "stream",
-  })
-    .then(response => {
-      return new Promise((resolve, reject) => {
-        response.data.pipe(writer);
+  }).then(response => {
+    return new Promise((resolve, reject) => {
+      response.data.pipe(writer);
 
-        let error: Error | null;
-        writer.on("error", err => {
-          error = err;
-          writer.close();
-          reject(err);
-        });
-        writer.on("close", () => {
-          if (!error) {
-            resolve(true);
-          }
-        });
+      let error: Error | null;
+      writer.on("error", err => {
+        error = err;
+        writer.close();
+        reject(err);
       });
-    })
-    .catch(e => {
-      console.error("AAAAAA", e);
+      writer.on("close", () => {
+        if (!error) {
+          resolve(true);
+        }
+      });
     });
+  });
 }
