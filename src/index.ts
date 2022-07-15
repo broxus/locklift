@@ -1,9 +1,18 @@
 import { ProviderRpcClient } from "everscale-inpage-provider";
-import { Clock, EverscaleStandaloneClient, SimpleKeystore } from "everscale-standalone-client/nodejs";
+import {
+  Clock,
+  EverscaleStandaloneClient,
+  SimpleKeystore,
+  checkConnection,
+  ConnectionError,
+  ConnectionProperties,
+} from "everscale-standalone-client/nodejs";
+import chalk from "chalk";
 
 import { Keys } from "./keys";
 import { ConfigState, LockliftConfig } from "./config";
 import * as utils from "./utils";
+import { logger } from "./logger";
 import { Giver } from "./factory";
 import { Factory } from "./factory";
 import { Transactions } from "./utils";
@@ -18,6 +27,7 @@ export type { Giver } from "./factory";
 
 export class Locklift<FactorySource = any> {
   public readonly utils = utils;
+
   private constructor(
     public readonly factory: Factory<FactorySource>,
     public readonly giver: Giver,
@@ -48,6 +58,8 @@ export class Locklift<FactorySource = any> {
     );
     keystore.addKeyPair("giver", giverKeys);
 
+    await ensureConnectionValid(networkConfig.connection);
+
     const clock = new Clock();
     const provider = new ProviderRpcClient({
       fallback: () =>
@@ -73,5 +85,30 @@ export class Locklift<FactorySource = any> {
     });
 
     return new Locklift<T>(factory, giver, provider, clock, keystore, transactions, tracing);
+  }
+}
+
+async function ensureConnectionValid(connection: ConnectionProperties): Promise<void> {
+  try {
+    await checkConnection(connection);
+  } catch (e: any) {
+    const localNodeInfo = `
+Make sure local node is running. To start it use:
+  ${chalk.bold("everdev se start")}
+or
+  ${chalk.bold("docker run -d --name local-node -e USER_AGREEMENT=yes -p80:80 tonlabs/local-node")}`;
+
+    if (e instanceof ConnectionError) {
+      const endpoints = e.params.type == "graphql" ? e.params.data.endpoints : [e.params.data.endpoint];
+      const additional = e.params.type == "graphql" && e.params.data.local ? localNodeInfo : "";
+      logger.printError(
+        `Failed to create ${e.params.type} connection. Please check your endpoints: ${endpoints.join(
+          " ",
+        )}${additional}`,
+      );
+      process.exit(1);
+    } else {
+      throw e;
+    }
   }
 }
