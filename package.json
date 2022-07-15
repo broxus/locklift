@@ -8,7 +8,9 @@
     "lint": "npx eslint .",
     "format": "prettier --write .",
     "dev-deploy-local": "npm run build && npm publish --registry http://localhost:4873/",
+    "publish": "npm run build && npm run publish",
     "dev-deploy": "npm run build && npm publish --registry http://95.216.205.173:4873/",
+    "prepublishOnly": "npm run build",
     "prepare": "husky install"
   },
   "bin": {
