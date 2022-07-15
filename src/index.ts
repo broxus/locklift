@@ -4,22 +4,24 @@ import { Clock, EverscaleStandaloneClient, SimpleKeystore } from "everscale-stan
 import { Keys } from "./keys";
 import { ConfigState, LockliftConfig } from "./config";
 import * as utils from "./utils";
-import { IGiver } from "./factory";
+import { Giver } from "./factory";
 import { Factory } from "./factory";
 import { Transactions } from "./utils";
 import { createTracing, Tracing } from "./tracing";
 import { getGiverKeyPair } from "./utilsInternal";
 
 export * from "everscale-inpage-provider";
+export type { Signer } from "everscale-standalone-client";
 export { Dimension, zeroAddress } from "./constants";
 export type { LockliftConfig } from "./config";
+export type { Giver } from "./factory";
 
 export class Locklift<FactorySource = any> {
   public readonly utils = utils;
 
   private constructor(
     public readonly factory: Factory<FactorySource>,
-    public readonly giver: IGiver,
+    public readonly giver: Giver,
     public readonly provider: ProviderRpcClient,
     public readonly clock: Clock,
     public readonly keystore: SimpleKeystore,

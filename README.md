@@ -121,7 +121,7 @@ const config: LockliftConfig = {
         key: "172af540e43a524763dd53b26a066d472a97c4de37d5498170564510608250c3",
       },
       tracing: {
-        endPoint: LOCAL_NETWORK_ENDPOINT,
+        endpoint: LOCAL_NETWORK_ENDPOINT,
       },
       keys: {
         // Use everdev to generate your phrase

@@ -1,8 +1,8 @@
-import { Address, Contract, IGiver, ProviderRpcClient, Transaction } from "locklift";
+import { Address, Contract, Giver, ProviderRpcClient, Transaction } from "locklift";
 import { Ed25519KeyPair } from "everscale-standalone-client";
 
 // Reimplements this class if you need to use custom giver contract
-export class Giver implements IGiver {
+export class SimpleGiver implements Giver {
   public giverContract: Contract<typeof giverAbi>;
 
   constructor(ever: ProviderRpcClient, readonly keyPair: Ed25519KeyPair, address: string) {
@@ -62,7 +62,7 @@ const giverAbi = {
   events: [],
 } as const;
 
-export class GiverWallet implements IGiver {
+export class GiverWallet implements Giver {
   public giverContract: Contract<typeof giverWallet>;
 
   constructor(ever: ProviderRpcClient, readonly keyPair: Ed25519KeyPair, address: string) {

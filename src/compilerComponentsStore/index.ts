@@ -14,23 +14,26 @@ export const getComponent = async ({
   component: ComponentType;
   version: string;
 }): Promise<string> => {
-  const tempFilePath = getPathToVersion({ component, version });
+  const tempFileBaseDir = getPathToVersion({ component, version });
 
-  const binaryFilePath = path.join(tempFilePath, executableFileName[component]({ version }));
+  const binaryFilePath = path.join(tempFileBaseDir, executableFileName[component]({ version }));
   if (isComponentVersionExists({ version, component })) {
     return binaryFilePath;
   }
 
-  console.log(`Start download ${component} version ${version}`);
+  console.log(`Start downloading ${component} version ${version}`);
   const downloadLink = downloadLinks[component]({ version });
-  await download(downloadLink, tempFilePath).catch(async () => {
+
+  await fs.ensureDir(tempFileBaseDir);
+  const gzFilePath = path.join(tempFileBaseDir, getGzFileName(fileNames[component]({ version })));
+
+  await download(downloadLink, gzFilePath).catch(async () => {
     const supportedVersions = await getSupportedVersions({ component });
     throw new Error(
       `Can't download ${component} version ${version}, supported versions: ${supportedVersions.map(el => ` ${el}`)}`,
     );
   });
 
-  const gzFilePath = path.join(tempFilePath, getGzFileName(fileNames[component]({ version })));
   const unzippedBuffer = await ungzip(fs.readFileSync(gzFilePath));
   fs.rmSync(gzFilePath);
   fs.writeFileSync(binaryFilePath, unzippedBuffer);
@@ -47,21 +50,25 @@ export async function download(fileUrl: string, outputLocationPath: string) {
     method: "get",
     url: fileUrl,
     responseType: "stream",
-  }).then(response => {
-    return new Promise((resolve, reject) => {
-      response.data.pipe(writer);
+  })
+    .then(response => {
+      return new Promise((resolve, reject) => {
+        response.data.pipe(writer);
 
-      let error: Error | null;
-      writer.on("error", err => {
-        error = err;
-        writer.close();
-        reject(err);
+        let error: Error | null;
+        writer.on("error", err => {
+          error = err;
+          writer.close();
+          reject(err);
+        });
+        writer.on("close", () => {
+          if (!error) {
+            resolve(true);
+          }
+        });
       });
-      writer.on("close", () => {
-        if (!error) {
-          resolve(true);
-        }
-      });
+    })
+    .catch(e => {
+      console.error("AAAAAA", e);
     });
-  });
 }

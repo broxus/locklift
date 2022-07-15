@@ -7,7 +7,7 @@ import type { Ed25519KeyPair } from "everscale-standalone-client";
 import { ConnectionProperties } from "everscale-standalone-client";
 import { generateBip39Phrase } from "everscale-crypto";
 
-import { IGiver } from "../factory";
+import { Giver } from "../factory";
 
 export enum ConfigState {
   EXTERNAL,
@@ -52,7 +52,7 @@ export type NetworkValue<T extends ConfigState = ConfigState.EXTERNAL> = {
 export type ExternalCotracts = Record<string, Array<string>>;
 export type GiverConfig = {
   address: string;
-  giverFactory: (ever: ProviderRpcClient, keyPair: Ed25519KeyPair, address: string) => IGiver;
+  giverFactory: (ever: ProviderRpcClient, keyPair: Ed25519KeyPair, address: string) => Giver;
 } & ({ key: string } | { phrase: string; accountId: number });
 
 const MochaConfig = ss.type({

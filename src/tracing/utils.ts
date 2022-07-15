@@ -1,7 +1,7 @@
 import axios from "axios";
 import { MsgTree, RevertedBranch, TraceType } from "./types";
 
-export const fetchMsgData = async (msgId: string, endPoint: string): Promise<MsgTree> => {
+export const fetchMsgData = async (msgId: string, endpoint: string): Promise<MsgTree> => {
   const msgQuery = `{
     messages(
       filter: {
@@ -51,7 +51,7 @@ export const fetchMsgData = async (msgId: string, endPoint: string): Promise<Msg
     }
   }`;
   const response = await axios
-    .post<{ data: { messages: Array<MsgTree> } }>(endPoint, { query: msgQuery })
+    .post<{ data: { messages: Array<MsgTree> } }>(endpoint, { query: msgQuery })
 
     .then(res => res.data.data);
   return response.messages[0];

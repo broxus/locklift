@@ -4,7 +4,7 @@ import dirTree from "directory-tree";
 
 import { ConstructorParams, ContractWithName, DeployTransaction, Optional } from "../types";
 import * as utils from "../utils";
-import { IGiver } from "./giver";
+import { Giver } from "./giver";
 import { AccountFactory } from "./account";
 import { Deployer } from "./deployer";
 import { validateAccountAbi } from "./utils";
@@ -28,9 +28,9 @@ export type FactoryType = Record<string, any>;
 export class Factory<T extends FactoryType> {
   private readonly factoryCache: CacheType<T, keyof T> = {} as CacheType<T, keyof T>;
 
-  private constructor(private readonly ever: ProviderRpcClient, private readonly giver: IGiver) {}
+  private constructor(private readonly ever: ProviderRpcClient, private readonly giver: Giver) {}
 
-  public static async setup<T extends FactoryType>(ever: ProviderRpcClient, giver: IGiver): Promise<Factory<T>> {
+  public static async setup<T extends FactoryType>(ever: ProviderRpcClient, giver: Giver): Promise<Factory<T>> {
     const factory = new Factory<T>(ever, giver);
     await factory.getContractsArtifacts().then(artifacts => {
       artifacts.forEach(({ artifacts, contractName }) => {

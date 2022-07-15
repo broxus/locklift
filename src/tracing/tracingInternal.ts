@@ -17,7 +17,7 @@ export class TracingInternal {
   constructor(
     private readonly ever: ProviderRpcClient,
     private readonly factory: Factory<any>,
-    private readonly endPoint: string,
+    private readonly endpoint: string,
     private readonly enabled = false,
   ) {
     this.consoleContract = new ever.Contract(consoleAbi, new Address(CONSOLE_ADDRESS));
@@ -91,7 +91,7 @@ export class TracingInternal {
     allowedCodes = { compute: [], action: [], contracts: { any: { compute: [], action: [] } } },
   }: TraceParams) {
     if (this.enabled) {
-      const msgTree = await this.buildMsgTree(inMsgId, this.endPoint);
+      const msgTree = await this.buildMsgTree(inMsgId, this.endpoint);
       const allowedCodesExtended = _.merge(_.cloneDeep(this._allowedCodes), allowedCodes);
       const traceTree = await this.buildTracingTree(msgTree, allowedCodesExtended);
       const reverted = this.findRevertedBranch(traceTree);
@@ -111,8 +111,8 @@ export class TracingInternal {
     console.log(decoded?.input);
   }
 
-  private async buildMsgTree(inMsgId: string, endPoint: string, onlyRoot = false) {
-    const msg = await fetchMsgData(inMsgId, endPoint);
+  private async buildMsgTree(inMsgId: string, endpoint: string, onlyRoot = false) {
+    const msg = await fetchMsgData(inMsgId, endpoint);
     if (onlyRoot) {
       return msg;
     }
@@ -123,7 +123,7 @@ export class TracingInternal {
     if (msg.dst_transaction && msg.dst_transaction.out_msgs.length > 0) {
       msg.outMessages = await Promise.all(
         msg.dst_transaction.out_msgs.map(async (msgId: string) => {
-          return await this.buildMsgTree(msgId, endPoint);
+          return await this.buildMsgTree(msgId, endpoint);
         }),
       );
     }
