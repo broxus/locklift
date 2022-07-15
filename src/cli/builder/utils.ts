@@ -2,7 +2,7 @@ import fs from "fs";
 import { DirectoryTree } from "directory-tree";
 import { LockliftConfig } from "../../config";
 import { BuilderConfig } from "./index";
-import { ComponentType } from "../../compilerComponentsStore/constances";
+import { ComponentType } from "../../compilerComponentsStore/constants";
 import { getComponent } from "../../compilerComponentsStore";
 import * as Buffer from "buffer";
 import { ExecErrorOutput } from "./types";

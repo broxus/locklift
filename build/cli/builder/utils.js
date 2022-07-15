@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.tryToGetNodeModules = exports.execSyncWrapper = exports.extractContractName = exports.tvcToBase64 = exports.compilerConfigResolver = exports.flatDirTree = exports.checkDirEmpty = void 0;
 const fs_1 = __importDefault(require("fs"));
-const constances_1 = require("../../compilerComponentsStore/constances");
+const constants_1 = require("../../compilerComponentsStore/constants");
 const compilerComponentsStore_1 = require("../../compilerComponentsStore");
 const child_process_1 = require("child_process");
 const path_1 = require("path");
@@ -38,7 +38,7 @@ const compilerConfigResolver = async ({ compiler, linker, }) => {
     }
     if ("version" in compiler) {
         builderConfig.compilerPath = await (0, compilerComponentsStore_1.getComponent)({
-            component: constances_1.ComponentType.COMPILER,
+            component: constants_1.ComponentType.COMPILER,
             version: compiler.version,
         });
     }
@@ -52,11 +52,11 @@ const compilerConfigResolver = async ({ compiler, linker, }) => {
         }
         builderConfig.linkerPath = await (0, compilerComponentsStore_1.getComponent)({
             version: linker.version,
-            component: constances_1.ComponentType.LINKER,
+            component: constants_1.ComponentType.LINKER,
         });
         builderConfig.linkerLibPath = await (0, compilerComponentsStore_1.getComponent)({
             version: compiler.version,
-            component: constances_1.ComponentType.LIB,
+            component: constants_1.ComponentType.LIB,
         });
     }
     return builderConfig;

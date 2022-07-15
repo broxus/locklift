@@ -27,7 +27,6 @@ const getCodeAndAddress = (msg, targetType) => {
             };
     }
 };
-//
 const decoder = async ({ msgBody, msgType, contract, initialType, }) => {
     const parsedAbi = JSON.parse(contract.contract.abi);
     switch (msgType) {
@@ -39,16 +38,16 @@ const decoder = async ({ msgBody, msgType, contract, initialType, }) => {
                     .decodeInputMessage({
                     internal: isInternal,
                     body: msgBody,
-                    methods: parsedAbi.functions.map((el) => el.name),
+                    methods: parsedAbi.functions.map(el => el.name),
                 })
-                    .then((decoded) => ({ method: decoded?.method, params: decoded?.input })),
+                    .then(decoded => ({ method: decoded?.method, params: decoded?.input })),
                 finalType: initialType,
             };
         }
         case 2: {
             const outMsg = await contract.contract.decodeOutputMessage({
                 body: msgBody,
-                methods: parsedAbi.functions.map((el) => el.name),
+                methods: parsedAbi.functions.map(el => el.name),
             });
             if (outMsg) {
                 return {
@@ -60,9 +59,9 @@ const decoder = async ({ msgBody, msgType, contract, initialType, }) => {
                 decoded: await contract.contract
                     .decodeEvent({
                     body: msgBody,
-                    events: parsedAbi.events.map((el) => el.name),
+                    events: parsedAbi.events.map(el => el.name),
                 })
-                    .then((decoded) => ({ params: decoded?.data, method: decoded?.event })),
+                    .then(decoded => ({ params: decoded?.data, method: decoded?.event })),
                 finalType: types_1.TraceType.EVENT,
             };
         }

@@ -1,7 +1,5 @@
-import { Dimensions } from "locklift";
-
 async function main() {
-  const signer = (await locklift.provider.keyStore.getSigner("0"))!;
+  const signer = (await locklift.keystore.getSigner("0"))!;
   const { contract: sample, tx } = await locklift.factory.deployContract(
     "Sample",
     {
@@ -13,7 +11,7 @@ async function main() {
     {
       _state: 0,
     },
-    locklift.utils.convertCrystal(3, Dimensions.Nano),
+    locklift.utils.toNano(3),
   );
 
   console.log(`Sample deployed at: ${sample.address.toString()}`);

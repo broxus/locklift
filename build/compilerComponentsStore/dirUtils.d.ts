@@ -1,4 +1,4 @@
-import { ComponentType } from "./constances";
+import { ComponentType } from "./constants";
 export declare const getPathToVersion: ({ component, version }: {
     component: ComponentType;
     version: string;

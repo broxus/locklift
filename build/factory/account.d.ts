@@ -1,6 +1,6 @@
-import { ConstructorParams, Optional, TransactionWithOutput } from "../types";
 import { GetExpectedAddressParams, ContractMethod, AbiFunctionName, AbiFunctionInputs, DecodedAbiFunctionOutputs, Address, Contract, ProviderRpcClient } from "everscale-inpage-provider";
 import { Deployer } from "./deployer";
+import { ConstructorParams, Optional, TransactionWithOutput } from "../types";
 export declare const accountAbiBase: {
     readonly functions: readonly [{
         readonly name: "sendTransaction";
@@ -27,26 +27,18 @@ export declare class Account<Abi> {
     readonly accountContract: Contract<Abi>;
     readonly publicKey: string;
     constructor(accountContract: Contract<Abi>, publicKey: string);
-    static getAccount: <Abi_1>(accountAddress: Address, ever: ProviderRpcClient, publicKey: string, abi: Abi_1) => Account<Abi_1>;
-    static deployNewAccount: <Abi_1>(deployer: Deployer, publicKey: string, value: string, abi: Abi_1, deployParams: GetExpectedAddressParams<Abi_1>, constructorParams: ConstructorParams<Abi_1>) => Promise<{
-        account: Account<Abi_1>;
+    static getAccount<Abi>(accountAddress: Address, ever: ProviderRpcClient, publicKey: string, abi: Abi): Account<Abi>;
+    static deployNewAccount<Abi>(deployer: Deployer, publicKey: string, value: string, abi: Abi, deployParams: GetExpectedAddressParams<Abi>, constructorParams: ConstructorParams<Abi>): Promise<{
+        account: Account<Abi>;
         tx: TransactionWithOutput;
     }>;
     get address(): Address;
-    runTarget: <Abi_1>(config: {
-        contract: Contract<Abi_1>;
-        value?: string | undefined;
-        bounce?: boolean | undefined;
-        flags?: number | undefined;
-    }, producer: (targetContract: Contract<Abi_1>) => ContractMethod<import("everscale-inpage-provider").MergeInputObjectsArray<Extract<Abi_1 extends {
-        functions: infer F;
-    } ? F extends readonly unknown[] ? import("everscale-inpage-provider/dist/utils").ArrayItemType<F> : never : never, {
-        name: AbiFunctionName<Abi_1>;
-    }>["inputs"]>, import("everscale-inpage-provider").MergeOutputObjectsArray<Extract<Abi_1 extends {
-        functions: infer F;
-    } ? F extends readonly unknown[] ? import("everscale-inpage-provider/dist/utils").ArrayItemType<F> : never : never, {
-        name: AbiFunctionName<Abi_1>;
-    }>["outputs"]>>) => Promise<{
+    runTarget(config: {
+        contract: Contract<Abi>;
+        value?: string;
+        bounce?: boolean;
+        flags?: number;
+    }, producer: (targetContract: Contract<Abi>) => ContractMethod<AbiFunctionInputs<Abi, AbiFunctionName<Abi>>, DecodedAbiFunctionOutputs<Abi, AbiFunctionName<Abi>>>): Promise<{
         transaction: import("everscale-inpage-provider").Transaction<Address>;
         output?: {} | undefined;
     }>;

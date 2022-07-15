@@ -1,8 +1,8 @@
 /// <reference types="mocha" />
-import { Ed25519KeyPair } from "everscale-standalone-client/nodejs";
 import { ProviderRpcClient } from "everscale-inpage-provider";
-import { GiverI } from "../factory";
+import type { Ed25519KeyPair } from "everscale-standalone-client";
 import { ConnectionProperties } from "everscale-standalone-client";
+import { IGiver } from "../factory";
 export declare enum ConfigState {
     EXTERNAL = 0,
     INTERNAL = 1
@@ -35,19 +35,16 @@ export declare type KeysConfig = {
 export declare type Networks<T extends ConfigState = ConfigState.EXTERNAL> = Record<"local" | string, NetworkValue<T>>;
 export declare type NetworkValue<T extends ConfigState = ConfigState.EXTERNAL> = {
     giver: GiverConfig;
-    keys: T extends ConfigState.EXTERNAL ? KeysConfig : KeysConfigRequired;
+    keys: T extends ConfigState.EXTERNAL ? KeysConfig : Required<KeysConfig>;
     connection: ConnectionProperties;
     tracing?: {
-        endPoint: string;
+        endpoint: string;
     };
-};
-export declare type KeysConfigRequired = Omit<KeysConfig, "phrase"> & {
-    phrase: string;
 };
 export declare type ExternalCotracts = Record<string, Array<string>>;
 export declare type GiverConfig = {
     address: string;
-    giverFactory: (ever: ProviderRpcClient, keyPair: Ed25519KeyPair, address: string) => GiverI;
+    giverFactory: (ever: ProviderRpcClient, keyPair: Ed25519KeyPair, address: string) => IGiver;
 } & ({
     key: string;
 } | {

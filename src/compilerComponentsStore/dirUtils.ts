@@ -1,7 +1,8 @@
 import envPaths from "env-paths";
 import fs from "fs-extra";
 import path from "path";
-import { ComponentType, PACKAGE_NAME } from "./constances";
+
+import { ComponentType, PACKAGE_NAME } from "./constants";
 import { replaceDots } from "./utils";
 
 const getDataDir = (): string => {

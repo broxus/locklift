@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AccountFactory = exports.Account = exports.accountAbiBase = void 0;
-const constants_1 = require("../constants");
 const utils_1 = require("../utils");
 exports.accountAbiBase = {
     functions: [
@@ -25,27 +24,27 @@ class Account {
         this.accountContract = accountContract;
         this.publicKey = publicKey;
     }
-    static getAccount = (accountAddress, ever, publicKey, abi) => {
+    static getAccount(accountAddress, ever, publicKey, abi) {
         return new Account(new ever.Contract(abi, accountAddress), publicKey);
-    };
-    static deployNewAccount = async (deployer, publicKey, value, abi, deployParams, constructorParams) => {
+    }
+    static async deployNewAccount(deployer, publicKey, value, abi, deployParams, constructorParams) {
         const { contract, tx } = await deployer.deployContract(abi, deployParams, constructorParams, value);
         return { account: new Account(contract, publicKey), tx };
-    };
+    }
     get address() {
         return this.accountContract.address;
     }
-    runTarget = async (config, producer) => {
+    async runTarget(config, producer) {
         return (0, utils_1.errorExtractor)(this.accountContract.methods
             .sendTransaction({
-            value: config.value || (0, utils_1.convertCrystal)(2, constants_1.Dimensions.Nano),
+            value: config.value || (0, utils_1.toNano)(2),
             bounce: !!config.bounce,
             dest: config.contract.address,
             payload: await producer(config.contract).encodeInternal(),
             flags: config.flags || 0,
         })
             .sendExternal({ publicKey: this.publicKey }));
-    };
+    }
 }
 exports.Account = Account;
 class AccountFactory {

@@ -1,14 +1,15 @@
-import { Address, Contract, GiverI, ProviderRpcClient, Transaction } from "locklift";
+import { Address, Contract, IGiver, ProviderRpcClient, Transaction } from "locklift";
 import { Ed25519KeyPair } from "everscale-standalone-client";
 
-// Reimplements this class if need to use custom giver contract
-export class Giver implements GiverI {
+// Reimplements this class if you need to use custom giver contract
+export class Giver implements IGiver {
   public giverContract: Contract<typeof giverAbi>;
 
   constructor(ever: ProviderRpcClient, readonly keyPair: Ed25519KeyPair, address: string) {
     const giverAddr = new Address(address);
     this.giverContract = new ever.Contract(giverAbi, giverAddr);
   }
+
   public async sendTo(sendTo: Address, value: string): Promise<{ transaction: Transaction; output?: {} }> {
     return this.giverContract.methods
       .sendTransaction({
@@ -61,13 +62,14 @@ const giverAbi = {
   events: [],
 } as const;
 
-export class GiverWallet implements GiverI {
+export class GiverWallet implements IGiver {
   public giverContract: Contract<typeof giverWallet>;
 
   constructor(ever: ProviderRpcClient, readonly keyPair: Ed25519KeyPair, address: string) {
     const giverAddr = new Address(address);
     this.giverContract = new ever.Contract(giverWallet, giverAddr);
   }
+
   public async sendTo(sendTo: Address, value: string): Promise<{ transaction: Transaction; output?: {} }> {
     return this.giverContract.methods
       .sendTransaction({

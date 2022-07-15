@@ -1,6 +1,6 @@
 import { Address, Contract, ProviderRpcClient } from "everscale-inpage-provider";
 import { consoleAbi, ConsoleAbi } from "../console.abi";
-import { CONSOLE_ADDRESS } from "./constances";
+import { CONSOLE_ADDRESS } from "./constants";
 import { fetchMsgData, throwErrorInConsole } from "./utils";
 import { Trace } from "./trace/trace";
 import { AllowedCodes, MsgTree, OptionalContracts, RevertedBranch, TraceParams } from "./types";
@@ -50,7 +50,7 @@ export class TracingInternal {
       this._allowedCodes.contracts[address] = { compute: [], action: [] };
     }
     if (allowedCodes.compute) {
-      this._allowedCodes.contracts[address].compute.map((code) => {
+      this._allowedCodes.contracts[address].compute.map(code => {
         const idx = this._allowedCodes.contracts[address].compute.indexOf(code);
         if (idx > -1) {
           this._allowedCodes.contracts[address].compute.splice(idx, 1);
@@ -58,7 +58,7 @@ export class TracingInternal {
       });
     }
     if (allowedCodes.action) {
-      this._allowedCodes.contracts[address].action.map((code) => {
+      this._allowedCodes.contracts[address].action.map(code => {
         const idx = this._allowedCodes.contracts[address].action.indexOf(code);
         if (idx > -1) {
           this._allowedCodes.contracts[address].action.splice(idx, 1);
@@ -69,7 +69,7 @@ export class TracingInternal {
 
   removeAllowedCodes(allowedCodes: OptionalContracts = { compute: [], action: [] }) {
     if (allowedCodes.compute) {
-      allowedCodes.compute.map((code) => {
+      allowedCodes.compute.map(code => {
         const idx = this._allowedCodes.compute.indexOf(code);
         if (idx > -1) {
           this._allowedCodes.compute.splice(idx, 1);
@@ -77,7 +77,7 @@ export class TracingInternal {
       });
     }
     if (allowedCodes.action) {
-      allowedCodes.action.map((code) => {
+      allowedCodes.action.map(code => {
         const idx = this._allowedCodes.action.indexOf(code);
         if (idx > -1) {
           this._allowedCodes.action.splice(idx, 1);

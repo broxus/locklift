@@ -7,10 +7,11 @@ declare type ProviderConfig = {
     connectionProperties: Pick<ClientProperties, "connection">;
 };
 export declare class Provider {
-    ever: ProviderRpcClient;
-    keyStore: SimpleKeystore;
+    readonly ever: ProviderRpcClient;
+    readonly keystore: SimpleKeystore;
     private readonly clock;
-    constructor(providerConfig: ProviderConfig);
+    private constructor();
+    static setup(providerConfig: ProviderConfig): Promise<Provider>;
     getBalance(address: Address): Promise<string | undefined>;
     setTimeMovement(ms: number): void;
 }

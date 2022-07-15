@@ -66,8 +66,7 @@ program
             process.exit(1);
     }
     // Initialize Locklift and pass it into tests context
-    const locklift = new index_1.Locklift(config, options.network);
-    await locklift.setup();
+    const locklift = await index_1.Locklift.setup(config, options.network);
     //@ts-ignore
     global.locklift = locklift;
     // Run mocha tests
@@ -83,9 +82,9 @@ program
     }
     else {
         const testNestedTree = (0, directory_tree_1.default)(path_1.default.resolve(process.cwd(), options.test), { extensions: /\.(js|ts)/ });
-        testFiles = utils.flatDirTree(testNestedTree)?.map((t) => t.path) || [];
+        testFiles = utils.flatDirTree(testNestedTree)?.map(t => t.path) || [];
     }
     testFiles.forEach((file) => mocha.addFile(file));
-    mocha.run((fail) => process.exit(fail ? 1 : 0));
+    mocha.run(fail => process.exit(fail ? 1 : 0));
 });
 exports.default = program;

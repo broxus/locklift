@@ -1,63 +1,80 @@
+import { ProviderRpcClient } from "everscale-inpage-provider";
+import { Clock, EverscaleStandaloneClient, SimpleKeystore } from "everscale-standalone-client/nodejs";
+
 import { Keys } from "./keys";
-import { ConfigState, LockliftConfig, NetworkValue } from "./config";
+import { ConfigState, LockliftConfig } from "./config";
 import * as utils from "./utils";
-import { GiverI } from "./factory";
-export { GiverI } from "./factory/giver";
-import { Provider } from "./provider";
+import { IGiver } from "./factory";
 import { Factory } from "./factory";
 import { Transactions } from "./utils";
 import { createTracing, Tracing } from "./tracing";
 import { getGiverKeyPair } from "./utilsInternal";
+
 export * from "everscale-inpage-provider";
-export { Dimensions, zeroAddress } from "./constants";
+export { Dimension, zeroAddress } from "./constants";
+export type { LockliftConfig } from "./config";
 
 export class Locklift<FactorySource = any> {
-  networkConfig!: NetworkValue<ConfigState.INTERNAL>;
-  factory!: Factory<FactorySource>;
-  giver!: GiverI;
-  utils = utils;
-  transactions!: Transactions;
-  provider!: Provider;
-  tracing!: Tracing;
-  constructor(
-    private readonly config: LockliftConfig<ConfigState.INTERNAL>,
-    private readonly network: keyof LockliftConfig["networks"] = "local",
-  ) {
-    this.networkConfig = this.config.networks[this.network];
-  }
+  public readonly utils = utils;
 
-  async setup() {
+  private constructor(
+    public readonly factory: Factory<FactorySource>,
+    public readonly giver: IGiver,
+    public readonly provider: ProviderRpcClient,
+    public readonly clock: Clock,
+    public readonly keystore: SimpleKeystore,
+    public readonly transactions: Transactions,
+    public readonly tracing: Tracing,
+  ) {}
+
+  public static async setup<T>(
+    config: LockliftConfig<ConfigState.INTERNAL>,
+    network: keyof LockliftConfig["networks"] = "local",
+  ): Promise<Locklift<T>> {
     try {
-      const keys = new Keys(this.networkConfig.keys);
-      const keyPairs = await keys.setup().then(() => keys.getKeyPairs());
-      const giverKeys = getGiverKeyPair(this.networkConfig.giver);
+      const networkConfig = config.networks[network];
 
-      this.provider = new Provider({
-        giverKeys,
-        keys: keyPairs,
-        connectionProperties: {
-          connection: this.networkConfig.connection,
-        },
-      });
+      const giverKeys = getGiverKeyPair(networkConfig.giver);
+      const keys = await Keys.generate(networkConfig.keys);
 
-      await this.provider.ever.ensureInitialized();
-      this.giver = this.config.networks[this.network].giver.giverFactory(
-        this.provider.ever,
-        giverKeys,
-        this.networkConfig.giver.address,
+      const keystore = new SimpleKeystore(
+        [...keys].reduce(
+          (acc, keyPair, idx) => ({
+            ...acc,
+            [idx]: keyPair,
+          }),
+          {},
+        ),
       );
-      this.factory = new Factory(this.provider.ever, this.giver);
-      await this.factory.setup();
+      keystore.addKeyPair("giver", giverKeys);
 
-      this.transactions = new Transactions(this.provider.ever, this.tracing);
-      this.tracing = createTracing({
-        ever: this.provider.ever,
-        features: this.transactions,
-        factory: this.factory,
-        endPoint: this.config.networks[this.network].tracing?.endPoint,
+      const clock = new Clock();
+      const provider = new ProviderRpcClient({
+        fallback: () =>
+          EverscaleStandaloneClient.create({
+            connection: networkConfig.connection,
+            keystore,
+            clock,
+          }),
       });
+      await provider.ensureInitialized();
+
+      const giver = networkConfig.giver.giverFactory(provider, giverKeys, networkConfig.giver.address);
+
+      const factory = await Factory.setup<T>(provider, giver);
+
+      const transactions = new Transactions(provider);
+
+      const tracing = createTracing({
+        ever: provider,
+        features: transactions,
+        factory,
+        endpoint: networkConfig.tracing?.endpoint,
+      });
+
+      return new Locklift<T>(factory, giver, provider, clock, keystore, transactions, tracing);
     } catch (e) {
-      console.error(e);
+      throw e;
     }
   }
 }

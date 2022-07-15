@@ -2,42 +2,17 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Keys = void 0;
 const everscale_crypto_1 = require("everscale-crypto");
-/**
- * Simple keys manager. Initialize keys from the
- */
 class Keys {
-    keysConfig;
-    keyPairs;
-    constructor(keysConfig) {
-        this.keysConfig = keysConfig;
-        this.keyPairs = [];
-    }
-    /**
-     * Returns key pairs.
-     * @returns {Promise<[]|Array>}
-     */
-    async getKeyPairs() {
-        return this.keyPairs;
-    }
     /**
      * Derives specific amount of keys from the specified mnemonic phrase and HD path.
      * Phrase, amount and path should be specified in the keys config section
-     * @returns {Promise<void>}
+     * @returns {Promise<KeyPair[]>}
      */
-    async setup() {
-        const keysHDPaths = [...Array(this.keysConfig.amount).keys()].map((i) => this.keysConfig.path?.replace("INDEX", `${i}`));
-        if (process.platform !== "darwin") {
-            this.keyPairs = await Promise.all(keysHDPaths.map(async (path) => {
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                return (0, everscale_crypto_1.deriveBip39Phrase)(this.keysConfig.phrase, path);
-            }));
-        }
-        else {
-            for (const path of keysHDPaths) {
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                this.keyPairs.push(await (0, everscale_crypto_1.deriveBip39Phrase)(this.keysConfig.phrase, path));
-            }
-        }
+    static async generate(config) {
+        return [...Array(config.amount).keys()].map(i => {
+            const path = config.path.replace("INDEX", `${i}`);
+            return (0, everscale_crypto_1.deriveBip39Phrase)(config.phrase, path);
+        });
     }
 }
 exports.Keys = Keys;

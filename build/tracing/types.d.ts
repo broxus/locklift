@@ -1,8 +1,8 @@
-import { Trace } from "./trace/trace";
-import { Optional } from "../types";
 import { DecodedEvent, DecodedOutput } from "everscale-inpage-provider";
 import { AbiEventName, AbiFunctionName } from "everscale-inpage-provider/dist/models";
 import { DecodedInput } from "everscale-inpage-provider/dist/contract";
+import { Trace } from "./trace/trace";
+import { Optional } from "../types";
 export declare enum TraceType {
     FUNCTION_CALL = "function_call",
     FUNCTION_RETURN = "function_return",

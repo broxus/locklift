@@ -7,10 +7,10 @@ exports.isComponentVersionExists = exports.getPathToVersion = void 0;
 const env_paths_1 = __importDefault(require("env-paths"));
 const fs_extra_1 = __importDefault(require("fs-extra"));
 const path_1 = __importDefault(require("path"));
-const constances_1 = require("./constances");
+const constants_1 = require("./constants");
 const utils_1 = require("./utils");
 const getDataDir = () => {
-    const dataDir = (0, env_paths_1.default)(constances_1.PACKAGE_NAME).data;
+    const dataDir = (0, env_paths_1.default)(constants_1.PACKAGE_NAME).data;
     fs_extra_1.default.ensureDirSync(dataDir);
     return dataDir;
 };

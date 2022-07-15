@@ -30,21 +30,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Factory = exports.Account = void 0;
+const path_1 = __importDefault(require("path"));
+const directory_tree_1 = __importDefault(require("directory-tree"));
+const utils = __importStar(require("../utils"));
 const account_1 = require("./account");
 const deployer_1 = require("./deployer");
-const utils = __importStar(require("../utils"));
-const path_1 = __importDefault(require("path"));
-const utils_1 = require("../cli/builder/utils");
-const directory_tree_1 = __importDefault(require("directory-tree"));
-const core_1 = require("@tonclient/core");
-const lib_node_1 = require("@tonclient/lib-node");
-const utils_2 = require("./utils");
+const utils_1 = require("./utils");
+const utils_2 = require("../cli/builder/utils");
 var account_2 = require("./account");
 Object.defineProperty(exports, "Account", { enumerable: true, get: function () { return account_2.Account; } });
 __exportStar(require("./giver"), exports);
 __exportStar(require("./deployer"), exports);
-core_1.TonClient.useBinaryLibrary(lib_node_1.libNode);
-const tonClient = new core_1.TonClient({});
 class Factory {
     ever;
     giver;
@@ -53,14 +49,15 @@ class Factory {
         this.ever = ever;
         this.giver = giver;
     }
-    setup = async () => {
-        //setupCache
-        await this.getContractsArtifacts().then((artifacts) => {
+    static async setup(ever, giver) {
+        const factory = new Factory(ever, giver);
+        await factory.getContractsArtifacts().then(artifacts => {
             artifacts.forEach(({ artifacts, contractName }) => {
-                this.factoryCache[contractName] = artifacts;
+                factory.factoryCache[contractName] = artifacts;
             });
         });
-    };
+        return factory;
+    }
     get deployer() {
         return new deployer_1.Deployer(this.ever, this.giver);
     }
@@ -68,52 +65,55 @@ class Factory {
         const { tvc, abi } = this.getContractArtifacts(contractName);
         return this.deployer.deployContract(abi, { ...deployParams, tvc: deployParams.tvc || tvc }, constructorParams, value);
     };
-    getAccountsFactory = (contractName) => {
+    getAccountsFactory(contractName) {
         const { tvc, abi } = this.getContractArtifacts(contractName);
-        (0, utils_2.validateAccountAbi)(abi);
+        (0, utils_1.validateAccountAbi)(abi);
         return new account_1.AccountFactory(this.deployer, this.ever, abi, tvc);
-    };
+    }
     getDeployedContract = (name, address) => {
         return new this.ever.Contract(this.getContractArtifacts(name).abi, address);
     };
     initializeContract = async (name, resolvedPath) => {
-        const base64 = utils.loadBase64FromFile(path_1.default.resolve(resolvedPath, name + ".base64"));
+        const tvc = utils.loadBase64FromFile(path_1.default.resolve(resolvedPath, name + ".base64"));
         const abi = utils.loadJSONFromFile(path_1.default.resolve(resolvedPath, name + ".abi.json"));
-        const decoded = await tonClient.boc.decode_tvc({ tvc: base64 });
+        const { code } = await this.ever.splitTvc(tvc);
+        if (code == null) {
+            throw new Error(`Contract TVC ${name} doesn't contain code`);
+        }
+        const codeHash = await this.ever.getBocHash(code);
         return {
-            tvc: base64,
-            code: (await this.ever.splitTvc(base64)).code,
+            tvc,
+            code,
             abi,
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            hashCode: decoded.code_hash,
+            codeHash,
         };
     };
-    getContractsArtifacts = async () => {
-        const resolvedBuildPath = path_1.default.resolve(process.cwd(), "build");
-        const contractsNestedTree = (0, directory_tree_1.default)(resolvedBuildPath, {
-            extensions: /\.json/,
-        });
-        const contractNames = (0, utils_1.flatDirTree)(contractsNestedTree)?.map((el) => el.name.slice(0, -9));
-        return await Promise.all(contractNames.map(async (contractName) => ({
-            artifacts: await this.initializeContract(contractName, resolvedBuildPath),
-            contractName,
-        })));
-    };
-    getContractArtifacts = (name) => {
+    getContractArtifacts(name) {
         return this.factoryCache[name];
-    };
-    getAllArtifacts = () => {
+    }
+    getAllArtifacts() {
         return Object.entries(this.factoryCache).map(([contractName, artifacts]) => ({
             contractName,
             artifacts,
         }));
-    };
+    }
     getContractByCodeHash = (codeHash, address) => {
-        const contractArtifacts = this.getAllArtifacts().find(({ artifacts }) => artifacts.hashCode === codeHash);
+        const contractArtifacts = this.getAllArtifacts().find(({ artifacts }) => artifacts.codeHash === codeHash);
         return (contractArtifacts && {
             contract: this.getDeployedContract(contractArtifacts.contractName, address),
             name: contractArtifacts.contractName,
         });
     };
+    async getContractsArtifacts() {
+        const resolvedBuildPath = path_1.default.resolve(process.cwd(), "build");
+        const contractsNestedTree = (0, directory_tree_1.default)(resolvedBuildPath, {
+            extensions: /\.json/,
+        });
+        const contractNames = (0, utils_2.flatDirTree)(contractsNestedTree)?.map(el => el.name.slice(0, -9));
+        return await Promise.all(contractNames.map(async (contractName) => ({
+            artifacts: await this.initializeContract(contractName, resolvedBuildPath),
+            contractName,
+        })));
+    }
 }
 exports.Factory = Factory;

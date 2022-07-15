@@ -1,14 +1,13 @@
 import { expect } from "chai";
-import { Contract, Dimensions } from "locklift";
+import { Contract, Signer } from "locklift";
 import { FactorySource } from "../build/factorySource";
-import { Signer } from "everscale-standalone-client";
 
 let sample: Contract<FactorySource["Sample"]>;
 let signer: Signer;
 
 describe("Test Sample contract", async function () {
   before(async () => {
-    signer = (await locklift.provider.keyStore.getSigner("0"))!;
+    signer = (await locklift.keystore.getSigner("0"))!;
   });
   describe("Contracts", async function () {
     it("Load contract factory", async function () {
@@ -32,7 +31,7 @@ describe("Test Sample contract", async function () {
         {
           _state: INIT_STATE,
         },
-        locklift.utils.convertCrystal(2, Dimensions.Nano),
+        locklift.utils.toNano(2),
       );
       sample = contract;
 

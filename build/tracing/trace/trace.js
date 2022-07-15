@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Trace = void 0;
-const constances_1 = require("../constances");
+const constants_1 = require("../constants");
 const types_1 = require("../types");
 const everscale_inpage_provider_1 = require("everscale-inpage-provider");
 const utils_1 = require("./utils");
@@ -39,7 +39,7 @@ class Trace {
     // allowed_codes - {compute: [100, 50, 12], action: [11, 12]}
     checkForErrors(allowedCodes = { compute: [], action: [], contracts: { any: { compute: [], action: [] } } }) {
         const tx = this.msg.dst_transaction;
-        if (this.msg.dst === constances_1.CONSOLE_ADDRESS) {
+        if (this.msg.dst === constants_1.CONSOLE_ADDRESS) {
             return;
         }
         let skipComputeCheck = false;
@@ -77,7 +77,7 @@ class Trace {
         if (contract === null) {
             contract = this.contract;
         }
-        if (this.msg.dst === constances_1.CONSOLE_ADDRESS) {
+        if (this.msg.dst === constants_1.CONSOLE_ADDRESS) {
             return;
         }
         if (this.type === types_1.TraceType.TRANSFER || this.type === types_1.TraceType.BOUNCE) {

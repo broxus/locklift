@@ -16,9 +16,9 @@ export declare class Tracing {
     removeAllowedCodesForAddress: (params: [address: string, allowedCodes?: import("./types").OptionalContracts | undefined]) => void;
     removeAllowedCodes: (params: Parameters<typeof this.tracingInternal.removeAllowedCodes>) => void;
 }
-export declare const createTracing: ({ ever, factory, features, endPoint, }: {
+export declare const createTracing: ({ ever, factory, features, endpoint, }: {
     ever: ProviderRpcClient;
     factory: Factory<any>;
     features: Transactions;
-    endPoint?: string | undefined;
+    endpoint?: string | undefined;
 }) => Tracing;

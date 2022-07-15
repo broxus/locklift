@@ -22,11 +22,11 @@ program
   .addOption(
     new Option("--config <config>", "Path to the config file")
       .default(() => loadConfig("locklift.config.ts"))
-      .argParser(async (config) => () => loadConfig(config)),
+      .argParser(async config => () => loadConfig(config)),
   )
   .requiredOption("-s, --script <script>", "Script to run")
   .allowUnknownOption()
-  .action(async (options) => {
+  .action(async options => {
     const config = await options.config();
 
     if (config.networks[options.network] === undefined) {
@@ -46,9 +46,7 @@ program
     }
 
     // Initialize Locklift
-    const locklift = new Locklift(config, options.network);
-
-    await locklift.setup();
+    const locklift = await Locklift.setup(config, options.network);
 
     //@ts-ignore
     global.locklift = locklift;

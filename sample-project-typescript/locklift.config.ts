@@ -1,11 +1,13 @@
-import { LockliftConfig } from "locklift/config";
+import { LockliftConfig } from "locklift";
 import { FactorySource } from "./build/factorySource";
 import { Giver, GiverWallet } from "./giverSettings";
-import { NETWORK_PRESETS } from "everscale-standalone-client/nodejs";
+
 declare global {
   const locklift: import("locklift").Locklift<FactorySource>;
 }
-const LOCAL_NETWORK_ENDPOINT = "http://localhost:5000/graphql";
+
+const LOCAL_NETWORK_ENDPOINT = "http://localhost/graphql";
+
 const config: LockliftConfig = {
   compiler: {
     // Specify path to your TON-Solidity-Compiler
@@ -33,10 +35,8 @@ const config: LockliftConfig = {
       // Specify connection settings for https://github.com/broxus/everscale-standalone-client/
       connection: {
         group: "localnet",
-        // @ts-ignore
         type: "graphql",
         data: {
-          // @ts-ignore
           endpoints: [LOCAL_NETWORK_ENDPOINT],
           latencyDetectionInterval: 1000,
           local: true,
@@ -61,7 +61,7 @@ const config: LockliftConfig = {
     },
     mainnet: {
       // Specify connection settings for https://github.com/broxus/everscale-standalone-client/
-      connection: NETWORK_PRESETS.mainnet,
+      connection: "mainnet",
       // This giver is default Wallet
       giver: {
         // Check if you need provide custom giver

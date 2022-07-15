@@ -17,7 +17,7 @@ export class Tracing {
   ): Promise<T> => {
     return this.features
       .waitFinalized(transactionProm)
-      .then((transaction) =>
+      .then(transaction =>
         this.tracingInternal
           .trace({ inMsgId: extractTransactionFromParams(transaction).inMessage.hash, ...config })
           .then(() => transaction),
@@ -41,13 +41,13 @@ export const createTracing = ({
   ever,
   factory,
   features,
-  endPoint,
+  endpoint,
 }: {
   ever: ProviderRpcClient;
   factory: Factory<any>;
   features: Transactions;
-  endPoint?: string;
+  endpoint?: string;
 }): Tracing => {
-  const internalTracing = new TracingInternal(ever, factory, endPoint || "", !!endPoint);
+  const internalTracing = new TracingInternal(ever, factory, endpoint || "", !!endpoint);
   return new Tracing(ever, internalTracing, features);
 };

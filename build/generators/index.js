@@ -31,7 +31,7 @@ const fs_1 = __importDefault(require("fs"));
 const fsPath = __importStar(require("path"));
 const typeGenerator = (pathToBuildFolder) => {
     const generatedCode = getAbiFiles(pathToBuildFolder)
-        .map((file) => getContractAbi(pathToBuildFolder, file))
+        .map(file => getContractAbi(pathToBuildFolder, file))
         .map(({ abi, name }) => ({
         contractName: name,
         code: generateContractCode({ abiSource: abi, contractName: name }),
@@ -64,7 +64,7 @@ const getContractAbi = (pathToBuildFolder, fileName) => {
     };
 };
 const getAbiFiles = (buildPath) => {
-    return fs_1.default.readdirSync(buildPath).filter((el) => el.endsWith(".abi.json"));
+    return fs_1.default.readdirSync(buildPath).filter(el => el.endsWith(".abi.json"));
 };
 const copyExternalFiles = (externalCotracts, destinationFolder) => {
     Object.entries(externalCotracts)
@@ -72,8 +72,8 @@ const copyExternalFiles = (externalCotracts, destinationFolder) => {
         const pathToFolder = fsPath.resolve(folderName);
         const files = fs_1.default.readdirSync(pathToFolder);
         return files
-            .filter((file) => contracts.some((contract) => contract === file.split(".")[0]))
-            .map((file) => ({ file, pathToFolder }));
+            .filter(file => contracts.some(contract => contract === file.split(".")[0]))
+            .map(file => ({ file, pathToFolder }));
     })
         .forEach(({ pathToFolder, file }) => fs_1.default.copyFileSync(fsPath.join(pathToFolder, file), fsPath.join(destinationFolder, file)));
 };

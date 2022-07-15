@@ -1,14 +1,13 @@
-import { DecodedMsg, DecoderOutput, MsgTree, TraceType } from "../types";
+import { DecodedMsg, MsgTree, TraceType } from "../types";
 import { ContractWithName } from "../../types";
 import { AbiEventName, AbiFunctionName } from "everscale-inpage-provider/dist/models";
-import { DecodedEvent, DecodedOutput } from "everscale-inpage-provider";
-import { DecodedInput } from "everscale-inpage-provider/dist/contract";
 
 enum TargetType {
   DST = "DST",
   SRC = "SRC",
   DEPLOY = "DEPLOY",
 }
+
 const getCodeAndAddress = (msg: MsgTree, targetType: TargetType): { codeHash: string | undefined; address: string } => {
   switch (targetType) {
     case TargetType.DST:
@@ -28,7 +27,7 @@ const getCodeAndAddress = (msg: MsgTree, targetType: TargetType): { codeHash: st
       };
   }
 };
-//
+
 export const decoder = async <Abi>({
   msgBody,
   msgType,
@@ -56,16 +55,16 @@ export const decoder = async <Abi>({
           .decodeInputMessage({
             internal: isInternal,
             body: msgBody,
-            methods: parsedAbi.functions.map((el) => el.name),
+            methods: parsedAbi.functions.map(el => el.name),
           })
-          .then((decoded) => ({ method: decoded?.method, params: decoded?.input })),
+          .then(decoded => ({ method: decoded?.method, params: decoded?.input })),
         finalType: initialType,
       };
     }
     case 2: {
       const outMsg = await contract.contract.decodeOutputMessage({
         body: msgBody,
-        methods: parsedAbi.functions.map((el) => el.name),
+        methods: parsedAbi.functions.map(el => el.name),
       });
       if (outMsg) {
         return {
@@ -77,14 +76,15 @@ export const decoder = async <Abi>({
         decoded: await contract.contract
           .decodeEvent({
             body: msgBody,
-            events: parsedAbi.events.map((el) => el.name),
+            events: parsedAbi.events.map(el => el.name),
           })
-          .then((decoded) => ({ params: decoded?.data, method: decoded?.event })),
+          .then(decoded => ({ params: decoded?.data, method: decoded?.event })),
         finalType: TraceType.EVENT,
       };
     }
   }
 };
+
 export const contractContractInformation = ({
   msg,
   type,

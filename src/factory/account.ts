@@ -1,13 +1,8 @@
-import { Dimensions } from "../constants";
-import { ConstructorParams, Optional, TransactionWithOutput } from "../types";
 import {
   GetExpectedAddressParams,
   ContractMethod,
-  // @ts-ignore
   AbiFunctionName,
-  // @ts-ignore
   AbiFunctionInputs,
-  // @ts-ignore
   DecodedAbiFunctionOutputs,
   Address,
   Contract,
@@ -15,7 +10,8 @@ import {
 } from "everscale-inpage-provider";
 
 import { Deployer } from "./deployer";
-import { convertCrystal, errorExtractor } from "../utils";
+import { ConstructorParams, Optional, TransactionWithOutput } from "../types";
+import { toNano, errorExtractor } from "../utils";
 
 export const accountAbiBase = {
   functions: [
@@ -36,32 +32,32 @@ export const accountAbiBase = {
 export class Account<Abi> {
   constructor(readonly accountContract: Contract<Abi>, readonly publicKey: string) {}
 
-  static getAccount = <Abi>(
+  public static getAccount<Abi>(
     accountAddress: Address,
     ever: ProviderRpcClient,
     publicKey: string,
     abi: Abi,
-  ): Account<Abi> => {
+  ): Account<Abi> {
     return new Account(new ever.Contract(abi, accountAddress), publicKey);
-  };
+  }
 
-  static deployNewAccount = async <Abi>(
+  public static async deployNewAccount<Abi>(
     deployer: Deployer,
     publicKey: string,
     value: string,
     abi: Abi,
     deployParams: GetExpectedAddressParams<Abi>,
     constructorParams: ConstructorParams<Abi>,
-  ): Promise<{ account: Account<Abi>; tx: TransactionWithOutput }> => {
+  ): Promise<{ account: Account<Abi>; tx: TransactionWithOutput }> {
     const { contract, tx } = await deployer.deployContract(abi, deployParams, constructorParams, value);
     return { account: new Account(contract, publicKey), tx };
-  };
+  }
 
   get address(): Address {
     return this.accountContract.address;
   }
 
-  runTarget = async <Abi>(
+  public async runTarget(
     config: {
       contract: Contract<Abi>;
       value?: string;
@@ -74,11 +70,11 @@ export class Account<Abi> {
       AbiFunctionInputs<Abi, AbiFunctionName<Abi>>,
       DecodedAbiFunctionOutputs<Abi, AbiFunctionName<Abi>>
     >,
-  ) => {
+  ) {
     return errorExtractor(
       (this.accountContract as unknown as Contract<typeof accountAbiBase>).methods
         .sendTransaction({
-          value: config.value || convertCrystal(2, Dimensions.Nano),
+          value: config.value || toNano(2),
           bounce: !!config.bounce,
           dest: config.contract.address,
           payload: await producer(config.contract).encodeInternal(),
@@ -86,7 +82,7 @@ export class Account<Abi> {
         })
         .sendExternal({ publicKey: this.publicKey }),
     );
-  };
+  }
 }
 
 export class AccountFactory<Abi> {

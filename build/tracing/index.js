@@ -15,7 +15,7 @@ class Tracing {
     trace = async (transactionProm, config) => {
         return this.features
             .waitFinalized(transactionProm)
-            .then((transaction) => this.tracingInternal
+            .then(transaction => this.tracingInternal
             .trace({ inMsgId: (0, utils_1.extractTransactionFromParams)(transaction).inMessage.hash, ...config })
             .then(() => transaction));
     };
@@ -28,8 +28,8 @@ class Tracing {
     removeAllowedCodes = (params) => this.tracingInternal.removeAllowedCodes(...params);
 }
 exports.Tracing = Tracing;
-const createTracing = ({ ever, factory, features, endPoint, }) => {
-    const internalTracing = new tracingInternal_1.TracingInternal(ever, factory, endPoint || "", !!endPoint);
+const createTracing = ({ ever, factory, features, endpoint, }) => {
+    const internalTracing = new tracingInternal_1.TracingInternal(ever, factory, endpoint || "", !!endpoint);
     return new Tracing(ever, internalTracing, features);
 };
 exports.createTracing = createTracing;

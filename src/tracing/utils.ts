@@ -3,59 +3,60 @@ import { MsgTree, RevertedBranch, TraceType } from "./types";
 
 export const fetchMsgData = async (msgId: string, endPoint: string): Promise<MsgTree> => {
   const msgQuery = `{
-          messages(
-            filter: {
-              id: {
-                eq: "${msgId}"
-              }
-            }
-          ) {
-            id
-            body
-            code_hash
-            src
-            msg_type
-            dst
-            dst_account {
-              id
-              code_hash
-            }
-            src_account{
-              id
-              code_hash
-            }
-            dst_transaction {
-              status
-              total_fees
-              aborted
-              out_msgs
-              storage {
-                storage_fees_collected
-              }
-              compute {
-                exit_code
-                compute_type
-                success
-                gas_fees
-              }
-              action {
-                result_code
-                success
-                total_action_fees
-              }
-            }
-            status
-            value
-            bounced
-            bounce
-          }
-        }`;
+    messages(
+      filter: {
+        id: {
+          eq: "${msgId}"
+        }
+      }
+    ) {
+      id
+      body
+      code_hash
+      src
+      msg_type
+      dst
+      dst_account {
+        id
+        code_hash
+      }
+      src_account{
+        id
+        code_hash
+      }
+      dst_transaction {
+        status
+        total_fees
+        aborted
+        out_msgs
+        storage {
+          storage_fees_collected
+        }
+        compute {
+          exit_code
+          compute_type
+          success
+          gas_fees
+        }
+        action {
+          result_code
+          success
+          total_action_fees
+        }
+      }
+      status
+      value
+      bounced
+      bounce
+    }
+  }`;
   const response = await axios
     .post<{ data: { messages: Array<MsgTree> } }>(endPoint, { query: msgQuery })
 
-    .then((res) => res.data.data);
+    .then(res => res.data.data);
   return response.messages[0];
 };
+
 export const convert = (number: number, decimals = 9, precision = 4) => {
   if (number === null) {
     return null;

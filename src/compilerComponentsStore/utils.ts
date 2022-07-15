@@ -1,5 +1,6 @@
-import { ComponentType } from "./constances";
 import axios from "axios";
+
+import { ComponentType } from "./constants";
 
 const platforms = {
   isWin32: process.platform === "win32",
@@ -7,7 +8,8 @@ const platforms = {
   isDarwin: process.platform === "darwin",
 };
 
-export const getGzFileName = (fileName: string) => fileName + ".gz";
+export const getGzFileName = (fileName: string) => `${fileName}.gz`;
+
 const getLinkerUrl = ({ version }: { version: string }) =>
   `https://binaries.tonlabs.io/${getGzFileName(getLinkerFileName({ version }))}`;
 const getCompilerUrl = ({ version }: { version: string }) =>
@@ -61,12 +63,12 @@ export const executableFileName: Record<ComponentType, (arg: { version: string }
 export const getSupportedVersions = ({ component }: { component: ComponentType }): Promise<Array<string>> => {
   switch (component) {
     case ComponentType.COMPILER:
-      return axios.get<{ solc: Array<string> }>("https://binaries.tonlabs.io/solc.json").then((res) => res.data.solc);
+      return axios.get<{ solc: Array<string> }>("https://binaries.tonlabs.io/solc.json").then(res => res.data.solc);
     case ComponentType.LINKER:
       return axios
         .get<{ tvm_linker: Array<string> }>("https://binaries.tonlabs.io/tvm_linker.json")
-        .then((res) => res.data.tvm_linker);
+        .then(res => res.data.tvm_linker);
     case ComponentType.LIB:
-      return axios.get<{ solc: Array<string> }>("https://binaries.tonlabs.io/solc.json").then((res) => res.data.solc);
+      return axios.get<{ solc: Array<string> }>("https://binaries.tonlabs.io/solc.json").then(res => res.data.solc);
   }
 };

@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.TracingInternal = void 0;
 const everscale_inpage_provider_1 = require("everscale-inpage-provider");
 const console_abi_1 = require("../console.abi");
-const constances_1 = require("./constances");
+const constants_1 = require("./constants");
 const utils_1 = require("./utils");
 const trace_1 = require("./trace/trace");
 const lodash_1 = __importDefault(require("lodash"));
@@ -26,7 +26,7 @@ class TracingInternal {
         this.factory = factory;
         this.endPoint = endPoint;
         this.enabled = enabled;
-        this.consoleContract = new ever.Contract(console_abi_1.consoleAbi, new everscale_inpage_provider_1.Address(constances_1.CONSOLE_ADDRESS));
+        this.consoleContract = new ever.Contract(console_abi_1.consoleAbi, new everscale_inpage_provider_1.Address(constants_1.CONSOLE_ADDRESS));
     }
     get allowedCodes() {
         return this._allowedCodes;
@@ -54,7 +54,7 @@ class TracingInternal {
             this._allowedCodes.contracts[address] = { compute: [], action: [] };
         }
         if (allowedCodes.compute) {
-            this._allowedCodes.contracts[address].compute.map((code) => {
+            this._allowedCodes.contracts[address].compute.map(code => {
                 const idx = this._allowedCodes.contracts[address].compute.indexOf(code);
                 if (idx > -1) {
                     this._allowedCodes.contracts[address].compute.splice(idx, 1);
@@ -62,7 +62,7 @@ class TracingInternal {
             });
         }
         if (allowedCodes.action) {
-            this._allowedCodes.contracts[address].action.map((code) => {
+            this._allowedCodes.contracts[address].action.map(code => {
                 const idx = this._allowedCodes.contracts[address].action.indexOf(code);
                 if (idx > -1) {
                     this._allowedCodes.contracts[address].action.splice(idx, 1);
@@ -72,7 +72,7 @@ class TracingInternal {
     }
     removeAllowedCodes(allowedCodes = { compute: [], action: [] }) {
         if (allowedCodes.compute) {
-            allowedCodes.compute.map((code) => {
+            allowedCodes.compute.map(code => {
                 const idx = this._allowedCodes.compute.indexOf(code);
                 if (idx > -1) {
                     this._allowedCodes.compute.splice(idx, 1);
@@ -80,7 +80,7 @@ class TracingInternal {
             });
         }
         if (allowedCodes.action) {
-            allowedCodes.action.map((code) => {
+            allowedCodes.action.map(code => {
                 const idx = this._allowedCodes.action.indexOf(code);
                 if (idx > -1) {
                     this._allowedCodes.action.splice(idx, 1);
@@ -114,7 +114,7 @@ class TracingInternal {
         if (onlyRoot) {
             return msg;
         }
-        if (msg.dst === constances_1.CONSOLE_ADDRESS) {
+        if (msg.dst === constants_1.CONSOLE_ADDRESS) {
             await this.printConsoleMsg(msg);
         }
         msg.outMessages = [];

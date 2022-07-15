@@ -25,11 +25,11 @@ program
   .addOption(
     new Option("--config <config>", "Path to the config file")
       .default(async () => loadConfig("locklift.config.ts"))
-      .argParser(async (config) => () => loadConfig(config)),
+      .argParser(async config => () => loadConfig(config)),
   )
   .option("--tests [tests...]", "Set of tests to run, separated by comma")
   .allowUnknownOption()
-  .action(async (options) => {
+  .action(async options => {
     const config = await options.config();
     if (config.networks[options.network] === undefined) {
       console.error(`Can't find configuration for ${options.network} network!`);
@@ -47,9 +47,8 @@ program
       if (!status) process.exit(1);
     }
     // Initialize Locklift and pass it into tests context
-    const locklift = new Locklift(config, options.network);
+    const locklift = await Locklift.setup(config, options.network);
 
-    await locklift.setup();
     //@ts-ignore
     global.locklift = locklift;
 
@@ -68,10 +67,10 @@ program
     } else {
       const testNestedTree = dirTree(path.resolve(process.cwd(), options.test), { extensions: /\.(js|ts)/ });
 
-      testFiles = utils.flatDirTree(testNestedTree)?.map((t) => t.path) || [];
+      testFiles = utils.flatDirTree(testNestedTree)?.map(t => t.path) || [];
     }
     testFiles.forEach((file: string) => mocha.addFile(file));
-    mocha.run((fail) => process.exit(fail ? 1 : 0));
+    mocha.run(fail => process.exit(fail ? 1 : 0));
   });
 
 export default program;

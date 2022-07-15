@@ -1,4 +1,4 @@
-import { CONSOLE_ADDRESS } from "../constances";
+import { CONSOLE_ADDRESS } from "../constants";
 import { AllowedCodes, DecodedMsg, MsgTree, TraceType } from "../types";
 import { Address } from "everscale-inpage-provider";
 

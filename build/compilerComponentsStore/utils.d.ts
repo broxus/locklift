@@ -1,4 +1,4 @@
-import { ComponentType } from "./constances";
+import { ComponentType } from "./constants";
 export declare const getGzFileName: (fileName: string) => string;
 export declare const replaceDots: (arg: string) => string;
 export declare const downloadLinks: Record<ComponentType, (arg: {

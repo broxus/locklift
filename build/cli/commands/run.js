@@ -63,8 +63,7 @@ program
             process.exit(1);
     }
     // Initialize Locklift
-    const locklift = new index_1.Locklift(config, options.network);
-    await locklift.setup();
+    const locklift = await index_1.Locklift.setup(config, options.network);
     //@ts-ignore
     global.locklift = locklift;
     global.__dirname = __dirname;

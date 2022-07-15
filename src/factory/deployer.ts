@@ -1,10 +1,10 @@
 import { Contract, GetExpectedAddressParams, ProviderRpcClient } from "everscale-inpage-provider";
-import { GiverI } from "./giver";
+import { IGiver } from "./giver";
 import { errorExtractor } from "../utils";
 import { ConstructorParams, TransactionWithOutput } from "../types";
 
 export class Deployer {
-  constructor(private readonly ever: ProviderRpcClient, private readonly giver: GiverI) {}
+  constructor(private readonly ever: ProviderRpcClient, private readonly giver: IGiver) {}
   deployContract = async <Abi>(
     abi: Abi,
     deployParams: GetExpectedAddressParams<Abi>,
