@@ -5,13 +5,13 @@ import path from "path";
 import { ComponentType, PACKAGE_NAME } from "./constants";
 import { replaceDots } from "./utils";
 
-const getDataDir = (): string => {
-  const dataDir = envPaths(PACKAGE_NAME).data;
+const getCacheDir = (): string => {
+  const dataDir = envPaths(PACKAGE_NAME).cache;
   fs.ensureDirSync(dataDir);
   return dataDir;
 };
 const getComponentsDir = ({ component }: { component: ComponentType }): string => {
-  const dir = path.resolve(getDataDir(), component);
+  const dir = path.resolve(getCacheDir(), component);
   fs.ensureDirSync(dir);
   return dir;
 };

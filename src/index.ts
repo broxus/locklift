@@ -33,50 +33,46 @@ export class Locklift<FactorySource = any> {
     config: LockliftConfig<ConfigState.INTERNAL>,
     network: keyof LockliftConfig["networks"] = "local",
   ): Promise<Locklift<T>> {
-    try {
-      const networkConfig = config.networks[network];
+    const networkConfig = config.networks[network];
 
-      const giverKeys = getGiverKeyPair(networkConfig.giver);
-      const keys = await Keys.generate(networkConfig.keys);
+    const giverKeys = getGiverKeyPair(networkConfig.giver);
+    const keys = await Keys.generate(networkConfig.keys);
 
-      const keystore = new SimpleKeystore(
-        [...keys].reduce(
-          (acc, keyPair, idx) => ({
-            ...acc,
-            [idx]: keyPair,
-          }),
-          {},
-        ),
-      );
-      keystore.addKeyPair("giver", giverKeys);
+    const keystore = new SimpleKeystore(
+      [...keys].reduce(
+        (acc, keyPair, idx) => ({
+          ...acc,
+          [idx]: keyPair,
+        }),
+        {},
+      ),
+    );
+    keystore.addKeyPair("giver", giverKeys);
 
-      const clock = new Clock();
-      const provider = new ProviderRpcClient({
-        fallback: () =>
-          EverscaleStandaloneClient.create({
-            connection: networkConfig.connection,
-            keystore,
-            clock,
-          }),
-      });
-      await provider.ensureInitialized();
+    const clock = new Clock();
+    const provider = new ProviderRpcClient({
+      fallback: () =>
+        EverscaleStandaloneClient.create({
+          connection: networkConfig.connection,
+          keystore,
+          clock,
+        }),
+    });
+    await provider.ensureInitialized();
 
-      const giver = networkConfig.giver.giverFactory(provider, giverKeys, networkConfig.giver.address);
+    const giver = networkConfig.giver.giverFactory(provider, giverKeys, networkConfig.giver.address);
 
-      const factory = await Factory.setup<T>(provider, giver);
+    const factory = await Factory.setup<T>(provider, giver);
 
-      const transactions = new Transactions(provider);
+    const transactions = new Transactions(provider);
 
-      const tracing = createTracing({
-        ever: provider,
-        features: transactions,
-        factory,
-        endpoint: networkConfig.tracing?.endpoint,
-      });
+    const tracing = createTracing({
+      ever: provider,
+      features: transactions,
+      factory,
+      endpoint: networkConfig.tracing?.endpoint,
+    });
 
-      return new Locklift<T>(factory, giver, provider, clock, keystore, transactions, tracing);
-    } catch (e) {
-      throw e;
-    }
+    return new Locklift<T>(factory, giver, provider, clock, keystore, transactions, tracing);
   }
 }

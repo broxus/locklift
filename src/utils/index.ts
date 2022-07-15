@@ -1,6 +1,6 @@
 import fs from "fs";
 import BigNumber from "bignumber.js";
-import { Address, ProviderRpcClient, Transaction } from "everscale-inpage-provider";
+import { ProviderRpcClient, Transaction } from "everscale-inpage-provider";
 import { getPublicKey, KeyPair } from "everscale-crypto";
 
 import { Dimension } from "../constants";

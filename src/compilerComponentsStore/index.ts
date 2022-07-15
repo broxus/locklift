@@ -27,7 +27,7 @@ export const getComponent = async ({
   await fs.ensureDir(tempFileBaseDir);
   const gzFilePath = path.join(tempFileBaseDir, getGzFileName(fileNames[component]({ version })));
 
-  await download(downloadLink, gzFilePath).catch(async e => {
+  await download(downloadLink, gzFilePath).catch(async () => {
     const supportedVersions = await getSupportedVersions({ component });
     console.error(`Can't download ${component} version ${version}, supported versions: ${supportedVersions.join(" ")}`);
     await fs.rmdir(tempFileBaseDir);
