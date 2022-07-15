@@ -89,7 +89,7 @@ const config: LockliftConfig = {
     version: "0.61.2",
 
     // Specify config for extarnal contracts as in exapmple
-    // This filed only for generating types
+    // This filed for generating types only
     // externalContracts: {
     //   "node_modules/broxus-ton-tokens-contracts/build": ['TokenRoot', 'TokenWallet']
     // }
