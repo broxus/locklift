@@ -5,8 +5,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
+    "lint": "npx eslint .",
+    "format": "prettier --write .",
     "dev-deploy-local": "npm run build && npm publish --registry http://localhost:4873/",
-    "dev-deploy": "npm run build && npm publish --registry http://95.216.205.173:4873/"
+    "dev-deploy": "npm run build && npm publish --registry http://95.216.205.173:4873/",
+    "prepare": "husky install"
   },
   "bin": {
     "locklift": "build/cli/index.js"
@@ -100,6 +103,7 @@
     "eslint": "^8.19.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.2.1",
-    "prettier": "^2.7.1"
+    "prettier": "^2.7.1",
+    "husky": "^8.0.0"
   }
 }

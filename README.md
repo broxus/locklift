@@ -11,7 +11,6 @@
     </p>
 </p>
 
-
 Locklift is a development environment aiming to help you with Everscale contracts development. With Locklift, you get:
 
 - Network management for working with any networks (main, test, local, ...)
@@ -164,6 +163,7 @@ This command uses the specified TON Solidity compiler and TVM linker to build al
 ```bash
 npx locklift build
 ```
+
 ```
 Found 1 sources
 Building contracts/Sample.sol
@@ -231,6 +231,7 @@ example with tracing output
 ```bash
 npx locklift test -n local
 ```
+
 ```
 ...
 
@@ -290,27 +291,28 @@ We can ignore errors on specific call:
 // Here 51 compute and 30 action errors will be ignored for all transacions in msg chain and 60 compute error
 // will be ignored only on specific address
 const transaction = await locklift.tracing.trace(
-  tokenRoot.methods.sendTokens({walletOwner: ''}).sendExternal({publicKey: signer.publicKey}),
+  tokenRoot.methods.sendTokens({ walletOwner: "" }).sendExternal({ publicKey: signer.publicKey }),
   {
     allowedCodes: {
-      compute: [40]
-    }
-  })
+      compute: [40],
+    },
+  },
+);
 ```
 
 Or set ignoring by default for all further calls:
 
 ```typescript
 // ignore compute phase erros for all transactions
-locklift.tracing.allowCodes({compute: [51, 60]})
+locklift.tracing.allowCodes({ compute: [51, 60] });
 // ignore more errors for specific address
-locklift.tracing.allowCodesForAddress(SOME_ADDRESS, {compute: [123], action: [111]})
+locklift.tracing.allowCodesForAddress(SOME_ADDRESS, { compute: [123], action: [111] });
 
 // remove code from default list of ignored errors, so that only 51 erros will be ignored
 // this affects only global rules, per-address rules are not modified
-locklift.tracing.removeAllowedCodes({compute: [60]})
+locklift.tracing.removeAllowedCodes({ compute: [60] });
 // remove code from deault list of ignored errors for specific address
-locklift.tracing.removeAllowedCodesForAddress(SOME_ADDRESS, {compute: [123]})
+locklift.tracing.removeAllowedCodesForAddress(SOME_ADDRESS, { compute: [123] });
 ```
 
 ## Run script
@@ -320,6 +322,7 @@ This command runs an arbitrary Node JS script with already configured `locklift`
 ```bash
 npx locklift run --network local --script scripts/1-deploy-sample.ts
 ```
+
 ```
 Sample deployed at: 0:a56a1882231c9d901a1576ec2187575b01d1e33dd71108525b205784a41ae6d0
 ```
@@ -367,8 +370,7 @@ Get full account state
 ##### Example
 
 ```typescript
-expect(await locklift.provider.getFullContractState({address: addr}).then((res) => res.state?.isDeployed)).to.be
-  .true;
+expect(await locklift.provider.getFullContractState({ address: addr }).then(res => res.state?.isDeployed)).to.be.true;
 ```
 
 ### Factory (`locklift.factory`)
@@ -421,13 +423,13 @@ const MyContract = locklift.factory.getDeployedContract(
   new Address("MyAddress"),
 );
 // Send External
-await MyContract.methods.changeCounterState({newState: 10}).sendExternal({publicKey: signer.publicKey});
+await MyContract.methods.changeCounterState({ newState: 10 }).sendExternal({ publicKey: signer.publicKey });
 // Run getter or view method
 const counterSatate = await MyContract.methods.getCounterState({}).call();
 // Await event that is still not emitted
-const futureEvent = await MyContract.waitForEvent({filter: (event) => event.event === "StateChanged"});
+const futureEvent = await MyContract.waitForEvent({ filter: event => event.event === "StateChanged" });
 // Get past events
-const pastEvents = await MyContract.getPastEvents({filter: (event) => event.event === "Deposit"});
+const pastEvents = await MyContract.getPastEvents({ filter: event => event.event === "Deposit" });
 ```
 
 ### AccountFactory (`locklift.factory.getAccountsFactory`)
@@ -441,11 +443,11 @@ accountAbiBase = {
     {
       name: "sendTransaction",
       inputs: [
-        {name: "dest", type: "address"},
-        {name: "value", type: "uint128"},
-        {name: "bounce", type: "bool"},
-        {name: "flags", type: "uint8"},
-        {name: "payload", type: "cell"},
+        { name: "dest", type: "address" },
+        { name: "value", type: "uint128" },
+        { name: "bounce", type: "bool" },
+        { name: "flags", type: "uint8" },
+        { name: "payload", type: "cell" },
       ],
       outputs: [],
     },
@@ -504,7 +506,7 @@ await userAccount1.runTarget(
     contract: tokenWallet,
     value: locklift.utils.toNano(5),
   },
-  (tokenWallet) =>
+  tokenWallet =>
     tokenWallet.methods.transfer({
       amount: DEPOSIT_AMOUNT,
       payload: "",
