@@ -7,10 +7,11 @@ import {
   Address,
   Contract,
   ProviderRpcClient,
+  MergeInputObjectsArray,
 } from "everscale-inpage-provider";
 
 import { Deployer } from "./deployer";
-import { ConstructorParams, Optional, TransactionWithOutput } from "../types";
+import { ConstructorParams, TransactionWithOutput } from "../types";
 import { toNano, errorExtractor } from "../utils";
 
 export const accountAbiBase = {
@@ -41,7 +42,7 @@ export class Account<Abi> {
     return new Account(new ever.Contract(abi, accountAddress), publicKey);
   }
 
-  public static async deployNewAccount<Abi>(
+  private static async deployNewAccount<Abi>(
     deployer: Deployer,
     publicKey: string,
     value: string,
@@ -85,6 +86,17 @@ export class Account<Abi> {
   }
 }
 
+export type DeployNewAccountParams<Abi> = Abi extends { data: infer D }
+  ? {
+      tvc?: string;
+      workchain?: number;
+      publicKey: string;
+      initParams: MergeInputObjectsArray<D>;
+      constructorParams: ConstructorParams<Abi>;
+      value: string;
+    }
+  : never;
+
 export class AccountFactory<Abi> {
   constructor(
     private readonly deployer: Deployer,
@@ -95,18 +107,22 @@ export class AccountFactory<Abi> {
 
   getAccount = (accountAddress: Address, publicKey: string): Account<Abi> =>
     Account.getAccount(accountAddress, this.ever, publicKey, this.abi);
-  deployNewAccount = async (
-    publicKey: string,
-    value: string,
-    deployParams: Optional<GetExpectedAddressParams<Abi>, "tvc">,
-    constructorParams: ConstructorParams<Abi>,
-  ): Promise<{ account: Account<Abi>; tx: TransactionWithOutput }> =>
-    Account.deployNewAccount(
+
+  async deployNewAccount(
+    args: DeployNewAccountParams<Abi>,
+  ): Promise<{ account: Account<Abi>; tx: TransactionWithOutput }> {
+    return Account["deployNewAccount"](
       this.deployer,
-      publicKey,
-      value,
+      args.publicKey,
+      args.value,
       this.abi,
-      { ...deployParams, tvc: deployParams.tvc || this.tvc } as GetExpectedAddressParams<Abi>,
-      constructorParams,
+      {
+        tvc: args.tvc || this.tvc,
+        publicKey: args.publicKey,
+        initParams: args.initParams,
+        workchain: args.workchain,
+      } as GetExpectedAddressParams<Abi>,
+      args.constructorParams,
     );
+  }
 }

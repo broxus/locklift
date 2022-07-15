@@ -388,17 +388,18 @@ Deploy specified contract and returns contract instance and transaction.
 
 ```typescript
 // Deploy
-const {contract: DeployedMyContract, tx} = locklift.factory.deployContract(
-  "MyContractName", // name of your contract
-  {
-    // static parameters of contract
-    initParams: {},
-    publicKey: signer.publicKey,
-  },
-  {...constructoParams},
+const {contract: DeployedMyContract, tx} = locklift.factory.deployContract({
+  // name of your contract
+  contract: "MyContractName",
+  // public key in init data
+  publicKey: signer.publicKey,
+  // static parameters of contract
+  initParams: {...},
+  // runtime deployment arguments
+  constructoParams: {...},
   // this value will be transfered from giver to deployable contract
-  locklift.utils.toNano(2),
-);
+  value: locklift.utils.toNano(2),
+});
 // Ot you can get instance of already deployed contract
 const GettedMyContract = await locklift.factory.getDeployedContract(
   "Wallet", // name of your contract
@@ -462,17 +463,14 @@ Now you can use it for deploying contract or getting deployed ones
 #### Deploy
 
 ```typescript
-const {contract: MyAccount, tx} = accountsFactory.deployNewAccount(
-  signer.publicKey,
-  locklift.utils.toNano(100000).toString(),
-  {
-    initParams: {
-      _randomNonce: locklift.utils.getRandomNonce(),
-    },
-    publicKey: signer.publicKey,
+const {contract: MyAccount, tx} = accountsFactory.deployNewAccount({
+  publicKey: signer.publicKey,
+  initParams: {
+    _randomNonce: locklift.utils.getRandomNonce(),
   },
-  {...constructoParams},
-);
+  constructorParams: {...},
+  value: locklift.utils.toNano(100000)
+});
 ```
 
 #### Get account by address

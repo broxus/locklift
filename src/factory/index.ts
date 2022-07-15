@@ -25,6 +25,12 @@ type CacheType<T extends FactoryType, key extends keyof T> = Record<key, Contrac
 
 export type FactoryType = Record<string, any>;
 
+export type DeployContractParams<T extends FactoryType, ContractName extends keyof T> = {
+  contract: ContractName;
+  constructorParams: ConstructorParams<T[ContractName]>;
+  value: string;
+} & Optional<GetExpectedAddressParams<T[ContractName]>, "tvc">;
+
 export class Factory<T extends FactoryType> {
   private readonly factoryCache: CacheType<T, keyof T> = {} as CacheType<T, keyof T>;
 
@@ -44,20 +50,22 @@ export class Factory<T extends FactoryType> {
     return new Deployer(this.ever, this.giver);
   }
 
-  public deployContract = async <ContractName extends keyof T>(
-    contractName: ContractName,
-    deployParams: Optional<GetExpectedAddressParams<T[ContractName]>, "tvc">,
-    constructorParams: ConstructorParams<T[ContractName]>,
-    value: string,
-  ): Promise<{ contract: Contract<T[ContractName]> } & DeployTransaction> => {
-    const { tvc, abi } = this.getContractArtifacts(contractName as ContractName);
+  public async deployContract<ContractName extends keyof T>(
+    args: DeployContractParams<T, ContractName>,
+  ): Promise<{ contract: Contract<T[ContractName]> } & DeployTransaction> {
+    const { tvc, abi } = this.getContractArtifacts(args.contract);
     return this.deployer.deployContract(
       abi,
-      { ...deployParams, tvc: deployParams.tvc || tvc } as GetExpectedAddressParams<T[ContractName]>,
-      constructorParams,
-      value,
+      {
+        tvc: args.tvc || tvc,
+        workchain: args.workchain,
+        publicKey: args.publicKey,
+        initParams: args.initParams,
+      } as GetExpectedAddressParams<T[ContractName]>,
+      args.constructorParams,
+      args.value,
     );
-  };
+  }
 
   public getAccountsFactory<ContractName extends keyof T>(contractName: ContractName) {
     const { tvc, abi } = this.getContractArtifacts(contractName as ContractName);
