@@ -20,16 +20,24 @@ const getComponent = async ({ version, component, }) => {
     const downloadLink = utils_1.downloadLinks[component]({ version });
     await fs_extra_1.default.ensureDir(tempFileBaseDir);
     const gzFilePath = path_1.default.join(tempFileBaseDir, (0, utils_1.getGzFileName)(utils_1.fileNames[component]({ version })));
-    await download(downloadLink, gzFilePath).catch(async () => {
+    await download(downloadLink, gzFilePath).catch(async (e) => {
         const supportedVersions = await (0, utils_1.getSupportedVersions)({ component });
-        throw new Error(`Can't download ${component} version ${version}, supported versions: ${supportedVersions.map(el => ` ${el}`)}`);
+        console.error(`Can't download ${component} version ${version}, supported versions: ${supportedVersions.join(" ")}`);
+        await fs_extra_1.default.rmdir(tempFileBaseDir);
+        process.exit(1);
     });
-    const unzippedBuffer = await (0, node_gzip_1.ungzip)(fs_extra_1.default.readFileSync(gzFilePath));
-    fs_extra_1.default.rmSync(gzFilePath);
-    fs_extra_1.default.writeFileSync(binaryFilePath, unzippedBuffer);
-    fs_extra_1.default.chmodSync(binaryFilePath, "755");
-    console.log(`${component} version ${version} successfully downloaded`);
-    return binaryFilePath;
+    try {
+        const unzippedBuffer = await (0, node_gzip_1.ungzip)(fs_extra_1.default.readFileSync(gzFilePath));
+        fs_extra_1.default.rmSync(gzFilePath);
+        fs_extra_1.default.writeFileSync(binaryFilePath, unzippedBuffer);
+        fs_extra_1.default.chmodSync(binaryFilePath, "755");
+        console.log(`${component} version ${version} successfully downloaded`);
+        return binaryFilePath;
+    }
+    catch (e) {
+        await fs_extra_1.default.rmdir(tempFileBaseDir);
+        throw e;
+    }
 };
 exports.getComponent = getComponent;
 async function download(fileUrl, outputLocationPath) {
@@ -55,8 +63,9 @@ async function download(fileUrl, outputLocationPath) {
             });
         });
     })
-        .catch(e => {
-        console.error("AAAAAA", e);
+        .catch(async (e) => {
+        await fs_extra_1.default.unlink(outputLocationPath);
+        throw e;
     });
 }
 exports.download = download;

@@ -27,20 +27,25 @@ export const getComponent = async ({
   await fs.ensureDir(tempFileBaseDir);
   const gzFilePath = path.join(tempFileBaseDir, getGzFileName(fileNames[component]({ version })));
 
-  await download(downloadLink, gzFilePath).catch(async () => {
+  await download(downloadLink, gzFilePath).catch(async e => {
     const supportedVersions = await getSupportedVersions({ component });
-    throw new Error(
-      `Can't download ${component} version ${version}, supported versions: ${supportedVersions.map(el => ` ${el}`)}`,
-    );
+    console.error(`Can't download ${component} version ${version}, supported versions: ${supportedVersions.join(" ")}`);
+    await fs.rmdir(tempFileBaseDir);
+    process.exit(1);
   });
 
-  const unzippedBuffer = await ungzip(fs.readFileSync(gzFilePath));
-  fs.rmSync(gzFilePath);
-  fs.writeFileSync(binaryFilePath, unzippedBuffer);
-  fs.chmodSync(binaryFilePath, "755");
-  console.log(`${component} version ${version} successfully downloaded`);
+  try {
+    const unzippedBuffer = await ungzip(fs.readFileSync(gzFilePath));
+    fs.rmSync(gzFilePath);
+    fs.writeFileSync(binaryFilePath, unzippedBuffer);
+    fs.chmodSync(binaryFilePath, "755");
+    console.log(`${component} version ${version} successfully downloaded`);
 
-  return binaryFilePath;
+    return binaryFilePath;
+  } catch (e) {
+    await fs.rmdir(tempFileBaseDir);
+    throw e;
+  }
 };
 
 export async function download(fileUrl: string, outputLocationPath: string) {
@@ -50,21 +55,26 @@ export async function download(fileUrl: string, outputLocationPath: string) {
     method: "get",
     url: fileUrl,
     responseType: "stream",
-  }).then(response => {
-    return new Promise((resolve, reject) => {
-      response.data.pipe(writer);
+  })
+    .then(response => {
+      return new Promise((resolve, reject) => {
+        response.data.pipe(writer);
 
-      let error: Error | null;
-      writer.on("error", err => {
-        error = err;
-        writer.close();
-        reject(err);
+        let error: Error | null;
+        writer.on("error", err => {
+          error = err;
+          writer.close();
+          reject(err);
+        });
+        writer.on("close", () => {
+          if (!error) {
+            resolve(true);
+          }
+        });
       });
-      writer.on("close", () => {
-        if (!error) {
-          resolve(true);
-        }
-      });
+    })
+    .catch(async e => {
+      await fs.unlink(outputLocationPath);
+      throw e;
     });
-  });
 }
