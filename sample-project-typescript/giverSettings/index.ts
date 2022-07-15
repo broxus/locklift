@@ -76,7 +76,7 @@ export class GiverWallet implements Giver {
         value: value,
         dest: sendTo,
         bounce: false,
-        flags: 1,
+        flags: 3,
         payload: "",
       })
       .sendExternal({ publicKey: this.keyPair.publicKey });

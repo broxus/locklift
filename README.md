@@ -116,7 +116,7 @@ const config: LockliftConfig = {
       // This giver is default local-node giverV2
       giver: {
         // Check if you need provide custom giver
-        giverFactory: (ever, keyPair, address) => new Giver(ever, keyPair, address),
+        giverFactory: (ever, keyPair, address) => new SimpleGiver(ever, keyPair, address),
         address: "0:ece57bcc6c530283becbbd8a3b24d3c5987cdddc3c8b7b33be6e4a6312490415",
         key: "172af540e43a524763dd53b26a066d472a97c4de37d5498170564510608250c3",
       },
@@ -139,7 +139,7 @@ const config: LockliftConfig = {
         address: "0:ece57bcc6c530283becbbd8a3b24d3c5987cdddc3c8b7b33be6e4a6312490415",
         // you can use bip39 phrase instead of key
         phrase: "action inject penalty envelope rabbit element slim tornado dinner pizza off blood",
-        account_id: 0,
+        accountId: 0,
       },
       keys: {
         // Use everdev to generate your phrase
@@ -160,8 +160,10 @@ const config: LockliftConfig = {
 
 This command uses the specified TON Solidity compiler and TVM linker to build all project contracts.
 
+```bash
+npx locklift build
 ```
-$ npx locklift build
+```
 Found 1 sources
 Building contracts/Sample.sol
 Compiled contracts/Sample.sol
