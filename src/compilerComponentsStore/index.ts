@@ -6,6 +6,7 @@ import { ungzip } from "node-gzip";
 import { getPathToVersion, isComponentVersionExists } from "./dirUtils";
 import { downloadLinks, executableFileName, fileNames, getGzFileName, getSupportedVersions } from "./utils";
 import { ComponentType } from "./constants";
+import { logger } from "../logger";
 
 export const getComponent = async ({
   version,
@@ -21,7 +22,7 @@ export const getComponent = async ({
     return binaryFilePath;
   }
 
-  console.log(`Start downloading ${component} version ${version}`);
+  logger.printInfo(`Start downloading ${component} version ${version}`);
   const downloadLink = downloadLinks[component]({ version });
 
   await fs.ensureDir(tempFileBaseDir);
@@ -39,7 +40,7 @@ export const getComponent = async ({
     fs.rmSync(gzFilePath);
     fs.writeFileSync(binaryFilePath, unzippedBuffer);
     fs.chmodSync(binaryFilePath, "755");
-    console.log(`${component} version ${version} successfully downloaded`);
+    logger.printInfo(`${component} version ${version} successfully downloaded`);
 
     return binaryFilePath;
   } catch (e) {

@@ -6,6 +6,7 @@ import { Trace } from "./trace/trace";
 import { AllowedCodes, MsgTree, OptionalContracts, RevertedBranch, TraceParams } from "./types";
 import { Factory } from "../factory";
 import _ from "lodash";
+import { logger } from "../logger";
 
 export class TracingInternal {
   private readonly consoleContract: Contract<ConsoleAbi>;
@@ -100,6 +101,7 @@ export class TracingInternal {
       }
       return msgTree;
     }
+    logger.printWarn("You need to provide tracing endPoint to enable trace");
   }
 
   private async printConsoleMsg(msg: MsgTree) {
@@ -108,7 +110,7 @@ export class TracingInternal {
       body: msg.body,
       internal: true,
     });
-    console.log(decoded?.input);
+    logger.printInfo(decoded?.input);
   }
 
   private async buildMsgTree(inMsgId: string, endpoint: string, onlyRoot = false) {

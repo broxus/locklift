@@ -11,6 +11,7 @@ const tablemark = require("tablemark");
 import { ParsedDoc } from "../types";
 import { promisify } from "util";
 import { catchError, concat, defer, filter, from, map, mergeMap, tap, throwError, toArray } from "rxjs";
+import { logger } from "../../logger";
 export type BuilderConfig = {
   includesPath?: string;
   compilerPath: string;
@@ -33,11 +34,11 @@ export class Builder {
     const contractsTree = this.getContractsTree()!;
 
     try {
-      this.log(`Found ${contractsTree.length} sources`);
+      logger.printInfo(`Found ${contractsTree.length} sources`);
       await from(contractsTree)
         .pipe(
-          map((el) => ({ ...el, path: resolve(el.path) })),
-          map((el) => ({
+          map(el => ({ ...el, path: resolve(el.path) })),
+          map(el => ({
             ...el,
             contractFileName: extractContractName(el.path),
           })),
@@ -51,13 +52,13 @@ export class Builder {
             return defer(async () =>
               promisify(exec)(`cd ${this.options.build} && \
           ${this.config.compilerPath} ${!this.options.disableIncludePath ? includePath : ""} ${path}`),
-            ).pipe(map((output) => ({ output, contractFileName: parse(contractFileName).name, path })));
+            ).pipe(map(output => ({ output, contractFileName: parse(contractFileName).name, path })));
           }),
           //Warnings
-          tap((output) => console.log(output.output.stderr.toString())),
+          tap(output => logger.printBuilderLog(output.output.stderr.toString())),
           //Errors
-          catchError((e) => {
-            console.log(e?.stderr?.toString() || e);
+          catchError(e => {
+            logger.printError(e?.stderr?.toString() || e);
             return throwError(undefined);
           }),
           filter(({ output }) => {
@@ -71,20 +72,20 @@ export class Builder {
             return defer(async () =>
               promisify(exec)(`${this.config.linkerPath} compile "${resolvedPathCode}" -a "${resolvedPathAbi}" ${lib}`),
             ).pipe(
-              map((tvmLinkerLog) => {
+              map(tvmLinkerLog => {
                 return tvmLinkerLog.stdout.toString().match(new RegExp("Saved contract to file (.*)"));
               }),
-              catchError((e) => {
-                console.log(e?.stderr?.toString());
+              catchError(e => {
+                logger.printError(e?.stderr?.toString());
                 return throwError(undefined);
               }),
-              map((matchResult) => {
+              map(matchResult => {
                 if (!matchResult) {
                   throw new Error("Linking error, noting linking");
                 }
                 return matchResult[1];
               }),
-              mergeMap((tvcFile) => {
+              mergeMap(tvcFile => {
                 return concat(
                   defer(() =>
                     promisify(fs.writeFile)(
@@ -94,8 +95,8 @@ export class Builder {
                   ),
                   defer(() => promisify(fs.rename)(tvcFile, resolve(this.options.build, `${contractFileName}.tvc`))),
                 ).pipe(
-                  catchError((e) => {
-                    console.log(e?.stderr?.toString());
+                  catchError(e => {
+                    logger.printError(e?.stderr?.toString());
                     return throwError(undefined);
                   }),
                 );
@@ -109,12 +110,12 @@ export class Builder {
             }
           }),
           tap(() => typeGenerator(this.options.build)),
-          tap(() => this.log("factorySource generated")),
+          tap(() => logger.printInfo("factorySource generated")),
         )
         .toPromise();
-      console.log("Built");
+      logger.printInfo("Built");
     } catch (err) {
-      console.log("BUILD ERROR", err);
+      logger.printError(err);
       return false;
     }
     return true;
@@ -125,17 +126,17 @@ export class Builder {
     const contractsTree = this.getContractsTree()!;
 
     try {
-      console.log(`Found ${contractsTree.length} sources`);
+      logger.printInfo(`Found ${contractsTree.length} sources`);
 
       let docs: ParsedDoc[] = [];
       contractsTree.map(({ path }) => {
-        this.log(`Building ${path}`);
+        logger.printInfo(`Building ${path}`);
 
         const output = execSyncWrapper(
           `cd ${this.options.build} && ${this.config.compilerPath} ./../${path} --${this.options.mode}`,
         );
 
-        this.log(`Compiled ${path}`);
+        logger.printInfo(`Compiled ${path}`);
 
         docs = [...docs, ...this.parseDocs(output.toString())];
       });
@@ -166,9 +167,9 @@ export class Builder {
 
       fs.writeFileSync(resolve(process.cwd(), this.options.docs, "index.md"), render);
 
-      this.log("Docs generated successfully!");
+      logger.printInfo("Docs generated successfully!");
     } catch (e) {
-      console.log(e);
+      logger.printError(e);
       return false;
     }
 
@@ -178,13 +179,13 @@ export class Builder {
   private parseDocs(output: string): ParsedDoc[] {
     const contracts = [...output.matchAll(this.nameRegex)]
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      .map((m) => m.groups!.contract)
+      .map(m => m.groups!.contract)
       // For the target contracts compiler returns relative path
       // and for dependency contracts paths are absolute
       // Make them all absolute
-      .map((c) => resolve(process.cwd(), this.options.build, c));
+      .map(c => resolve(process.cwd(), this.options.build, c));
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const docs = [...output.matchAll(this.docRegex)].map((m) => JSON.parse(m.groups!.doc));
+    const docs = [...output.matchAll(this.docRegex)].map(m => JSON.parse(m.groups!.doc));
 
     return _.zip(contracts, docs).reduce((acc: ParsedDoc[], [contract, doc]: string[]) => {
       const [path, name] = contract.split(":");
@@ -214,9 +215,5 @@ export class Builder {
     });
 
     return flatDirTree(contractsNestedTree);
-  }
-
-  private log(text: string): void {
-    console.log(text);
   }
 }
