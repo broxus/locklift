@@ -1,4 +1,4 @@
-pragma solidity >= 0.6.0;
+pragma ever-solidity >= 0.62.0;
 pragma AbiHeader expire;
 pragma AbiHeader pubkey;
 

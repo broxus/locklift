@@ -65,7 +65,6 @@ export const convert = (number: number, decimals = 9, precision = 4) => {
 };
 
 export const throwErrorInConsole = <Abi>(revertedBranch: Array<RevertedBranch<Abi>>) => {
-  debugger;
   for (const { totalActions, actionIdx, traceLog } of revertedBranch) {
     const bounce = traceLog.msg.bounce;
     let name = "undefinedContract";

@@ -6,7 +6,7 @@
             <img alt="GitHub" src="https://img.shields.io/badge/license-Apache--2.0-orange" />
         </a>
         <a href="https://www.npmjs.com/package/locklift">
-            <img alt="npm" src="https://img.shields.io/badge/npm-v2.0.0-red">
+            <img alt="npm" src="https://img.shields.io/npm/v/locklift">
         </a>
     </p>
 </p>
@@ -86,7 +86,7 @@ const config: LockliftConfig = {
     // path: "/mnt/o/projects/broxus/TON-Solidity-Compiler/build/solc/solc",
 
     // Or specify version of compiler
-    version: "0.61.2",
+    version: "0.62.0",
 
     // Specify config for extarnal contracts as in exapmple
     // externalContracts: {
@@ -100,7 +100,7 @@ const config: LockliftConfig = {
     // path: "/mnt/o/projects/broxus/TVM-linker/target/release/tvm_linker",
 
     // Or specify version of linker
-    version: "0.15.43",
+    version: "0.15.48",
   },
   networks: {
     local: {
@@ -132,7 +132,7 @@ const config: LockliftConfig = {
     },
     mainnet: {
       // Specify connection settings for https://github.com/broxus/everscale-standalone-client/
-      connection: NETWORK_PRESETS.mainnet,
+      connection: "mainnet",
       // Here, default SafeMultisig wallet is used as a giver
       giver: {
         giverFactory: (ever, keyPair, address) => new GiverWallet(ever, keyPair, address),
