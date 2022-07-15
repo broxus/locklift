@@ -18,7 +18,6 @@ export type { Giver } from "./factory";
 
 export class Locklift<FactorySource = any> {
   public readonly utils = utils;
-
   private constructor(
     public readonly factory: Factory<FactorySource>,
     public readonly giver: Giver,

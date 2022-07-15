@@ -16,9 +16,9 @@ program
   .addOption(
     new Option("--config <config>", "Path to the config file")
       .default(async () => loadConfig("locklift.config.ts"))
-      .argParser(async (config) => () => loadConfig(config)),
+      .argParser(async config => () => loadConfig(config)),
   )
-  .action(async (options) => {
+  .action(async options => {
     const config = await options.config();
 
     fs.ensureDirSync(options.build);
