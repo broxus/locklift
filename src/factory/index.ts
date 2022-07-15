@@ -50,9 +50,9 @@ export class Factory<T extends FactoryType> {
     return new Deployer(this.ever, this.giver);
   }
 
-  public async deployContract<ContractName extends keyof T>(
+  public deployContract = async <ContractName extends keyof T>(
     args: DeployContractParams<T, ContractName>,
-  ): Promise<{ contract: Contract<T[ContractName]> } & DeployTransaction> {
+  ): Promise<{ contract: Contract<T[ContractName]> } & DeployTransaction> => {
     const { tvc, abi } = this.getContractArtifacts(args.contract);
     return this.deployer.deployContract(
       abi,
@@ -65,13 +65,13 @@ export class Factory<T extends FactoryType> {
       args.constructorParams,
       args.value,
     );
-  }
+  };
 
-  public getAccountsFactory<ContractName extends keyof T>(contractName: ContractName) {
+  public getAccountsFactory = <ContractName extends keyof T>(contractName: ContractName) => {
     const { tvc, abi } = this.getContractArtifacts(contractName as ContractName);
     validateAccountAbi(abi);
     return new AccountFactory(this.deployer, this.ever, abi, tvc);
-  }
+  };
 
   public getDeployedContract = <ContractName extends keyof T>(
     name: ContractName,
@@ -101,16 +101,16 @@ export class Factory<T extends FactoryType> {
     };
   };
 
-  public getContractArtifacts<key extends keyof T>(name: key): ContractData<T[key]> {
+  public getContractArtifacts = <key extends keyof T>(name: key): ContractData<T[key]> => {
     return this.factoryCache[name] as ContractData<T[key]>;
-  }
+  };
 
-  public getAllArtifacts(): Array<{ contractName: keyof T; artifacts: ContractData<T[keyof T]> }> {
+  public getAllArtifacts = (): Array<{ contractName: keyof T; artifacts: ContractData<T[keyof T]> }> => {
     return Object.entries(this.factoryCache).map(([contractName, artifacts]) => ({
       contractName,
       artifacts,
     })) as unknown as Array<{ contractName: keyof T; artifacts: ContractData<T[keyof T]> }>;
-  }
+  };
 
   public getContractByCodeHash = (codeHash: string, address: Address): ContractWithName | undefined => {
     const contractArtifacts = this.getAllArtifacts().find(({ artifacts }) => artifacts.codeHash === codeHash);

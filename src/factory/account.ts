@@ -58,7 +58,7 @@ export class Account<Abi> {
     return this.accountContract.address;
   }
 
-  public async runTarget(
+  public runTarget = async (
     config: {
       contract: Contract<Abi>;
       value?: string;
@@ -71,7 +71,7 @@ export class Account<Abi> {
       AbiFunctionInputs<Abi, AbiFunctionName<Abi>>,
       DecodedAbiFunctionOutputs<Abi, AbiFunctionName<Abi>>
     >,
-  ) {
+  ) => {
     return errorExtractor(
       (this.accountContract as unknown as Contract<typeof accountAbiBase>).methods
         .sendTransaction({
@@ -83,7 +83,7 @@ export class Account<Abi> {
         })
         .sendExternal({ publicKey: this.publicKey }),
     );
-  }
+  };
 }
 
 export type DeployNewAccountParams<Abi> = Abi extends { data: infer D }
@@ -108,9 +108,9 @@ export class AccountFactory<Abi> {
   getAccount = (accountAddress: Address, publicKey: string): Account<Abi> =>
     Account.getAccount(accountAddress, this.ever, publicKey, this.abi);
 
-  async deployNewAccount(
+  public deployNewAccount = async (
     args: DeployNewAccountParams<Abi>,
-  ): Promise<{ account: Account<Abi>; tx: TransactionWithOutput }> {
+  ): Promise<{ account: Account<Abi>; tx: TransactionWithOutput }> => {
     return Account["deployNewAccount"](
       this.deployer,
       args.publicKey,
@@ -124,5 +124,5 @@ export class AccountFactory<Abi> {
       } as GetExpectedAddressParams<Abi>,
       args.constructorParams,
     );
-  }
+  };
 }
