@@ -20,22 +20,20 @@ describe("Test Sample contract", async function () {
 
     it("Deploy contract", async function () {
       const INIT_STATE = 0;
-      const { contract } = await locklift.factory.deployContract(
-        "Sample",
-        {
-          initParams: {
-            _nonce: locklift.utils.getRandomNonce(),
-          },
-          publicKey: signer.publicKey,
+      const { contract } = await locklift.factory.deployContract({
+        contract: "Sample",
+        publicKey: signer.publicKey,
+        initParams: {
+          _nonce: locklift.utils.getRandomNonce(),
         },
-        {
+        constructorParams: {
           _state: INIT_STATE,
         },
-        locklift.utils.toNano(2),
-      );
+        value: locklift.utils.toNano(2),
+      });
       sample = contract;
 
-      expect(await locklift.provider.getBalance(sample.address).then((balance) => Number(balance))).to.be.above(0);
+      expect(await locklift.provider.getBalance(sample.address).then(balance => Number(balance))).to.be.above(0);
     });
 
     it("Interact with contract", async function () {
