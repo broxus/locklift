@@ -41,7 +41,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/broxus/ton-locklift.git"
+    "url": "git+https://github.com/broxus/ever-locklift.git"
   },
   "keywords": [
     "Everscale",
@@ -59,9 +59,9 @@
   ],
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/broxus/ton-locklift/issues"
+    "url": "https://github.com/broxus/ever-locklift/issues"
   },
-  "homepage": "https://github.com/broxus/ton-locklift#readme",
+  "homepage": "https://github.com/broxus/ever-locklift#readme",
   "dependencies": {
     "@tonclient/core": "^1.28.0",
     "@tonclient/lib-node": "^1.28.0",

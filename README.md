@@ -6,7 +6,7 @@
             <img alt="GitHub" src="https://img.shields.io/badge/license-Apache--2.0-orange" />
         </a>
         <a href="https://www.npmjs.com/package/locklift">
-            <img alt="npm" src="https://img.shields.io/badge/npm-v2.0.0-red">
+            <img alt="npm" src="https://img.shields.io/badge/npm-v2.0.2-red">
         </a>
     </p>
 </p>
