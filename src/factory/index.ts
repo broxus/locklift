@@ -29,8 +29,8 @@ export type DeployContractParams<T extends FactoryType, ContractName extends key
   contract: ContractName;
   constructorParams: ConstructorParams<T[ContractName]>;
   value: string;
-} & Optional<GetExpectedAddressParams<T[ContractName]>, "tvc">;
-
+} & Optional<DeployParams<T[ContractName]>, "tvc">;
+export type DeployParams<Abi> = GetExpectedAddressParams<Abi> & { publicKey: string };
 export class Factory<T extends FactoryType> {
   private readonly factoryCache: CacheType<T, keyof T> = {} as CacheType<T, keyof T>;
 
@@ -61,7 +61,7 @@ export class Factory<T extends FactoryType> {
         workchain: args.workchain,
         publicKey: args.publicKey,
         initParams: args.initParams,
-      } as GetExpectedAddressParams<T[ContractName]>,
+      } as DeployParams<T[ContractName]>,
       args.constructorParams,
       args.value,
     );
