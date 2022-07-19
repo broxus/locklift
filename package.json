@@ -1,12 +1,16 @@
 {
   "name": "locklift",
-  "version": "2.1.4",
+  "version": "2.1.5",
   "description": "Node JS framework for working with Ever contracts. Inspired by Truffle and Hardhat. Helps you to build, test, run and maintain your smart contracts.",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
-    "dev-deploy-local": "npm run build && npm publish --registry http://localhost:4873/",
-    "dev-deploy": "npm run build && npm publish --registry http://95.216.205.173:4873/"
+    "lint": "npx eslint .",
+    "format": "prettier --write .",
+    "dev-deploy-local": "npm publish --registry http://localhost:4873/",
+    "dev-deploy": "npm publish --registry http://95.216.205.173:4873/",
+    "prepublishOnly": "npm run build",
+    "prepare": "husky install"
   },
   "bin": {
     "locklift": "build/cli/index.js"
@@ -41,7 +45,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/broxus/ever-locklift.git"
+    "url": "git+https://github.com/broxus/locklift.git"
   },
   "keywords": [
     "Everscale",
@@ -59,19 +63,20 @@
   ],
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/broxus/ever-locklift/issues"
+    "url": "https://github.com/broxus/locklift/issues"
   },
-  "homepage": "https://github.com/broxus/ever-locklift#readme",
+  "homepage": "https://github.com/broxus/locklift#readme",
   "dependencies": {
     "axios": "^0.27.2",
     "bignumber.js": "^9.0.1",
+    "chalk": "^4.1.2",
     "commander": "^7.2.0",
     "directory-tree": "^3.2.2",
     "ejs": "^3.1.6",
     "env-paths": "^2.2.1",
     "everscale-crypto": "^0.1.1",
-    "everscale-inpage-provider": "^0.3.27",
-    "everscale-standalone-client": "^2.0.17",
+    "everscale-inpage-provider": "^0.3.28",
+    "everscale-standalone-client": "^2.0.19",
     "fs-extra": "^10.1.0",
     "lodash": "^4.17.21",
     "mocha": "^10.0.0",
@@ -81,8 +86,8 @@
     "tablemark": "^2.0.0",
     "ts-mocha": "^10.0.0",
     "tsconfig-paths": "^4.0.0",
-    "underscore": "^1.13.1",
-    "typescript": "^4.7.4"
+    "typescript": "^4.7.4",
+    "underscore": "^1.13.1"
   },
   "devDependencies": {
     "@types/chai": "^4.3.1",
@@ -99,6 +104,7 @@
     "eslint": "^8.19.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.2.1",
-    "prettier": "^2.7.1"
+    "prettier": "^2.7.1",
+    "husky": "^8.0.0"
   }
 }

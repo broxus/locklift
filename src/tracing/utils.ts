@@ -1,5 +1,6 @@
 import axios from "axios";
 import { MsgTree, RevertedBranch, TraceType } from "./types";
+import { logger } from "../logger";
 
 export const fetchMsgData = async (msgId: string, endpoint: string): Promise<MsgTree> => {
   const msgQuery = `{
@@ -90,40 +91,42 @@ export const throwErrorInConsole = <Abi>(revertedBranch: Array<RevertedBranch<Ab
       }
     }
 
-    console.log("\t\t⬇\n\t\t⬇");
-    console.log(`\t#${actionIdx + 1} action out of ${totalActions}`);
+    logger.printTracingLog("\t\t⬇\n\t\t⬇");
+    logger.printTracingLog(`\t#${actionIdx + 1} action out of ${totalActions}`);
     // green tags
-    console.log(`Addr: \x1b[32m${traceLog.msg.dst}\x1b[0m`);
-    console.log(`MsgId: \x1b[32m${traceLog.msg.id}\x1b[0m`);
-    console.log("-----------------------------------------------------------------");
+    logger.printTracingLog(`Addr: \x1b[32m${traceLog.msg.dst}\x1b[0m`);
+    logger.printTracingLog(`MsgId: \x1b[32m${traceLog.msg.id}\x1b[0m`);
+    logger.printTracingLog("-----------------------------------------------------------------");
     if (traceLog.type === TraceType.BOUNCE) {
-      console.log("-> Bounced msg");
+      logger.printTracingLog("-> Bounced msg");
     }
     if (traceLog.error && traceLog.error.ignored) {
-      console.log(`-> Ignored ${traceLog.error.code} code on ${traceLog.error.phase} phase`);
+      logger.printTracingLog(`-> Ignored ${traceLog.error.code} code on ${traceLog.error.phase} phase`);
     }
     if (!traceLog.contract) {
-      console.log("-> Contract not deployed/Not recognized because build artifacts not provided");
+      logger.printTracingLog("-> Contract not deployed/Not recognized because build artifacts not provided");
     }
     // bold tag
-    console.log(
+    logger.printTracingLog(
       `\x1b[1m${name}.${method}\x1b[22m{value: ${convert(traceLog.msg.value)}, bounce: ${bounce}}${paramsStr}`,
     );
     if (traceLog.msg.dst_transaction) {
       if (traceLog.msg.dst_transaction.storage) {
-        console.log(`Storage fees: ${convert(traceLog.msg.dst_transaction.storage.storage_fees_collected)}`);
+        logger.printTracingLog(`Storage fees: ${convert(traceLog.msg.dst_transaction.storage.storage_fees_collected)}`);
       }
       if (traceLog.msg.dst_transaction.compute) {
-        console.log(`Compute fees: ${convert(Number(traceLog.msg.dst_transaction.compute.gas_fees))}`);
+        logger.printTracingLog(`Compute fees: ${convert(Number(traceLog.msg.dst_transaction.compute.gas_fees))}`);
       }
       if (traceLog.msg.dst_transaction.action) {
-        console.log(`Action fees: ${convert(Number(traceLog.msg.dst_transaction.action.total_action_fees))}`);
+        logger.printTracingLog(
+          `Action fees: ${convert(Number(traceLog.msg.dst_transaction.action.total_action_fees))}`,
+        );
       }
-      console.log(`\x1b[1mTotal fees:\x1b[22m ${convert(Number(traceLog.msg.dst_transaction.total_fees))}`);
+      logger.printTracingLog(`\x1b[1mTotal fees:\x1b[22m ${convert(Number(traceLog.msg.dst_transaction.total_fees))}`);
     }
     if (traceLog.error && !traceLog.error.ignored) {
       // red tag
-      console.log(
+      logger.printError(
         "\x1b[31m",
         `!!! Reverted with ${traceLog.error.code} error code on ${traceLog.error.phase} phase !!!`,
       );

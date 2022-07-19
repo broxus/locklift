@@ -1,5 +1,4 @@
 import {
-  GetExpectedAddressParams,
   ContractMethod,
   AbiFunctionName,
   AbiFunctionInputs,
@@ -13,6 +12,7 @@ import {
 import { Deployer } from "./deployer";
 import { ConstructorParams, TransactionWithOutput } from "../types";
 import { toNano, errorExtractor } from "../utils";
+import { DeployParams } from "./index";
 
 export const accountAbiBase = {
   functions: [
@@ -47,7 +47,7 @@ export class Account<Abi> {
     publicKey: string,
     value: string,
     abi: Abi,
-    deployParams: GetExpectedAddressParams<Abi>,
+    deployParams: DeployParams<Abi>,
     constructorParams: ConstructorParams<Abi>,
   ): Promise<{ account: Account<Abi>; tx: TransactionWithOutput }> {
     const { contract, tx } = await deployer.deployContract(abi, deployParams, constructorParams, value);
@@ -58,18 +58,18 @@ export class Account<Abi> {
     return this.accountContract.address;
   }
 
-  public runTarget = async (
+  public runTarget = async <TargetAbi>(
     config: {
-      contract: Contract<Abi>;
+      contract: Contract<TargetAbi>;
       value?: string;
       bounce?: boolean;
       flags?: number;
     },
-    producer: (
-      targetContract: Contract<Abi>,
+    producer?: (
+      targetContract: Contract<TargetAbi>,
     ) => ContractMethod<
-      AbiFunctionInputs<Abi, AbiFunctionName<Abi>>,
-      DecodedAbiFunctionOutputs<Abi, AbiFunctionName<Abi>>
+      AbiFunctionInputs<TargetAbi, AbiFunctionName<TargetAbi>>,
+      DecodedAbiFunctionOutputs<TargetAbi, AbiFunctionName<TargetAbi>>
     >,
   ) => {
     return errorExtractor(
@@ -78,7 +78,7 @@ export class Account<Abi> {
           value: config.value || toNano(2),
           bounce: !!config.bounce,
           dest: config.contract.address,
-          payload: await producer(config.contract).encodeInternal(),
+          payload: producer ? await producer(config.contract).encodeInternal() : "",
           flags: config.flags || 0,
         })
         .sendExternal({ publicKey: this.publicKey }),
@@ -121,7 +121,7 @@ export class AccountFactory<Abi> {
         publicKey: args.publicKey,
         initParams: args.initParams,
         workchain: args.workchain,
-      } as GetExpectedAddressParams<Abi>,
+      } as DeployParams<Abi>,
       args.constructorParams,
     );
   };
