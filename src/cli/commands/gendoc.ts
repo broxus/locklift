@@ -4,6 +4,7 @@ import { loadConfig } from "../../config";
 import { Builder } from "../builder";
 import fs from "fs-extra";
 import { compilerConfigResolver } from "../builder/utils";
+import { logger } from "../../logger";
 
 const program = new Command();
 
@@ -21,9 +22,9 @@ program
   .addOption(
     new Option("--config <config>", "Path to the config file")
       .default(() => loadConfig("locklift.config.ts"))
-      .argParser(async (config) => () => loadConfig(config)),
+      .argParser(async config => () => loadConfig(config)),
   )
-  .action(async (options) => {
+  .action(async options => {
     const config = await options.config();
 
     fs.ensureDirSync(options.build);
@@ -40,7 +41,7 @@ program
         process.exit(0);
       }
     } catch (e) {
-      console.log(e);
+      logger.printError(e);
     }
   });
 

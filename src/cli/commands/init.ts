@@ -3,6 +3,7 @@ import path from "path";
 import fs from "fs-extra";
 import * as utils from "../builder/utils";
 import { execSyncWrapper } from "../builder/utils";
+import { logger } from "../../logger";
 
 const program = new Command();
 
@@ -11,7 +12,7 @@ program
   .description("Initialize sample Locklift project in a directory")
   .option("-p, --path <path>", "Path to the project folder", ".")
   .option("-f, --force", "Ignore non-empty path", false)
-  .action(async (options) => {
+  .action(async options => {
     const pathEmpty = utils.checkDirEmpty(options.path);
     if (!pathEmpty && options.force === false) {
       console.error(`Directory at ${options.path} should be empty!`);
@@ -22,11 +23,11 @@ program
     await new Promise((res, rej) => {
       fs.copy(sampleProjectPath, options.path, (err: Error) => {
         if (err) {
-          console.error(err);
+          logger.printError(err);
           return rej(err);
         }
 
-        console.log(`New Locklift project initialized in ${options.path}`);
+        logger.printInfo(`New Locklift project initialized in ${options.path}`);
         return res(undefined);
       });
     });
@@ -43,12 +44,12 @@ program
     fs.writeFileSync(path.join(options.path, "./package.json"), JSON.stringify(packageJson, null, 2));
     const dependencies =
       "npm i --save-dev typescript@4.7.4 prettier chai @types/chai @types/mocha @types/node everscale-standalone-client ts-mocha locklift";
-    console.log("Installing required dependencies...");
+    logger.printInfo("Installing required dependencies...");
 
     if (options.path) {
-      console.log(execSyncWrapper(`cd ${options.path} && ${dependencies}`).toString());
+      logger.printInfo(execSyncWrapper(`cd ${options.path} && ${dependencies}`).toString());
     }
-    console.log(`LockLift initialized in ${options.path} happy hacking!`);
+    logger.printInfo(`LockLift initialized in ${options.path} happy hacking!`);
   });
 
 export default program;
