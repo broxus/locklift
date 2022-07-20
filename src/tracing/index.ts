@@ -13,7 +13,7 @@ export class Tracing {
   ) {}
   public trace = async <T extends TransactionParameter>(
     transactionProm: Promise<T>,
-    config: Omit<TraceParams, "inMsgId">,
+    config?: Omit<TraceParams, "inMsgId">,
   ): Promise<T> => {
     return this.features
       .waitFinalized(transactionProm)
