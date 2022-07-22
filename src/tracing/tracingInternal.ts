@@ -5,12 +5,12 @@ import { fetchMsgData, throwErrorInConsole } from "./utils";
 import { Trace } from "./trace/trace";
 import { AllowedCodes, MsgTree, OptionalContracts, RevertedBranch, TraceParams } from "./types";
 import { Factory } from "../factory";
-import _ from "lodash";
+import _, { difference } from "lodash";
 import { logger } from "../logger";
 
 export class TracingInternal {
   private readonly consoleContract: Contract<ConsoleAbi>;
-  private _allowedCodes: AllowedCodes = {
+  private _allowedCodes: Required<AllowedCodes> = {
     compute: [],
     action: [],
     contracts: {},
@@ -26,64 +26,50 @@ export class TracingInternal {
   get allowedCodes(): AllowedCodes {
     return this._allowedCodes;
   }
-  setAllowCodes(allowedCodes: OptionalContracts = { compute: [], action: [] }) {
+  setAllowedCodes(allowedCodes: OptionalContracts = { compute: [], action: [] }) {
     this._allowedCodes = {
       ...this._allowedCodes,
-      action: [...this._allowedCodes.action, ...allowedCodes.action],
-      compute: [...this._allowedCodes.compute, ...allowedCodes.compute],
+      action: [...(this._allowedCodes?.action || []), ...(allowedCodes?.action || [])],
+      compute: [...(this._allowedCodes?.compute || []), ...(allowedCodes.compute || [])],
     };
   }
 
-  allowCodesForAddress(address: string, allowedCodes: OptionalContracts = { compute: [], action: [] }) {
+  setAllowedCodesForAddress(address: string, allowedCodes: OptionalContracts = { compute: [], action: [] }) {
     if (!this._allowedCodes.contracts?.[address]) {
-      this._allowedCodes.contracts[address] = { compute: [], action: [] };
+      this._allowedCodes.contracts[address] = {
+        compute: [...(allowedCodes.compute || [])],
+        action: [...(allowedCodes.action || [])],
+      };
     }
     if (allowedCodes.compute) {
-      this._allowedCodes.contracts[address].compute.push(...allowedCodes.compute);
+      (this._allowedCodes.contracts[address].compute || []).push(...allowedCodes.compute);
     }
     if (allowedCodes.action) {
-      this._allowedCodes.contracts[address].action.push(...allowedCodes.action);
+      (this._allowedCodes.contracts[address].action || []).push(...allowedCodes.action);
     }
   }
 
-  removeAllowedCodesForAddress(address: string, allowedCodes: OptionalContracts = { compute: [], action: [] }) {
-    if (!this._allowedCodes.contracts[address]) {
-      this._allowedCodes.contracts[address] = { compute: [], action: [] };
+  removeAllowedCodesForAddress(address: string, codesToRemove: OptionalContracts = { compute: [], action: [] }) {
+    if (codesToRemove.compute) {
+      this._allowedCodes.contracts[address].compute = difference(
+        this._allowedCodes.contracts[address]?.compute || [],
+        codesToRemove.compute,
+      );
     }
-    if (allowedCodes.compute) {
-      this._allowedCodes.contracts[address].compute.map(code => {
-        const idx = this._allowedCodes.contracts[address].compute.indexOf(code);
-        if (idx > -1) {
-          this._allowedCodes.contracts[address].compute.splice(idx, 1);
-        }
-      });
-    }
-    if (allowedCodes.action) {
-      this._allowedCodes.contracts[address].action.map(code => {
-        const idx = this._allowedCodes.contracts[address].action.indexOf(code);
-        if (idx > -1) {
-          this._allowedCodes.contracts[address].action.splice(idx, 1);
-        }
-      });
+    if (codesToRemove.action) {
+      this._allowedCodes.contracts[address].action = difference(
+        this._allowedCodes.contracts[address]?.action || [],
+        codesToRemove.action,
+      );
     }
   }
 
-  removeAllowedCodes(allowedCodes: OptionalContracts = { compute: [], action: [] }) {
-    if (allowedCodes.compute) {
-      allowedCodes.compute.map(code => {
-        const idx = this._allowedCodes.compute.indexOf(code);
-        if (idx > -1) {
-          this._allowedCodes.compute.splice(idx, 1);
-        }
-      });
+  removeAllowedCodes(codesToRemove: OptionalContracts = { compute: [], action: [] }) {
+    if (codesToRemove.compute) {
+      this._allowedCodes.compute = difference(this._allowedCodes.compute || [], codesToRemove.compute);
     }
-    if (allowedCodes.action) {
-      allowedCodes.action.map(code => {
-        const idx = this._allowedCodes.action.indexOf(code);
-        if (idx > -1) {
-          this._allowedCodes.action.splice(idx, 1);
-        }
-      });
+    if (codesToRemove.action) {
+      this._allowedCodes.action = difference(this._allowedCodes.action || [], codesToRemove.action);
     }
   }
   // allowed_codes example - {compute: [100, 50, 12], action: [11, 12], "ton_addr": {compute: [60], action: [2]}}

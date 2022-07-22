@@ -65,9 +65,8 @@ export class Trace<Abi = any> {
       this.error = { phase: "compute", code: tx.compute.exit_code };
       // we didnt expect this error, save error
       if (
-        allowedCodes.compute.indexOf(tx.compute.exit_code) > -1 ||
-        (allowedCodes.contracts[this.msg.dst] &&
-          allowedCodes.contracts[this.msg.dst].compute.indexOf(tx.compute.exit_code) > -1)
+        allowedCodes.compute?.find(code => tx.compute.exit_code === code) ||
+        allowedCodes.contracts?.[this.msg.dst]?.compute?.find(code => tx.compute.exit_code === code)
       ) {
         this.error.ignored = true;
       }
@@ -75,9 +74,8 @@ export class Trace<Abi = any> {
       this.error = { phase: "action", code: tx.action.result_code };
       // we didnt expect this error, save error
       if (
-        allowedCodes.action.indexOf(tx.action.result_code) > -1 ||
-        (allowedCodes.contracts[this.msg.dst] &&
-          allowedCodes.contracts[this.msg.dst].action.indexOf(tx.action.result_code) > -1)
+        allowedCodes.action?.find(code => tx.action.resultCode === code) ||
+        allowedCodes.contracts?.[this.msg.dst]?.action?.find(code => tx.action.result_code === code)
       ) {
         this.error.ignored = true;
       }

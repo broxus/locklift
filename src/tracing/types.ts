@@ -44,11 +44,11 @@ export type TraceParams = {
 };
 export type OptionalContracts = Optional<AllowedCodes, "contracts">;
 type AllowedCode = {
-  compute: Array<number | null>;
-  action: Array<number | null>;
+  compute?: Array<number | null>;
+  action?: Array<number | null>;
 };
 export type AllowedCodes = AllowedCode & {
-  contracts: Record<string, AllowedCode>;
+  contracts?: Record<string, AllowedCode>;
 };
 
 export type DecoderOutput<Abi> =
