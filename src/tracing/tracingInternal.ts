@@ -96,7 +96,7 @@ export class TracingInternal {
       body: msg.body,
       internal: true,
     });
-    logger.printInfo(decoded?.input);
+    logger.printInfo(decoded && "_log" in decoded.input && decoded.input._log);
   }
 
   private async buildMsgTree(inMsgId: string, endpoint: string, onlyRoot = false) {
