@@ -1,7 +1,7 @@
 import { Address, Contract, ProviderRpcClient } from "everscale-inpage-provider";
 import { consoleAbi, ConsoleAbi } from "../console.abi";
 import { CONSOLE_ADDRESS } from "./constants";
-import { fetchMsgData, throwErrorInConsole } from "./utils";
+import { fetchMsgData, getDefaultAllowedCodes, isT, throwErrorInConsole } from "./utils";
 import { Trace } from "./trace/trace";
 import { AllowedCodes, MsgTree, OptionalContracts, RevertedBranch, TraceParams } from "./types";
 import { Factory } from "../factory";
@@ -11,8 +11,7 @@ import { logger } from "../logger";
 export class TracingInternal {
   private readonly consoleContract: Contract<ConsoleAbi>;
   private _allowedCodes: Required<AllowedCodes> = {
-    compute: [],
-    action: [],
+    ...getDefaultAllowedCodes(),
     contracts: {},
   };
   constructor(
@@ -26,45 +25,46 @@ export class TracingInternal {
   get allowedCodes(): AllowedCodes {
     return this._allowedCodes;
   }
-  setAllowedCodes(allowedCodes: OptionalContracts = { compute: [], action: [] }) {
-    this._allowedCodes = {
-      ...this._allowedCodes,
-      action: [...(this._allowedCodes?.action || []), ...(allowedCodes?.action || [])],
-      compute: [...(this._allowedCodes?.compute || []), ...(allowedCodes.compute || [])],
-    };
-  }
 
-  setAllowedCodesForAddress(address: string, allowedCodes: OptionalContracts = { compute: [], action: [] }) {
-    if (!this._allowedCodes.contracts?.[address]) {
-      this._allowedCodes.contracts[address] = {
-        compute: [...(allowedCodes.compute || [])],
-        action: [...(allowedCodes.action || [])],
-      };
+  setAllowedCodes(allowedCodes: OptionalContracts) {
+    if (allowedCodes.action) {
+      this._allowedCodes.action.push(...allowedCodes.action);
     }
     if (allowedCodes.compute) {
-      (this._allowedCodes.contracts[address].compute || []).push(...allowedCodes.compute);
-    }
-    if (allowedCodes.action) {
-      (this._allowedCodes.contracts[address].action || []).push(...allowedCodes.action);
+      this._allowedCodes.compute.push(...allowedCodes.compute);
     }
   }
 
-  removeAllowedCodesForAddress(address: string, codesToRemove: OptionalContracts = { compute: [], action: [] }) {
+  setAllowedCodesForAddress(address: string | Address, allowedCodes: OptionalContracts) {
+    const stringAddress = address.toString();
+    if (!this._allowedCodes.contracts?.[stringAddress]) {
+      this._allowedCodes.contracts[stringAddress] = getDefaultAllowedCodes();
+    }
+    if (allowedCodes.compute) {
+      (this._allowedCodes.contracts[stringAddress].compute || []).push(...allowedCodes.compute);
+    }
+    if (allowedCodes.action) {
+      (this._allowedCodes.contracts[stringAddress].action || []).push(...allowedCodes.action);
+    }
+  }
+
+  removeAllowedCodesForAddress(address: string | Address, codesToRemove: OptionalContracts) {
+    const stringAddress = address.toString();
     if (codesToRemove.compute) {
-      this._allowedCodes.contracts[address].compute = difference(
-        this._allowedCodes.contracts[address]?.compute || [],
+      this._allowedCodes.contracts[stringAddress].compute = difference(
+        this._allowedCodes.contracts[stringAddress]?.compute || [],
         codesToRemove.compute,
       );
     }
     if (codesToRemove.action) {
-      this._allowedCodes.contracts[address].action = difference(
-        this._allowedCodes.contracts[address]?.action || [],
+      this._allowedCodes.contracts[stringAddress].action = difference(
+        this._allowedCodes.contracts[stringAddress]?.action || [],
         codesToRemove.action,
       );
     }
   }
 
-  removeAllowedCodes(codesToRemove: OptionalContracts = { compute: [], action: [] }) {
+  removeAllowedCodes(codesToRemove: OptionalContracts) {
     if (codesToRemove.compute) {
       this._allowedCodes.compute = difference(this._allowedCodes.compute || [], codesToRemove.compute);
     }
@@ -73,13 +73,12 @@ export class TracingInternal {
     }
   }
   // allowed_codes example - {compute: [100, 50, 12], action: [11, 12], "ton_addr": {compute: [60], action: [2]}}
-  async trace({
-    inMsgId,
-    allowedCodes = { compute: [], action: [], contracts: { any: { compute: [], action: [] } } },
-  }: TraceParams) {
+  async trace({ inMsgId, allowedCodes }: TraceParams) {
     if (this.enabled) {
       const msgTree = await this.buildMsgTree(inMsgId, this.endpoint);
-      const allowedCodesExtended = _.merge(_.cloneDeep(this._allowedCodes), allowedCodes);
+      const allowedCodesExtended = _.mergeWith(_.cloneDeep(this._allowedCodes), allowedCodes, (objValue, srcValue) =>
+        Array.isArray(objValue) ? objValue.concat(srcValue) : undefined,
+      );
       const traceTree = await this.buildTracingTree(msgTree, allowedCodesExtended);
       const reverted = this.findRevertedBranch(traceTree);
       if (reverted) {

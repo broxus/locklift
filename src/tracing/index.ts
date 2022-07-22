@@ -26,14 +26,14 @@ export class Tracing {
   public get allowedCodes(): AllowedCodes {
     return this.tracingInternal.allowedCodes;
   }
-  public setAllowCodes = (params: Parameters<typeof this.tracingInternal.setAllowedCodes>) =>
+  public setAllowedCodes = (...params: Parameters<typeof this.tracingInternal.setAllowedCodes>) =>
     this.tracingInternal.setAllowedCodes(...params);
-  public allowCodesForAddress = (...params: Parameters<typeof this.tracingInternal.setAllowedCodesForAddress>) =>
+  public setAllowedCodesForAddress = (...params: Parameters<typeof this.tracingInternal.setAllowedCodesForAddress>) =>
     this.tracingInternal.setAllowedCodesForAddress(...params);
   public removeAllowedCodesForAddress = (
-    params: Parameters<typeof this.tracingInternal.removeAllowedCodesForAddress>,
+    ...params: Parameters<typeof this.tracingInternal.removeAllowedCodesForAddress>
   ) => this.tracingInternal.removeAllowedCodesForAddress(...params);
-  public removeAllowedCodes = (params: Parameters<typeof this.tracingInternal.removeAllowedCodes>) =>
+  public removeAllowedCodes = (...params: Parameters<typeof this.tracingInternal.removeAllowedCodes>) =>
     this.tracingInternal.removeAllowedCodes(...params);
 }
 

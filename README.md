@@ -294,7 +294,14 @@ const transaction = await locklift.tracing.trace(
   tokenRoot.methods.sendTokens({ walletOwner: "" }).sendExternal({ publicKey: signer.publicKey }),
   {
     allowedCodes: {
+      //compute or action phase for all contracts
       compute: [40],
+      //also you can specify allowed codes for specific contract
+      contracts: {
+        [someAddress.toString()]: {
+          action: [52, 60],
+        },
+      },
     },
   },
 );
@@ -303,10 +310,10 @@ const transaction = await locklift.tracing.trace(
 Or set ignoring by default for all further calls:
 
 ```typescript
-// ignore compute phase erros for all transactions
-locklift.tracing.allowCodes({ compute: [51, 60] });
+// ignore compute(or acton) phase erros for all transactions
+locklift.tracing.setAllowedCodes({ compute: [52, 60] });
 // ignore more errors for specific address
-locklift.tracing.allowCodesForAddress(SOME_ADDRESS, { compute: [123], action: [111] });
+locklift.tracing.setAllowedCodesForAddress(SOME_ADDRESS, { compute: [123], action: [111] });
 
 // remove code from default list of ignored errors, so that only 51 erros will be ignored
 // this affects only global rules, per-address rules are not modified

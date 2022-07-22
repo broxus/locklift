@@ -1,6 +1,7 @@
 import axios from "axios";
-import { MsgTree, RevertedBranch, TraceType } from "./types";
+import { AllowedCodes, MsgTree, OptionalContracts, RevertedBranch, TraceType } from "./types";
 import { logger } from "../logger";
+import { Address } from "everscale-inpage-provider";
 
 export const fetchMsgData = async (msgId: string, endpoint: string): Promise<MsgTree> => {
   const msgQuery = `{
@@ -134,3 +135,8 @@ export const throwErrorInConsole = <Abi>(revertedBranch: Array<RevertedBranch<Ab
     }
   }
 };
+export const isT = <T>(p: T): p is NonNullable<T> => !!p;
+export const getDefaultAllowedCodes = (): Omit<Required<AllowedCodes>, "contracts"> => ({
+  compute: [],
+  action: [],
+});
