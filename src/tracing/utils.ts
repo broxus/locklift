@@ -1,7 +1,6 @@
 import axios from "axios";
-import { AllowedCodes, MsgTree, OptionalContracts, RevertedBranch, TraceType } from "./types";
+import { AllowedCodes, MsgTree, RevertedBranch, TraceType } from "./types";
 import { logger } from "../logger";
-import { Address } from "everscale-inpage-provider";
 
 export const fetchMsgData = async (msgId: string, endpoint: string): Promise<MsgTree> => {
   const msgQuery = `{

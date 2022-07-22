@@ -1,7 +1,7 @@
 import { Address, Contract, ProviderRpcClient } from "everscale-inpage-provider";
 import { consoleAbi, ConsoleAbi } from "../console.abi";
 import { CONSOLE_ADDRESS } from "./constants";
-import { fetchMsgData, getDefaultAllowedCodes, isT, throwErrorInConsole } from "./utils";
+import { fetchMsgData, getDefaultAllowedCodes, throwErrorInConsole } from "./utils";
 import { Trace } from "./trace/trace";
 import { AllowedCodes, MsgTree, OptionalContracts, RevertedBranch, TraceParams } from "./types";
 import { Factory } from "../factory";
