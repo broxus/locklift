@@ -42,10 +42,11 @@ export type TraceParams = {
   inMsgId: string;
   allowedCodes?: AllowedCodes;
 };
+export type AllowErrorCodes = number | null;
 export type OptionalContracts = Optional<AllowedCodes, "contracts">;
 type AllowedCode = {
-  compute?: Array<number | null>;
-  action?: Array<number | null>;
+  compute?: Array<AllowErrorCodes>;
+  action?: Array<AllowErrorCodes>;
 };
 export type AllowedCodes = AllowedCode & {
   contracts?: Record<string, AllowedCode>;

@@ -139,3 +139,6 @@ export const getDefaultAllowedCodes = (): Omit<Required<AllowedCodes>, "contract
   compute: [],
   action: [],
 });
+export const isExistsInArr = <T>(srcArr: Array<T>, isExist: T): boolean => {
+  return srcArr.some(item => item === isExist);
+};

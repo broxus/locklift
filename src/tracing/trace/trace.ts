@@ -3,7 +3,7 @@ import { AllowedCodes, DecodedMsg, MsgTree, TraceType } from "../types";
 import { Address } from "everscale-inpage-provider";
 
 import { ContractWithName } from "../../types";
-import { contractContractInformation, decoder } from "./utils";
+import { contractContractInformation, decoder, isErrorExistsInAllowedArr } from "./utils";
 import { TracingInternal } from "../tracingInternal";
 
 export class Trace<Abi = any> {
@@ -65,8 +65,8 @@ export class Trace<Abi = any> {
       this.error = { phase: "compute", code: tx.compute.exit_code };
       // we didnt expect this error, save error
       if (
-        allowedCodes.compute?.find(code => tx.compute.exit_code === code) ||
-        allowedCodes.contracts?.[this.msg.dst]?.compute?.find(code => tx.compute.exit_code === code)
+        isErrorExistsInAllowedArr(allowedCodes.compute, tx.compute.exit_code) ||
+        isErrorExistsInAllowedArr(allowedCodes.contracts?.[this.msg.dst]?.compute, tx.compute.exit_code)
       ) {
         this.error.ignored = true;
       }
@@ -74,8 +74,8 @@ export class Trace<Abi = any> {
       this.error = { phase: "action", code: tx.action.result_code };
       // we didnt expect this error, save error
       if (
-        allowedCodes.action?.find(code => tx.action.resultCode === code) ||
-        allowedCodes.contracts?.[this.msg.dst]?.action?.find(code => tx.action.result_code === code)
+        isErrorExistsInAllowedArr(allowedCodes.action, tx.action.result_code) ||
+        isErrorExistsInAllowedArr(allowedCodes.contracts?.[this.msg.dst]?.action, tx.action.result_code)
       ) {
         this.error.ignored = true;
       }

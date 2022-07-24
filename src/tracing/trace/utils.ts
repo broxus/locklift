@@ -1,4 +1,4 @@
-import { DecodedMsg, MsgTree, TraceType } from "../types";
+import { AllowErrorCodes, DecodedMsg, MsgTree, TraceType } from "../types";
 import { ContractWithName } from "../../types";
 import { AbiEventName, AbiFunctionName } from "everscale-inpage-provider/dist/models";
 
@@ -103,3 +103,8 @@ export const contractContractInformation = ({
     [TraceType.FUNCTION_RETURN]: getCodeAndAddress(msg, TargetType.SRC),
     [TraceType.TRANSFER]: getCodeAndAddress(msg, TargetType.DST),
   }[type]);
+
+export const isErrorExistsInAllowedArr = (
+  allowedArr: Array<AllowErrorCodes> | undefined,
+  code: AllowErrorCodes,
+): boolean => !!allowedArr?.some(el => el === code);
