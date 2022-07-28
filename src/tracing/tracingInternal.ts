@@ -90,12 +90,12 @@ export class TracingInternal {
   }
 
   private async printConsoleMsg(msg: MsgTree) {
-    const decoded = await this.consoleContract.decodeInputMessage({
-      methods: ["log"],
+    const decoded = await this.ever.rawApi.decodeEvent({
       body: msg.body,
-      internal: true,
+      abi: JSON.stringify(consoleAbi),
+      event: 'Log'
     });
-    logger.printInfo(decoded && "_log" in decoded.input && decoded.input._log);
+    logger.printInfo(decoded && "_log" in decoded.data && decoded.data._log);
   }
 
   private async buildMsgTree(inMsgId: string, endpoint: string, onlyRoot = false) {

@@ -2,15 +2,11 @@
 pragma ever-solidity >=0.57.1;
 
 
-interface Console {
-    function log(string _log) external;
-}
-
-
 library console {
-    address constant CONSOLE_ADDRESS = address.makeAddrStd(0, 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF123456789ABCDE);
+    event Log(string _log);
 
     function log(string _log) internal {
-        Console(CONSOLE_ADDRESS).log{value: 10 milli, bounce: false}(_log);
+      address CONSOLE_ADDRESS = address.makeAddrExtern(0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF123456789ABCDE, 256);
+      emit Log{dest: CONSOLE_ADDRESS}(_log);
     }
 }
