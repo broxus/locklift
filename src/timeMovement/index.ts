@@ -37,7 +37,6 @@ export class TimeMovement {
       return logger.printWarn("TimeMovement is not allowed to go back in time");
     }
     this.clock.offset = await this.seService.setTimeOffset(offsetSeconds).then(toMs);
-    console.log(`new offset is ${this.clock.offset}`);
   };
 }
 
