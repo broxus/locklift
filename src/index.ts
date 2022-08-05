@@ -18,6 +18,8 @@ import { Factory } from "./factory";
 import { Transactions } from "./utils";
 import { createTracing, Tracing } from "./tracing";
 import { getGiverKeyPair } from "./utilsInternal";
+import { ConnectionData } from "everscale-standalone-client/client/ConnectionController";
+import { createTimeMovement, TimeMovement } from "./timeMovement";
 
 export * from "everscale-inpage-provider";
 export type { Signer } from "everscale-standalone-client";
@@ -36,6 +38,7 @@ export class Locklift<FactorySource = any> {
     public readonly keystore: SimpleKeystore,
     public readonly transactions: Transactions,
     public readonly tracing: Tracing,
+    public readonly testing: TimeMovement,
   ) {}
 
   public static async setup<T>(
@@ -56,6 +59,7 @@ export class Locklift<FactorySource = any> {
         {},
       ),
     );
+
     keystore.addKeyPair("giver", giverKeys);
 
     await ensureConnectionValid(networkConfig.connection);
@@ -83,8 +87,8 @@ export class Locklift<FactorySource = any> {
       factory,
       endpoint: networkConfig.tracing?.endpoint,
     });
-
-    return new Locklift<T>(factory, giver, provider, clock, keystore, transactions, tracing);
+    const timeMovement = await createTimeMovement(clock, networkConfig);
+    return new Locklift<T>(factory, giver, provider, clock, keystore, transactions, tracing, timeMovement);
   }
 }
 
