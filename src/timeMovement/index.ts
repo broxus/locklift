@@ -13,7 +13,7 @@ export class TimeMovement {
   /*
    * Returns current offset in seconds
    */
-  public getCurrentOffset = (): number => {
+  public getTimeOffset = (): number => {
     if (!this.isEnabled) {
       logger.printWarn("TimeMovement is disabled");
       return 0;
@@ -29,14 +29,14 @@ export class TimeMovement {
    * Set node and provider offset in seconds
    @param offsetInSeconds offset in seconds
    */
-  public addTimeOffset = async (offsetSeconds: number): Promise<void> => {
+  public increaseTime = async (seconds: number): Promise<void> => {
     if (!this.isEnabled) {
       return logger.printWarn("TimeMovement is disabled");
     }
-    if (offsetSeconds < 0) {
+    if (seconds < 0) {
       return logger.printWarn("TimeMovement is not allowed to go back in time");
     }
-    this.clock.offset = await this.seService.setTimeOffset(offsetSeconds).then(toMs);
+    this.clock.offset = await this.seService.setTimeOffset(seconds).then(toMs);
   };
 }
 
