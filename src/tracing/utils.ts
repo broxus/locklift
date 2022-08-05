@@ -85,7 +85,7 @@ export const throwErrorInConsole = <Abi>(revertedBranch: Array<RevertedBranch<Ab
       } else {
         paramsStr = "(\n";
         for (const [key, value] of Object.entries(traceLog.decodedMsg.params || {})) {
-          paramsStr += `    ${key}: ${value}\n`;
+          paramsStr += `    ${key}: ${JSON.stringify(value, null, 4)}\n`;
         }
         paramsStr += ")";
       }
