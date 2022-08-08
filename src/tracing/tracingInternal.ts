@@ -93,7 +93,7 @@ export class TracingInternal {
     const decoded = await this.ever.rawApi.decodeEvent({
       body: msg.body,
       abi: JSON.stringify(consoleAbi),
-      event: 'Log'
+      event: "Log",
     });
     logger.printInfo(decoded && "_log" in decoded.data && decoded.data._log);
   }

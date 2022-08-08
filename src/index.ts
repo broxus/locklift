@@ -18,14 +18,15 @@ import { Factory } from "./factory";
 import { Transactions } from "./utils";
 import { createTracing, Tracing } from "./tracing";
 import { getGiverKeyPair } from "./utilsInternal";
-import { ConnectionData } from "everscale-standalone-client/client/ConnectionController";
+// import { ConnectionData } from "everscale-standalone-client/client/ConnectionController";
 import { createTimeMovement, TimeMovement } from "./timeMovement";
 
 export * from "everscale-inpage-provider";
 export type { Signer } from "everscale-standalone-client";
-export { Dimension, zeroAddress } from "./constants";
+export { Dimension, zeroAddress, EMPTY_TVM_CELL } from "./constants";
 export type { LockliftConfig } from "./config";
 export type { Giver } from "./factory";
+export { Migration } from "./migration";
 
 export class Locklift<FactorySource = any> {
   public readonly utils = utils;
