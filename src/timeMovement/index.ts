@@ -54,12 +54,15 @@ export const createTimeMovement = async (
   }
   const rpcOrigin = new URL(rpcUrl).origin;
   const seService = new SeService(rpcOrigin);
-  const currentOffsetInSeconds = await seService.getCurrentOffsetTime();
+  const { currentOffsetInSeconds, isEnabled } = await seService
+    .getCurrentOffsetTime()
+    .then(currentOffsetInSeconds => ({ currentOffsetInSeconds, isEnabled: true }))
+    .catch(() => ({ isEnabled: false, currentOffsetInSeconds: 0 }));
   if (currentOffsetInSeconds > 0) {
     logger.printWarn(`Current SE time delta is ${currentOffsetInSeconds} seconds. Provider will sync with this offset`);
   }
   clock.offset = toMs(currentOffsetInSeconds);
-  return new TimeMovement(seService, clock, true);
+  return new TimeMovement(seService, clock, isEnabled);
 };
 
 const toMs = (seconds: number) => seconds * 1000;

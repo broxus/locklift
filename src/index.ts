@@ -18,7 +18,6 @@ import { Factory } from "./factory";
 import { Transactions } from "./utils";
 import { createTracing, Tracing } from "./tracing";
 import { getGiverKeyPair } from "./utilsInternal";
-import { ConnectionData } from "everscale-standalone-client/client/ConnectionController";
 import { createTimeMovement, TimeMovement } from "./timeMovement";
 
 export * from "everscale-inpage-provider";
