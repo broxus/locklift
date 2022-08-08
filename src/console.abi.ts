@@ -3,7 +3,7 @@ export const consoleAbi = {
   version: "2.2",
   header: [],
   functions: [],
-  events: [{"name": "Log", "inputs": [{"name":"_log","type":"string"}], "outputs": []}]
+  events: [{ name: "Log", inputs: [{ name: "_log", type: "string" }], outputs: [] }],
 } as const;
 
 export type ConsoleAbi = typeof consoleAbi;
