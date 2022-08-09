@@ -1,5 +1,5 @@
+![locklift logo](https://user-images.githubusercontent.com/15921290/183642554-6372baf5-bac5-4477-888b-870a6993f666.png)
 <p align="center">
-    <h3 align="center">Locklift</h3>
     <p align="center">Development environment for Everscale blockchain.</p>
     <p align="center">
         <a href="/LICENSE">
