@@ -1,4 +1,5 @@
 ![locklift logo](https://user-images.githubusercontent.com/15921290/183642554-6372baf5-bac5-4477-888b-870a6993f666.png)
+
 <p align="center">
     <p align="center">Development environment for Everscale blockchain.</p>
     <p align="center">
@@ -207,6 +208,18 @@ contract Sample {
 }
 ```
 
+Note: `console.log` functionality working only with tracing e.g:
+
+```typescript
+await lockLift.tracing.trace(sampleContract.testFunc({ input: 10 }).sendExternal({ pubkey: keyPair.publicKey }));
+```
+
+And then you will see this in your terminal:
+
+```
+You called testFunc with input = 10
+```
+
 Note that `console.log` use internal msg spending 0.01 ever.
 
 ### Tracing
@@ -360,7 +373,7 @@ const userBalance = await locklift.provider.getBalance(user.address);
 expect(Number(userBalance)).to.be.above(0, "Bad user balance");
 ```
 
-#### `locklift.provider.transactions`
+#### `locklift.transactions`
 
 Module provides access to high-level control of transaction flow.
 
@@ -378,6 +391,39 @@ Get full account state
 
 ```typescript
 expect(await locklift.provider.getFullContractState({ address: addr }).then(res => res.state?.isDeployed)).to.be.true;
+```
+
+#### `locklift.testing`
+
+The module provides access to special testing utils, which available only with dev node
+
+`locklift.testing.increaseTime`
+with this method you can increase local node time by seconds
+
+##### Example
+
+```typescript
+// increase time by 10 second
+await locklift.testing.increaseTime(10);
+// get current offset in seconds
+const currentOffsetInSeconds = locklift.testing.getTimeOffset();
+```
+
+Note: this method increases your local node and provider time, we can't change the time back.
+So if you need to reset the offset you will need to restart the local node.
+**After each run locklift makes syncing the provider with the local node.**
+And you will see the warning about current offset, please skip this warning if this is expected behavior,
+otherwise just restart the local node
+
+#### `locklift.context`
+
+The module provides information about current context
+
+##### Example
+
+```typescript
+const networkName = locklift.context.network.name; // network name which provided as --network param with locklift run command
+const networkConfig = locklift.context.network.config; // network setting related with selected network
 ```
 
 ### Factory (`locklift.factory`)

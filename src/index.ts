@@ -19,6 +19,7 @@ import { Transactions } from "./utils";
 import { createTracing, Tracing } from "./tracing";
 import { getGiverKeyPair } from "./utilsInternal";
 import { createTimeMovement, TimeMovement } from "./timeMovement";
+import { LockliftContext } from "./context/lockliftContext";
 
 export * from "everscale-inpage-provider";
 export type { Signer } from "everscale-standalone-client";
@@ -38,6 +39,7 @@ export class Locklift<FactorySource = any> {
     public readonly transactions: Transactions,
     public readonly tracing: Tracing,
     public readonly testing: TimeMovement,
+    public readonly context: LockliftContext,
   ) {}
 
   public static async setup<T>(
@@ -87,7 +89,8 @@ export class Locklift<FactorySource = any> {
       endpoint: networkConfig.tracing?.endpoint,
     });
     const timeMovement = await createTimeMovement(clock, networkConfig);
-    return new Locklift<T>(factory, giver, provider, clock, keystore, transactions, tracing, timeMovement);
+    const context = new LockliftContext({ config: networkConfig, name: network });
+    return new Locklift<T>(factory, giver, provider, clock, keystore, transactions, tracing, timeMovement, context);
   }
 }
 
