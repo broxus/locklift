@@ -220,7 +220,7 @@ And then you will see this in your terminal:
 You called testFunc with input = 10
 ```
 
-Note that `console.log` use internal msg spending 0.01 ever.
+Note the `console.log` is just an event, so if your transaction dropped on the computed phase (e.g `required` didn't pass), you will not see the log message.
 
 ### Tracing
 
