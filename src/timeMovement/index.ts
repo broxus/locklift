@@ -38,6 +38,14 @@ export class TimeMovement {
     }
     this.clock.offset = await this.seService.setTimeOffset(seconds).then(toMs);
   };
+  //TODO make it public when it will be resolved
+  private resetTimeOffset = async (): Promise<void> => {
+    if (!this.isEnabled) {
+      return logger.printWarn("TimeMovement is disabled");
+    }
+    this.clock.offset = await this.seService.resetTimeOffset().then(toMs);
+    console.log(`TimeMovement reset to ${this.getTimeOffset()}`);
+  };
 }
 
 export const createTimeMovement = async (

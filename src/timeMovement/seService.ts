@@ -12,4 +12,8 @@ export class SeService {
       .post<void>(`${this.rpcUrl}/se/increase-time?delta=${offsetInSeconds.toString()}`)
       .then(() => this.getCurrentOffsetTime());
   };
+
+  public resetTimeOffset = () => {
+    return axios.post<void>(`${this.rpcUrl}/se/reset-time`).then(() => this.getCurrentOffsetTime());
+  };
 }
