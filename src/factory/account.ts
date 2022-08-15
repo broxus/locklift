@@ -10,7 +10,7 @@ import {
 } from "everscale-inpage-provider";
 
 import { Deployer } from "./deployer";
-import { ConstructorParams, TransactionWithOutput } from "../types";
+import { ConstructorParams, TransactionWithOutput, Transfer } from "../types";
 import { toNano, errorExtractor } from "../utils";
 import { DeployParams } from "./index";
 
@@ -84,6 +84,19 @@ export class Account<Abi> {
         .sendExternal({ publicKey: this.publicKey }),
     );
   };
+
+  public transfer = ({ recipient, value, bounce = false, flags = 0, payload = "" }: Transfer) =>
+    errorExtractor(
+      (this.accountContract as unknown as Contract<typeof accountAbiBase>).methods
+        .sendTransaction({
+          value,
+          bounce,
+          flags,
+          dest: recipient,
+          payload,
+        })
+        .sendExternal({ publicKey: this.publicKey }),
+    );
 }
 
 export type DeployNewAccountParams<Abi> = Abi extends { data: infer D }

@@ -36,6 +36,7 @@ export const errorExtractor = async <T extends { transaction: Transaction; outpu
     if (res.transaction.aborted) {
       throw {
         message: `Transaction aborted with code ${res.transaction.exitCode}`,
+        name: "TransactionAborted",
         transaction: res,
       };
     }

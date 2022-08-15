@@ -1,4 +1,4 @@
-import { Contract, Transaction } from "everscale-inpage-provider";
+import { Address, Contract, Transaction } from "everscale-inpage-provider";
 
 export type ValueOf<T> = T[keyof T];
 export type ConstructorParams<Abi> = Parameters<constructorParams<Abi, Contract<Abi>["methods"]>>[0];
@@ -10,3 +10,10 @@ export type Optional<T extends Record<string, unknown>, K extends keyof T> = Omi
 export type TransactionWithOutput = { transaction: Transaction; output?: Record<string, unknown> | undefined };
 export type TransactionParameter = TransactionWithOutput | { tx: TransactionWithOutput };
 export type DeployTransaction = Extract<TransactionParameter, { tx: TransactionWithOutput }>;
+export type Transfer = {
+  recipient: Address;
+  value: string;
+  bounce?: boolean;
+  flags?: number;
+  payload?: string;
+};
