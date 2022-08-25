@@ -6,6 +6,7 @@ import {
   checkConnection,
   ConnectionError,
   ConnectionProperties,
+  SimpleAccountsStorage,
 } from "everscale-standalone-client/nodejs";
 import chalk from "chalk";
 
@@ -64,7 +65,7 @@ export class Locklift<FactorySource = any> {
     keystore.addKeyPair("giver", giverKeys);
 
     await ensureConnectionValid(networkConfig.connection);
-
+    const accountsStorage = new SimpleAccountsStorage();
     const clock = new Clock();
     const provider = new ProviderRpcClient({
       fallback: () =>
@@ -72,13 +73,14 @@ export class Locklift<FactorySource = any> {
           connection: networkConfig.connection,
           keystore,
           clock,
+          accountsStorage,
         }),
     });
     await provider.ensureInitialized();
 
     const giver = networkConfig.giver.giverFactory(provider, giverKeys, networkConfig.giver.address);
 
-    const factory = await Factory.setup<T>(provider, giver);
+    const factory = await Factory.setup<T>(provider, giver, accountsStorage);
 
     const transactions = new Transactions(provider);
 

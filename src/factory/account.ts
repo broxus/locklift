@@ -13,6 +13,7 @@ import { Deployer } from "./deployer";
 import { ConstructorParams, TransactionWithOutput, Transfer } from "../types";
 import { toNano, errorExtractor } from "../utils";
 import { DeployParams } from "./index";
+import { logger } from "../logger";
 
 export const accountAbiBase = {
   functions: [
@@ -110,13 +111,19 @@ export type DeployNewAccountParams<Abi> = Abi extends { data: infer D }
     }
   : never;
 
+/**
+ * @deprecated since version 2.2.0
+ * use locklift.factory.accounts instead
+ */
 export class AccountFactory<Abi> {
   constructor(
     private readonly deployer: Deployer,
     private readonly ever: ProviderRpcClient,
     private readonly abi: Abi,
     private readonly tvc: string,
-  ) {}
+  ) {
+    logger.deprecated({ methodName: "AccountFactory", instruction: "use locklift.factory.accounts instead" });
+  }
 
   getAccount = (accountAddress: Address, publicKey: string): Account<Abi> =>
     Account.getAccount(accountAddress, this.ever, publicKey, this.abi);

@@ -52,7 +52,13 @@ export const getKeyPairFromSecret = (secretKey: string): KeyPair => {
 };
 
 export const extractTransactionFromParams = (transaction: TransactionParameter): Transaction => {
-  return "tx" in transaction ? transaction.tx.transaction : transaction.transaction;
+  if ("tx" in transaction) {
+    return transaction.tx.transaction;
+  }
+  if ("transaction" in transaction) {
+    return transaction.transaction;
+  }
+  return transaction;
 };
 
 export class Transactions {

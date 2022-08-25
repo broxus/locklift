@@ -200,11 +200,11 @@ You can print to console in contracts with special library:
 import "locklift/src/console.sol";
 
 contract Sample {
-    function testFunc(uint input) external {
-        tvm.accept();
+  function testFunc(uint input) external {
+    tvm.accept();
 
-        console.log(format("You called testFunc with input = {}", input));
-    }
+    console.log(format("You called testFunc with input = {}", input));
+  }
 }
 ```
 
@@ -220,7 +220,8 @@ And then you will see this in your terminal:
 You called testFunc with input = 10
 ```
 
-Note the `console.log` is just an event, so if your message dropped on the computed phase (e.g `required` didn't pass), you will not see the log message.
+Note the `console.log` is just an event, so if your message dropped on the computed phase (e.g `required` didn't pass),
+you will not see the log message.
 
 ### Tracing
 
@@ -232,9 +233,9 @@ tracing will show the chain of calls that led to the error, as well as the error
 
 ```typescript
 // trace deploy
-const {contract: deployedContractInstance, tx} = await locklift.tracing.trace(locklift.factory.deployContract(...))
+const { contract: deployedContractInstance, tx } = await locklift.tracing.trace(locklift.factory.deployContract(...))
 // trace simple transaction
-const changeStateTransaction = await locklift.tracing.trace(MyContract.methods.changeCounterState({newState: 10}).sendExternal({publicKey: signer.publicKey}))
+const changeStateTransaction = await locklift.tracing.trace(MyContract.methods.changeCounterState({ newState: 10 }).sendExternal({ publicKey: signer.publicKey }))
 // trace runTarget
 const accountTransaction = await locklift.tracing.trace(myAccount.runTarget(...))
 ```
@@ -380,7 +381,7 @@ Module provides access to high-level control of transaction flow.
 This method allows you to wait until all transaction in chain are finalized.
 
 ```typescript
-const transaction = await locklift.transactions.waitFinalized(tokenRoot.methods.deployWallet({...))
+const transaction = await locklift.transactions.waitFinalized(tokenRoot.methods.deployWallet({ ...))
 ```
 
 #### `locklift.provider.getFullContractState`
@@ -429,7 +430,7 @@ const networkConfig = locklift.context.network.config; // network setting relate
 ### Factory (`locklift.factory`)
 
 This module provides the factory for getting sources of the contract and functionality for deploy contracts.
-From factory you can receive contract objects from the project Solidity sources and contracts provided
+From factory, you can receive contract objects from the project Solidity sources and contracts provided
 in `config.extarnalContracts`.
 
 #### `locklift.factory.getContractArtifacts`
@@ -446,15 +447,15 @@ Deploy specified contract and returns contract instance and transaction.
 
 ```typescript
 // Deploy
-const {contract: DeployedMyContract, tx} = locklift.factory.deployContract({
+const { contract: DeployedMyContract, tx } = locklift.factory.deployContract({
   // name of your contract
   contract: "MyContractName",
   // public key in init data
   publicKey: signer.publicKey,
   // static parameters of contract
-  initParams: {...},
+  initParams: { ... },
   // runtime deployment arguments
-  constructoParams: {...},
+  constructoParams: { ... },
   // this value will be transfered from giver to deployable contract
   value: locklift.utils.toNano(2),
 });
@@ -468,7 +469,8 @@ const GettedMyContract = await locklift.factory.getDeployedContract(
 
 ### Contract
 
-Contract object includes all methods based on built sources (Abi). It is based on https://github.com/broxus/everscale-inpage-provider
+Contract object includes all methods based on built sources (Abi). It is based
+on https://github.com/broxus/everscale-inpage-provider
 
 ```typescript
 const MyContract = locklift.factory.getDeployedContract(
@@ -485,7 +487,105 @@ const futureEvent = await MyContract.waitForEvent({ filter: event => event.event
 const pastEvents = await MyContract.getPastEvents({ filter: event => event.event === "Deposit" });
 ```
 
-### AccountFactory (`locklift.factory.getAccountsFactory`)
+### locklift.factory.accounts
+
+This module provides possibility to interact with contracts directly e.g.
+
+```typescript
+myContract.methods.mint({}).send({
+  //sender account
+  from: myAccountAddress,
+  amount: locklift.utils.toNano(20),
+});
+```
+
+For this flow need to add accounts to the `locklift.factory.accounts`. We are supporting WalletV3, HighLoadWallet
+and another wallets which should provided directly
+
+#### Deploy and adding new account to the account storage
+
+For creating and adding new account need to use `locklift.factory.accounts.addNewAccount` this method sends value and
+deploys new account
+
+1. WalletV3 or HighLoadWallet
+
+```typescript
+const account = await locklift.factory.accounts.addNewAccount({
+  type: WalletTypes.WalletV3, // or WalletTypes.HighLoadWallet,
+  //Value which will send to the new account from a giver
+  value: locklift.utils.toNano(100000).toString(),
+  //owner publicKey
+  publicKey: signer.publicKey,
+});
+```
+
+2. Custom Wallets (
+   e.g. [SafeMultisig like](https://github.com/broxus/ever-contracts/blob/master/contracts/wallets/Account.sol#L2-L3))
+
+_Note: For custom wallets needs to follow the same rules as for simple deploy(need to pass constructor and init params)_
+
+**Custom Wallet should implement method sendTransaction
+from** [Account](https://github.com/broxus/ever-contracts/blob/master/contracts/wallets/Account.sol#L2-L3))
+
+```typescript
+const account = await locklift.factory.accounts.addNewAccount({
+  type: WalletTypes.Custom,
+  //Contract should included to the locklift.config.externalContracts or should compiled from contracts folder
+  contract: "Account",
+  //Value which will send to the new account from a giver
+  value: locklift.utils.toNano(100000).toString(),
+  publicKey: signer.publicKey,
+  constructorParams: {},
+  initParams: {
+    _randomNonce: locklift.utils.getRandomNonce(),
+  },
+});
+```
+
+And then `account.address` can be used as sender.
+
+#### Full example:
+
+```typescript
+const account = await locklift.factory.accounts.addNewAccount({
+  type: WalletTypes.WalletV3, // or WalletTypes.HighLoadWallet,
+  //Value which will send to the new account from a giver
+  value: locklift.utils.toNano(100000).toString(),
+  //owner publicKey
+  publicKey: signer.publicKey,
+});
+
+await myContract.methods.mint({}).send({
+  //sender account
+  from: account.address,
+  amount: locklift.utils.toNano(20),
+});
+```
+
+#### Using an existing account
+
+```typescript
+const walletV3Account = await locklift.factory.accounts.addExistingAccount({
+  publicKey: signer.publicKey,
+  type: WalletTypes.WalletV3,
+});
+
+const mySafeMultisigAccount = await locklift.factory.accounts.addExistingAccount({
+  publicKey: signer.publicKey,
+  type: WalletTypes.Custom,
+  address: "MyAddress",
+});
+
+await myContract.methods.mint({}).send({
+  //sender account
+  from: mySafeMultisigAccount.address, // walletV3Account.address
+  amount: locklift.utils.toNano(20),
+});
+```
+
+### ~~AccountFactory~~ (`locklift.factory.getAccountsFactory`)
+
+this is deprecated since 2.2.0, use `locklift.factory.accounts` instead
 
 This module provides the generic accountFactory. You can provide your own implementation of account if needed,
 there is only one constraint - custom contract should include this method
@@ -521,12 +621,12 @@ Now you can use it for deploying contract or getting deployed ones
 #### Deploy
 
 ```typescript
-const {contract: MyAccount, tx} = accountsFactory.deployNewAccount({
+const { contract: MyAccount, tx } = accountsFactory.deployNewAccount({
   publicKey: signer.publicKey,
   initParams: {
     _randomNonce: locklift.utils.getRandomNonce(),
   },
-  constructorParams: {...},
+  constructorParams: { ... },
   value: locklift.utils.toNano(100000)
 });
 ```

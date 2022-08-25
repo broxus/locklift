@@ -9,6 +9,8 @@ import { AccountFactory } from "./account";
 import { Deployer } from "./deployer";
 import { validateAccountAbi } from "./utils";
 import { flatDirTree } from "../cli/builder/utils";
+import { AccountFactory2 } from "./account2";
+import { SimpleAccountsStorage } from "everscale-standalone-client/nodejs";
 
 export { Account, AccountFactory } from "./account";
 export * from "./giver";
@@ -30,14 +32,26 @@ export type DeployContractParams<T extends FactoryType, ContractName extends key
   constructorParams: ConstructorParams<T[ContractName]>;
   value: string;
 } & Optional<DeployParams<T[ContractName]>, "tvc">;
+
 export type DeployParams<Abi> = GetExpectedAddressParams<Abi> & { publicKey: string };
+
 export class Factory<T extends FactoryType> {
   private readonly factoryCache: CacheType<T, keyof T> = {} as CacheType<T, keyof T>;
+  public accounts: AccountFactory2<T>;
+  private constructor(
+    private readonly ever: ProviderRpcClient,
+    private readonly giver: Giver,
+    private readonly accountsStorage: SimpleAccountsStorage,
+  ) {
+    this.accounts = new AccountFactory2(this, giver.sendTo.bind(giver), accountsStorage);
+  }
 
-  private constructor(private readonly ever: ProviderRpcClient, private readonly giver: Giver) {}
-
-  public static async setup<T extends FactoryType>(ever: ProviderRpcClient, giver: Giver): Promise<Factory<T>> {
-    const factory = new Factory<T>(ever, giver);
+  public static async setup<T extends FactoryType>(
+    ever: ProviderRpcClient,
+    giver: Giver,
+    accountsStorage: SimpleAccountsStorage,
+  ): Promise<Factory<T>> {
+    const factory = new Factory<T>(ever, giver, accountsStorage);
     await factory.getContractsArtifacts().then(artifacts => {
       artifacts.forEach(({ artifacts, contractName }) => {
         factory.factoryCache[contractName] = artifacts;
