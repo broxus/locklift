@@ -457,7 +457,7 @@ const { contract: DeployedMyContract, tx } = locklift.factory.deployContract({
   // runtime deployment arguments
   constructoParams: { ... },
   // this value will be transfered from giver to deployable contract
-  value: locklift.utils.toNano(2),
+  value: toNano(2),
 });
 // Ot you can get instance of already deployed contract
 const GettedMyContract = await locklift.factory.getDeployedContract(
@@ -495,7 +495,7 @@ This module provides the possibility to interact with contracts directly e.g.
 myContract.methods.mint({}).send({
   //sender account
   from: myAccountAddress,
-  amount: locklift.utils.toNano(20),
+  amount: toNano(20),
 });
 ```
 
@@ -513,7 +513,7 @@ deploys new account
 const account = await locklift.factory.accounts.addNewAccount({
   type: WalletTypes.WalletV3, // or WalletTypes.HighLoadWallet,
   //Value which will send to the new account from a giver
-  value: locklift.utils.toNano(100000).toString(),
+  value: toNano(100000),
   //owner publicKey
   publicKey: signer.publicKey,
 });
@@ -534,11 +534,11 @@ const account = await locklift.factory.accounts.addNewAccount({
   //Contract should included to the locklift.config.externalContracts or should compiled from contracts folder
   contract: "Account",
   //Value which will send to the new account from a giver
-  value: locklift.utils.toNano(100000).toString(),
+  value: toNano(100000),
   publicKey: signer.publicKey,
   constructorParams: {},
   initParams: {
-    _randomNonce: locklift.utils.getRandomNonce(),
+    _randomNonce: getRandomNonce(),
   },
 });
 ```
@@ -551,7 +551,7 @@ And then `account.address` can be used as sender.
 const account = await locklift.factory.accounts.addNewAccount({
   type: WalletTypes.WalletV3, // or WalletTypes.HighLoadWallet,
   //Value which will send to the new account from a giver
-  value: locklift.utils.toNano(100000).toString(),
+  value: toNano(100000),
   //owner publicKey
   publicKey: signer.publicKey,
 });
@@ -559,7 +559,7 @@ const account = await locklift.factory.accounts.addNewAccount({
 await myContract.methods.mint({}).send({
   //sender account
   from: account.address,
-  amount: locklift.utils.toNano(20),
+  amount: toNano(20),
 });
 ```
 
@@ -580,7 +580,7 @@ const mySafeMultisigAccount = await locklift.factory.accounts.addExistingAccount
 await myContract.methods.mint({}).send({
   //sender account
   from: mySafeMultisigAccount.address, // walletV3Account.address
-  amount: locklift.utils.toNano(20),
+  amount: toNano(20),
 });
 ```
 
@@ -625,7 +625,7 @@ Now you can use it for deploying contract or getting deployed ones
 const { contract: MyAccount, tx } = accountsFactory.deployNewAccount({
   publicKey: signer.publicKey,
   initParams: {
-    _randomNonce: locklift.utils.getRandomNonce(),
+    _randomNonce: getRandomNonce(),
   },
   constructorParams: { ... },
   value: locklift.utils.toNano(100000)
@@ -682,13 +682,11 @@ reimplement it in giverSettings/index.ts.
 
 This module provides some utility functions for more convenient work with Ever objects.
 
-#### `locklift.utils.toNano(amount)`
-
-Multiplies amount by 10^9. Returns `string`.
-
 ##### Example
 
 ````typescript
-locklift.utils.toNano(10); // 10000000000
-locklift.utils.fromNano(10000000000); // 10```
+import { toNano, fromNano, getRandomNonce, convertAmount } from "locklift";
+
+toNano(10); // 10000000000
+fromNano(10000000000); // 10```
 ````
