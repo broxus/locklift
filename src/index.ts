@@ -28,6 +28,7 @@ export { Dimension, zeroAddress } from "./constants";
 export type { LockliftConfig } from "./config";
 export type { Giver } from "./factory";
 export { toNano, fromNano, getRandomNonce, convertAmount } from "./utils";
+export { WalletTypes } from "./types";
 
 export class Locklift<FactorySource = any> {
   public readonly utils = utils;

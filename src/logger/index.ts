@@ -3,7 +3,7 @@ enum Labels {
   INFO = "[INFO] ",
   WARNING = "[WARNING] ",
   ERROR = "[ERROR] ",
-  BUILDER_LOG = "[BUILDER LOG] ",
+  BUILDER_LOG = "[BUILDER] ",
 
   DEPRECATED = "[DEPRECATED] ",
 }
@@ -18,7 +18,7 @@ class Logger {
   }
 
   public printInfo(...params: ConsoleLogParams): void {
-    console.log(chalk.blue(Labels.INFO), chalk.blue(...params));
+    console.log(chalk.blueBright(Labels.INFO), chalk.blueBright(...params));
   }
 
   public printBuilderLog(...params: ConsoleLogParams): void {
