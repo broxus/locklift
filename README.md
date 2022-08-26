@@ -19,7 +19,7 @@ Locklift is a development environment aiming to help you with Everscale contract
 - Handy wrapper around Everscale smart contract
 - Custom givers support
 - Keys management
-- External script runner that executes scripts within specified environment
+- External script runner that executes scripts within a specified environment
 
 ## Quick start
 
@@ -29,7 +29,7 @@ To install Locklift you need node 14 or later. Go to an empty folder, initialize
 npm install --save-dev locklift
 ```
 
-Once it's installed you can initialize project
+Once it's installed you can initialize the project
 
 ```bash
 // initialize in current directory
@@ -55,7 +55,7 @@ npx locklift init --path amazing-locklift-project
 # New Locklift project initialized in amazing-locklift-project
 ```
 
-This command initialize new Locklift project, filled with samples:
+This command initializes new Locklift project, filled with samples:
 
 ```
 ├── contracts
@@ -71,7 +71,7 @@ This command initialize new Locklift project, filled with samples:
 
 ### Other flags
 
-`-f, --force` - force run the init command (in case you have any files in target directory);
+`-f, --force` - force run the init command (in case you have any files in the target directory);
 
 ## Configuration
 
@@ -114,9 +114,9 @@ const config: LockliftConfig = {
           local: true,
         },
       },
-      // This giver is default local-node giverV2
+      // This giver is the default local-node giverV2
       giver: {
-        // Check if you need provide custom giver
+        // Check if you need to provide a custom giver
         giverFactory: (ever, keyPair, address) => new SimpleGiver(ever, keyPair, address),
         address: "0:ece57bcc6c530283becbbd8a3b24d3c5987cdddc3c8b7b33be6e4a6312490415",
         key: "172af540e43a524763dd53b26a066d472a97c4de37d5498170564510608250c3",
@@ -249,7 +249,7 @@ npx locklift test -n local
 ```
 ...
 
-	#1 action out of 1
+ #1 action out of 1
 Addr: 0:785ea492db0bc46e370d9ef3a0cc23fb86f7a734ac7948bb50e25b51b2455de0
 MsgId: 963a963f227d69f2845265335ecee99052411204b767be441755796cc28482f4
 -----------------------------------------------------------------
@@ -261,9 +261,9 @@ TokenWallet.transfer{value: 4.998, bounce: true}(
     notify: true
     payload: te6ccgEBAQEAKAAAS4AXvOIJRF0kuLdJrf7QNzLzvROSLywJoUpcj6w7WfXqVCAAAAAQ
 )
-		⬇
-		⬇
-	#1 action out of 1
+  ⬇
+  ⬇
+ #1 action out of 1
 Addr: 0:b00ef94c1a23a48e14cdd12a689a3f942e8b616d061d74a017385f6edc704588
 MsgId: bcbe2fb9efd98efe02a6cb6452f38f3dce364b5480b7352000a32f7bdfde949a
 -----------------------------------------------------------------
@@ -274,9 +274,9 @@ TokenWallet.acceptTransfer{value: 4.978, bounce: true}(
     notify: true
     payload: te6ccgEBAQEAKAAAS4AXvOIJRF0kuLdJrf7QNzLzvROSLywJoUpcj6w7WfXqVCAAAAAQ
 )
-		⬇
-		⬇
-	#1 action out of 1
+  ⬇
+  ⬇
+ #1 action out of 1
 Addr: 0:5d0075f4d3b14edb87f78c5928fbaff7aa769a49eedc7368c33c95a6d63bbf17
 MsgId: 99034783340906fb5b9eb9a379e1fcb08887992ed0183da78e363ef694ba7c52
 -----------------------------------------------------------------
@@ -293,9 +293,9 @@ EverFarmPool.onAcceptTokensTransfer{value: 4.952, bounce: false}(
 
 ### Ignoring errors
 
-By default tracing will throw error on any non-zero code in execution graph, but
-sometimes in contract we can expect some specific errors that could be processed later with bounced msgs.
-In this cases we dont want tracing to throw errors, because such behaviour is expected.
+By default, tracing will throw an error on any non-zero code in the execution graph, but
+sometimes in contract, we can expect some specific errors that could be processed later with bounced msgs.
+In this cases, we don't want tracing to throw errors, because such behavior is expected.
 We can tell tracing to ignore specific errors on compute or action phases.
 
 We can ignore errors on specific call:
@@ -324,12 +324,12 @@ const transaction = await locklift.tracing.trace(
 Or set ignoring by default for all further calls:
 
 ```typescript
-// ignore compute(or acton) phase erros for all transactions
+// ignore compute(or acton) phase errors for all transactions
 locklift.tracing.setAllowedCodes({ compute: [52, 60] });
 // ignore more errors for specific address
 locklift.tracing.setAllowedCodesForAddress(SOME_ADDRESS, { compute: [123], action: [111] });
 
-// remove code from default list of ignored errors, so that only 51 erros will be ignored
+// remove code from a default list of ignored errors so that only 51 errors will be ignored
 // this affects only global rules, per-address rules are not modified
 locklift.tracing.removeAllowedCodes({ compute: [60] });
 // remove code from deault list of ignored errors for specific address
@@ -338,7 +338,7 @@ locklift.tracing.removeAllowedCodesForAddress(SOME_ADDRESS, { compute: [123] });
 
 ## Run script
 
-This command runs an arbitrary Node JS script with already configured `locklift` module.
+This command runs an arbitrary Node JS script with an already configured `locklift` module.
 
 ```bash
 npx locklift run --network local --script scripts/1-deploy-sample.ts
@@ -376,9 +376,9 @@ expect(Number(userBalance)).to.be.above(0, "Bad user balance");
 
 #### `locklift.transactions`
 
-Module provides access to high-level control of transaction flow.
+The module provides access to high-level control of transaction flow.
 
-This method allows you to wait until all transaction in chain are finalized.
+This method allows you to wait until all transactions in the chain are finalized.
 
 ```typescript
 const transaction = await locklift.transactions.waitFinalized(tokenRoot.methods.deployWallet({ ...))
@@ -396,15 +396,15 @@ expect(await locklift.provider.getFullContractState({ address: addr }).then(res 
 
 #### `locklift.testing`
 
-The module provides access to special testing utils, which available only with dev node
+The module provides access to special testing utils, which available only with the dev node
 
 `locklift.testing.increaseTime`
-with this method you can increase local node time by seconds
+with this method, you can increase local node time by seconds
 
 ##### Example
 
 ```typescript
-// increase time by 10 second
+// increase time by 10 seconds
 await locklift.testing.increaseTime(10);
 // get current offset in seconds
 const currentOffsetInSeconds = locklift.testing.getTimeOffset();
@@ -413,12 +413,12 @@ const currentOffsetInSeconds = locklift.testing.getTimeOffset();
 Note: this method increases your local node and provider time, we can't change the time back.
 So if you need to reset the offset you will need to restart the local node.
 **After each run locklift makes syncing the provider with the local node.**
-And you will see the warning about current offset, please skip this warning if this is expected behavior,
-otherwise just restart the local node
+And you will see the warning about the current offset, please skip this warning if this is expected behavior,
+otherwise, just restart the local node
 
 #### `locklift.context`
 
-The module provides information about current context
+The module provides information about the current context
 
 ##### Example
 
@@ -429,8 +429,8 @@ const networkConfig = locklift.context.network.config; // network setting relate
 
 ### Factory (`locklift.factory`)
 
-This module provides the factory for getting sources of the contract and functionality for deploy contracts.
-From factory, you can receive contract objects from the project Solidity sources and contracts provided
+This module provides the factory with getting sources of the contract and functionality for deploying contracts.
+From the factory, you can receive contract objects from the project Solidity sources and contracts provided
 in `config.extarnalContracts`.
 
 #### `locklift.factory.getContractArtifacts`
@@ -469,7 +469,7 @@ const GettedMyContract = await locklift.factory.getDeployedContract(
 
 ### Contract
 
-Contract object includes all methods based on built sources (Abi). It is based
+The contract object includes all methods based on built sources (Abi). It is based
 on https://github.com/broxus/everscale-inpage-provider
 
 ```typescript
@@ -489,7 +489,7 @@ const pastEvents = await MyContract.getPastEvents({ filter: event => event.event
 
 ### locklift.factory.accounts
 
-This module provides possibility to interact with contracts directly e.g.
+This module provides the possibility to interact with contracts directly e.g.
 
 ```typescript
 myContract.methods.mint({}).send({
@@ -500,11 +500,11 @@ myContract.methods.mint({}).send({
 ```
 
 For this flow need to add accounts to the `locklift.factory.accounts`. We are supporting WalletV3, HighLoadWallet
-and another wallets which should provided directly
+and other wallets which should provide directly
 
-#### Deploy and adding new account to the account storage
+#### Deploy and add new account to the account storage
 
-For creating and adding new account need to use `locklift.factory.accounts.addNewAccount` this method sends value and
+For creating and adding a new account need to use `locklift.factory.accounts.addNewAccount` this method sends values and
 deploys new account
 
 1. WalletV3 or HighLoadWallet
@@ -522,7 +522,8 @@ const account = await locklift.factory.accounts.addNewAccount({
 2. Custom Wallets (
    e.g. [SafeMultisig like](https://github.com/broxus/ever-contracts/blob/master/contracts/wallets/Account.sol#L2-L3))
 
-_Note: For custom wallets needs to follow the same rules as for simple deploy(need to pass constructor and init params)_
+_Note: For custom wallets, needs to follow the same rules as for simple deploy(need to pass constructor and init
+params)_
 
 **Custom Wallet should implement method sendTransaction
 from** [Account](https://github.com/broxus/ever-contracts/blob/master/contracts/wallets/Account.sol#L2-L3))
@@ -587,8 +588,8 @@ await myContract.methods.mint({}).send({
 
 this is deprecated since 2.2.0, use `locklift.factory.accounts` instead
 
-This module provides the generic accountFactory. You can provide your own implementation of account if needed,
-there is only one constraint - custom contract should include this method
+This module provides the generic account factory. You can provide your own implementation of the account if needed,
+there is only one constraint - the custom contract should include this method
 
 ```typescript
 accountAbiBase = {
@@ -644,7 +645,7 @@ To make testing realistic we added `Account` class that allows you to imitate us
 transactions to contracts through wallet contract.
 
 This class extends the basic `Contract` functionality by adding special `runTarget` method,
-which allows to interact with another contracts, by sending internal message from "Account" contract.
+which allows interaction with other contracts, by sending internal messages from "Account" contract.
 It encodes the specified method + params into the internal message, according to the
 target contract's ABI and call the Account's external method.
 
@@ -679,7 +680,7 @@ reimplement it in giverSettings/index.ts.
 
 ### Utils
 
-This module provides some utility functionality for more convenient work with TON objects.
+This module provides some utility functions for more convenient work with Ever objects.
 
 #### `locklift.utils.toNano(amount)`
 
