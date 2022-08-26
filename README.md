@@ -261,9 +261,9 @@ TokenWallet.transfer{value: 4.998, bounce: true}(
     notify: true
     payload: te6ccgEBAQEAKAAAS4AXvOIJRF0kuLdJrf7QNzLzvROSLywJoUpcj6w7WfXqVCAAAAAQ
 )
-  ⬇
-  ⬇
- #1 action out of 1
+		⬇
+		⬇
+	#1 action out of 1
 Addr: 0:b00ef94c1a23a48e14cdd12a689a3f942e8b616d061d74a017385f6edc704588
 MsgId: bcbe2fb9efd98efe02a6cb6452f38f3dce364b5480b7352000a32f7bdfde949a
 -----------------------------------------------------------------
@@ -274,9 +274,9 @@ TokenWallet.acceptTransfer{value: 4.978, bounce: true}(
     notify: true
     payload: te6ccgEBAQEAKAAAS4AXvOIJRF0kuLdJrf7QNzLzvROSLywJoUpcj6w7WfXqVCAAAAAQ
 )
-  ⬇
-  ⬇
- #1 action out of 1
+		⬇
+		⬇
+	#1 action out of 1
 Addr: 0:5d0075f4d3b14edb87f78c5928fbaff7aa769a49eedc7368c33c95a6d63bbf17
 MsgId: 99034783340906fb5b9eb9a379e1fcb08887992ed0183da78e363ef694ba7c52
 -----------------------------------------------------------------
