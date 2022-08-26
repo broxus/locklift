@@ -12,14 +12,14 @@ import { validateAccountAbi } from "./utils";
 
 type CreateAccountParams<T extends FactoryType> =
   | {
-      type: WalletTypes.WalletV3 | WalletTypes.HighLoadWallet;
+      type: WalletTypes.WalletV3 | WalletTypes.HighLoadWalletV2;
       publicKey: string;
       value: string;
     }
   | ({ type: WalletTypes.Custom } & DeployContractParams<T, keyof T>);
 
 type AddExistingAccountParams =
-  | { type: WalletTypes.HighLoadWallet | WalletTypes.WalletV3; publicKey: string }
+  | { type: WalletTypes.HighLoadWalletV2 | WalletTypes.WalletV3; publicKey: string }
   | { type: WalletTypes.Custom; publicKey?: string; address: Address };
 
 /*
@@ -56,7 +56,7 @@ export class AccountFactory2<T extends FactoryType> {
           tx: depositTransaction,
         };
       }
-      case WalletTypes.HighLoadWallet: {
+      case WalletTypes.HighLoadWalletV2: {
         const account = await HighloadWalletV2.fromPubkey({ publicKey: params.publicKey });
         const depositTransaction = await this.sender(account.address, params.value);
         return {
@@ -84,7 +84,7 @@ export class AccountFactory2<T extends FactoryType> {
 
   private getExistingAccount = async (params: AddExistingAccountParams): Promise<Account> => {
     switch (params.type) {
-      case WalletTypes.HighLoadWallet:
+      case WalletTypes.HighLoadWalletV2:
         return HighloadWalletV2.fromPubkey({ publicKey: params.publicKey });
       case WalletTypes.WalletV3:
         return WalletV3Account.fromPubkey({ publicKey: params.publicKey });

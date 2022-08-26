@@ -18,9 +18,38 @@ export type Transfer = {
   flags?: number;
   payload?: string;
 };
+
 export enum WalletTypes {
+  /**
+   * WalletV3
+   */
   WalletV3,
-  HighLoadWallet,
+  /**
+   * HighLoadWalletV2
+   */
+  HighLoadWalletV2,
+  /**
+   * Any account which supports Giver ABI (GiverV2, SafeMultisig, SetcodeMultisig, Surf):
+   *
+   * ```
+   * {
+   *   "ABI version": 2,
+   *   "header": ["pubkey", "time", "expire"],
+   *   "functions": [{
+   *     "name": "sendTransaction",
+   *     "inputs": [
+   *       {"name":"dest","type":"address"},
+   *       {"name":"value","type":"uint128"},
+   *       {"name":"bounce","type":"bool"},
+   *       {"name":"flags","type":"uint8"},
+   *       {"name":"payload","type":"cell"}
+   *     ],
+   *     "outputs": []
+   *   }],
+   *   "events": []
+   * }
+   * ```
+   */
   Custom,
 }
 export type CreateAccountOutput = {
