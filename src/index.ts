@@ -14,7 +14,7 @@ import { Keys } from "./keys";
 import { ConfigState, LockliftConfig } from "./config";
 import * as utils from "./utils";
 import { logger } from "./logger";
-import { Giver } from "./factory";
+import { FactoryType, Giver } from "./factory";
 import { Factory } from "./factory";
 import { Transactions } from "./utils";
 import { createTracing, Tracing } from "./tracing";
@@ -30,7 +30,7 @@ export type { Giver } from "./factory";
 export { toNano, fromNano, getRandomNonce, convertAmount } from "./utils";
 export { WalletTypes } from "./types";
 
-export class Locklift<FactorySource = any> {
+export class Locklift<FactorySource extends FactoryType> {
   public readonly utils = utils;
 
   private constructor(
@@ -45,7 +45,7 @@ export class Locklift<FactorySource = any> {
     public readonly context: LockliftContext,
   ) {}
 
-  public static async setup<T>(
+  public static async setup<T extends FactoryType>(
     config: LockliftConfig<ConfigState.INTERNAL>,
     network: keyof LockliftConfig["networks"] = "local",
   ): Promise<Locklift<T>> {
