@@ -50,7 +50,7 @@ export enum WalletTypes {
    * }
    * ```
    */
-  Custom,
+  MsigAccount,
 }
 export type CreateAccountOutput = {
   account: Account;

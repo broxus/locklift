@@ -348,7 +348,7 @@ npx locklift run --network local --script scripts/1-deploy-sample.ts
 Sample deployed at: 0:a56a1882231c9d901a1576ec2187575b01d1e33dd71108525b205784a41ae6d0
 ```
 
-## Locklift docs
+# Locklift docs
 
 This section describes the features of the `locklift` module.
 
@@ -362,7 +362,7 @@ Module provides access to keystore
 const signer = await locklift.keystore.getSigner("0");
 ```
 
-#### `locklift.provider.getBalance`
+## Get Balance (`locklift.provider.getBalance`)
 
 Get balance of account
 
@@ -374,7 +374,7 @@ const userBalance = await locklift.provider.getBalance(user.address);
 expect(Number(userBalance)).to.be.above(0, "Bad user balance");
 ```
 
-#### `locklift.transactions`
+## Transactions (`locklift.transactions`)
 
 The module provides access to high-level control of transaction flow.
 
@@ -384,7 +384,7 @@ This method allows you to wait until all transactions in the chain are finalized
 const transaction = await locklift.transactions.waitFinalized(tokenRoot.methods.deployWallet({ ...))
 ```
 
-#### `locklift.provider.getFullContractState`
+## Full contract state (`locklift.provider.getFullContractState`)
 
 Get full account state
 
@@ -394,7 +394,7 @@ Get full account state
 expect(await locklift.provider.getFullContractState({ address: addr }).then(res => res.state?.isDeployed)).to.be.true;
 ```
 
-#### `locklift.testing`
+## Testing (`locklift.testing`)
 
 The module provides access to special testing utils, which available only with the dev node
 
@@ -416,7 +416,7 @@ So if you need to reset the offset you will need to restart the local node.
 And you will see the warning about the current offset, please skip this warning if this is expected behavior,
 otherwise, just restart the local node
 
-#### `locklift.context`
+## Context (`locklift.context`)
 
 The module provides information about the current context
 
@@ -427,7 +427,7 @@ const networkName = locklift.context.network.name; // network name which provide
 const networkConfig = locklift.context.network.config; // network setting related with selected network
 ```
 
-### Factory (`locklift.factory`)
+## Factory (`locklift.factory`)
 
 This module provides the factory with getting sources of the contract and functionality for deploying contracts.
 From the factory, you can receive contract objects from the project Solidity sources and contracts provided
@@ -441,7 +441,7 @@ Returns all compilation artifacts based on the .sol file name or name from value
 const myContractData = await locklift.factory.getContractArtifacts("MyContract");
 ```
 
-#### `locklift.factory.deployContract`
+### Deploy `locklift.factory.deployContract`
 
 Deploy specified contract and returns contract instance and transaction.
 
@@ -467,7 +467,7 @@ const GettedMyContract = await locklift.factory.getDeployedContract(
 // In this example 'DeployedMyContract' and 'GettedMyContract' are the same contract
 ```
 
-### Contract
+## Contract
 
 The contract object includes all methods based on built sources (Abi). It is based
 on https://github.com/broxus/everscale-inpage-provider
@@ -487,7 +487,7 @@ const futureEvent = await MyContract.waitForEvent({ filter: event => event.event
 const pastEvents = await MyContract.getPastEvents({ filter: event => event.event === "Deposit" });
 ```
 
-### locklift.factory.accounts
+## locklift.factory.accounts
 
 This module provides the possibility to interact with contracts directly e.g.
 
@@ -499,15 +499,15 @@ myContract.methods.mint({}).send({
 });
 ```
 
-For this flow need to add accounts to the `locklift.factory.accounts`. We are supporting WalletV3, HighLoadWallet
+For this flow need to add accounts to the `locklift.factory.accounts`. We are supporting WalletV3, HighLoadWallet, MsigAccount
 and other wallets which should provide directly
 
-#### Deploy and add new account to the account storage
+### Deploy and add new account to the account storage
 
 For creating and adding a new account need to use `locklift.factory.accounts.addNewAccount` this method sends values and
 deploys new account
 
-1. WalletV3 or HighLoadWallet
+### 1. WalletV3 or HighLoadWallet
 
 ```typescript
 const account = await locklift.factory.accounts.addNewAccount({
@@ -519,18 +519,17 @@ const account = await locklift.factory.accounts.addNewAccount({
 });
 ```
 
-2. Custom Wallets (
-   e.g. [SafeMultisig like](https://github.com/broxus/ever-contracts/blob/master/contracts/wallets/Account.sol#L2-L3))
+### 2. Msig like Wallets (e.g. [SafeMultisig like](https://github.com/broxus/ever-contracts/blob/master/contracts/wallets/Account.sol#L2-L3))
 
 _Note: For custom wallets, needs to follow the same rules as for simple deploy(need to pass constructor and init
 params)_
 
-**Custom Wallet should implement method sendTransaction
+**Msig like Wallet should implement method sendTransaction
 from** [Account](https://github.com/broxus/ever-contracts/blob/master/contracts/wallets/Account.sol#L2-L3))
 
 ```typescript
 const account = await locklift.factory.accounts.addNewAccount({
-  type: WalletTypes.Custom,
+  type: WalletTypes.MsigAccount,
   //Contract should included to the locklift.config.externalContracts or should compiled from contracts folder
   contract: "Account",
   //Value which will send to the new account from a giver
@@ -563,7 +562,53 @@ await myContract.methods.mint({}).send({
 });
 ```
 
-#### Using an existing account
+### 3. Custom wallets
+
+_Note this is very low level adding account method, so if you need to use something custom would be a better way to
+use `2. Msig like Wallets`_ method
+
+[MsigAccount](https://github.com/broxus/everscale-standalone-client/blob/dev/src/client/AccountsStorage/Generic.ts#L61-L107)
+can be used as example for own implementation
+
+#### example
+
+```typescript
+import { GenericAccount } from 'locklift/everscale-standalone-client'
+
+const { abi: myMsigAccountAbi } = locklift.factory.getContractArtifacts("MyMsigAccount");
+
+//derived from https://github.com/broxus/everscale-standalone-client/blob/dev/src/client/AccountsStorage/Generic.ts#L61-L107
+class MyMsigAccount extends GenericAccount {
+  constructor(args: {
+    address: string | Address,
+    publicKey?: string
+  }) {
+    super({ abi: myMsigAccountAbi, ... });
+  }
+}
+
+const signer = await locklift.keystore.getSigner('0')
+const { contract: myMsigContract } = await locklift.factory.deployContract({
+  contract: "MyMsigAccount",
+  constructorParams: {},
+  initParams: {
+    _randomNonce: getRandomNonce(),
+  },
+  value: toNano(10),
+  publicKey: signer.publicKey,
+});
+const myMsigAccount = new MyMsigAccount({ address: myMsigContract.address, publicKey: signer.publicKey })
+locklift.factory.accounts.storage.addAccount(myMsigAccount)
+
+await myContract.methods.mint({}).send({
+  //sender account
+  from: myMsigAccount.address,
+  amount: toNano(20),
+});
+
+```
+
+### Using an existing account
 
 ```typescript
 const walletV3Account = await locklift.factory.accounts.addExistingAccount({
@@ -584,7 +629,7 @@ await myContract.methods.mint({}).send({
 });
 ```
 
-### ~~AccountFactory~~ (`locklift.factory.getAccountsFactory`)
+## ~~AccountFactory~~ (`locklift.factory.getAccountsFactory`)
 
 this is deprecated since 2.2.0, use `locklift.factory.accounts` instead
 
@@ -619,7 +664,7 @@ let accountsFactory = locklift.factory.getAccountsFactory(
 
 Now you can use it for deploying contract or getting deployed ones
 
-#### Deploy
+### Deploy
 
 ```typescript
 const { contract: MyAccount, tx } = accountsFactory.deployNewAccount({
@@ -632,7 +677,7 @@ const { contract: MyAccount, tx } = accountsFactory.deployNewAccount({
 });
 ```
 
-#### Get account by address
+### Get account by address
 
 ```typescript
 const Account = accountsFactory.getAccount(new Address("MyAddress"), signer.publicKey);
@@ -672,13 +717,13 @@ await userAccount1.runTarget(
 );
 ```
 
-### Giver (`locklift.giver`)
+## Giver (`locklift.giver`)
 
 This module allows you to send tokens. LockLift using GiverV2 by default, but you can use everything you want, just
 reimplement it in giverSettings/index.ts.
 `locklift.factory` is using the giver under the hood, for deploying contracts
 
-### Utils
+## Utils
 
 This module provides some utility functions for more convenient work with Ever objects.
 

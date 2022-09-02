@@ -3,10 +3,10 @@ import { Address, Contract } from "everscale-inpage-provider";
 import { CreateAccountOutput, DeployTransaction, WalletTypes } from "../types";
 import {
   SimpleAccountsStorage,
-  GiverAccount,
   WalletV3Account,
   HighloadWalletV2,
   Account,
+  MsigAccount,
 } from "everscale-standalone-client/nodejs";
 import { validateAccountAbi } from "./utils";
 
@@ -16,11 +16,11 @@ type CreateAccountParams<T extends FactoryType> =
       publicKey: string;
       value: string;
     }
-  | ({ type: WalletTypes.Custom } & DeployContractParams<T, keyof T>);
+  | ({ type: WalletTypes.MsigAccount } & DeployContractParams<T, keyof T>);
 
 type AddExistingAccountParams =
   | { type: WalletTypes.HighLoadWalletV2 | WalletTypes.WalletV3; publicKey: string }
-  | { type: WalletTypes.Custom; publicKey?: string; address: Address };
+  | { type: WalletTypes.MsigAccount; publicKey?: string; address: Address };
 
 /*
 AccountFactory2 is service based on everscale-standalone-client SimpleAccountsStorage
@@ -64,11 +64,11 @@ export class AccountFactory2<T extends FactoryType> {
           tx: depositTransaction,
         };
       }
-      case WalletTypes.Custom: {
+      case WalletTypes.MsigAccount: {
         const { abi } = this.sourceFactory.getContractArtifacts(params.contract);
         validateAccountAbi(abi);
         const contractWithTx = await this.sourceFactory.deployContract(params);
-        const account = new GiverAccount({ publicKey: params.publicKey, address: contractWithTx.contract.address });
+        const account = new MsigAccount({ publicKey: params.publicKey, address: contractWithTx.contract.address });
         return { tx: contractWithTx.tx, account };
       }
     }
@@ -88,15 +88,15 @@ export class AccountFactory2<T extends FactoryType> {
         return HighloadWalletV2.fromPubkey({ publicKey: params.publicKey });
       case WalletTypes.WalletV3:
         return WalletV3Account.fromPubkey({ publicKey: params.publicKey });
-      case WalletTypes.Custom:
-        return new GiverAccount({ publicKey: params.publicKey, address: params.address });
+      case WalletTypes.MsigAccount:
+        return new MsigAccount({ publicKey: params.publicKey, address: params.address });
     }
   };
 
   /*
   Access to the account storage
    */
-  get storage(): Omit<SimpleAccountsStorage, "addAccount"> {
+  get storage(): SimpleAccountsStorage {
     return this.accountsStorage;
   }
 }
