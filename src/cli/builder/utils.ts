@@ -96,3 +96,6 @@ export const tryToGetNodeModules = (): string | undefined => {
     return undefined;
   }
 };
+
+export const isValidCompilerOutputLog = (output: string): boolean =>
+  !!output.trim() && output.trim() !== "Compiler run successful, no output requested.";

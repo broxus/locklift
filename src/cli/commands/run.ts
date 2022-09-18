@@ -22,7 +22,7 @@ program
   .addOption(
     new Option("--config <config>", "Path to the config file")
       .default(() => loadConfig("locklift.config.ts"))
-      .argParser(async config => () => loadConfig(config)),
+      .argParser(config => () => loadConfig(config)),
   )
   .requiredOption("-s, --script <script>", "Script to run")
   .allowUnknownOption()

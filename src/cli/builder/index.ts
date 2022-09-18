@@ -6,12 +6,21 @@ import fs from "fs";
 import { resolve, parse } from "path";
 import _ from "underscore";
 import dirTree from "directory-tree";
-import { execSyncWrapper, extractContractName, flatDirTree, tryToGetNodeModules, tvcToBase64 } from "./utils";
+import {
+  execSyncWrapper,
+  extractContractName,
+  flatDirTree,
+  isValidCompilerOutputLog,
+  tryToGetNodeModules,
+  tvcToBase64,
+} from "./utils";
+
 const tablemark = require("tablemark");
 import { ParsedDoc } from "../types";
 import { promisify } from "util";
 import { catchError, concat, defer, filter, from, map, mergeMap, tap, throwError, toArray } from "rxjs";
 import { logger } from "../../logger";
+
 export type BuilderConfig = {
   includesPath?: string;
   compilerPath: string;
@@ -55,7 +64,11 @@ export class Builder {
             ).pipe(map(output => ({ output, contractFileName: parse(contractFileName).name, path })));
           }),
           //Warnings
-          tap(output => logger.printBuilderLog(output.output.stderr.toString())),
+          tap(
+            output =>
+              isValidCompilerOutputLog(output.output.stderr.toString()) &&
+              logger.printBuilderLog(output.output.stderr.toString()),
+          ),
           //Errors
           catchError(e => {
             logger.printError(e?.stderr?.toString() || e);
@@ -115,7 +128,9 @@ export class Builder {
         .toPromise();
       logger.printInfo("Built");
     } catch (err) {
-      logger.printError(err);
+      if (err) {
+        logger.printError(err);
+      }
       return false;
     }
     return true;
