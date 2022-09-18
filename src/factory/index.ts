@@ -107,6 +107,11 @@ export class Factory<T extends FactoryType> {
     }
 
     const abi = utils.loadJSONFromFile(path.resolve(resolvedPath, (name as string) + ".abi.json"));
+
+    if (!abi) {
+      throw new Error(`Not found ABI of Contract ${name as string}`);
+    }
+
     const { code } = await this.ever.splitTvc(tvc);
     if (code == null) {
       throw new Error(`Contract TVC ${name as string} doesn't contain code`);

@@ -6,8 +6,12 @@ import { getPublicKey, KeyPair } from "everscale-crypto";
 import { Dimension } from "../constants";
 import { TransactionParameter } from "../types";
 
-export const loadJSONFromFile = (filePath: string): ReturnType<typeof JSON.parse> => {
-  return JSON.parse(fs.readFileSync(filePath, "utf8"));
+export const loadJSONFromFile = (filePath: string): ReturnType<typeof JSON.parse> | undefined => {
+  try {
+    return JSON.parse(fs.readFileSync(filePath, "utf8"));
+  } catch (e) {
+    return undefined;
+  }
 };
 
 export const loadBase64FromFile = (filePath: string): string | undefined => {
