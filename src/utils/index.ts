@@ -14,6 +14,14 @@ export const loadBase64FromFile = (filePath: string): string => {
   return fs.readFileSync(filePath, "utf8").split("\n").join("");
 };
 
+export const tryLoadTvcFromFile = (filePath: string): string | undefined => {
+  try {
+    return fs.readFileSync(filePath, "base64");
+  } catch (e) {
+    return;
+  }
+};
+
 export const toNano = (amount: number | string): string => new BigNumber(amount).shiftedBy(9).toFixed(0);
 export const fromNano = (amount: number | string): string => new BigNumber(amount).shiftedBy(-9).toString();
 

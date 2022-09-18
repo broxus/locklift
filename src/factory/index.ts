@@ -98,7 +98,9 @@ export class Factory<T extends FactoryType> {
     name: keyof T,
     resolvedPath: string,
   ): Promise<ContractData<T[key]>> => {
-    const tvc = utils.loadBase64FromFile(path.resolve(resolvedPath, (name as string) + ".base64"));
+    const tvc =
+      utils.tryLoadTvcFromFile(path.resolve(resolvedPath, (name as string) + ".tvc")) ||
+      utils.loadBase64FromFile(path.resolve(resolvedPath, (name as string) + ".base64"));
     const abi = utils.loadJSONFromFile(path.resolve(resolvedPath, (name as string) + ".abi.json"));
     const { code } = await this.ever.splitTvc(tvc);
     if (code == null) {
