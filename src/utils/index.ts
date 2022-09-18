@@ -10,8 +10,12 @@ export const loadJSONFromFile = (filePath: string): ReturnType<typeof JSON.parse
   return JSON.parse(fs.readFileSync(filePath, "utf8"));
 };
 
-export const loadBase64FromFile = (filePath: string): string => {
-  return fs.readFileSync(filePath, "utf8").split("\n").join("");
+export const loadBase64FromFile = (filePath: string): string | undefined => {
+  try {
+    return fs.readFileSync(filePath, "utf8").split("\n").join("");
+  } catch (e) {
+    return undefined;
+  }
 };
 
 export const tryLoadTvcFromFile = (filePath: string): string | undefined => {

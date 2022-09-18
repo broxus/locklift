@@ -101,6 +101,11 @@ export class Factory<T extends FactoryType> {
     const tvc =
       utils.tryLoadTvcFromFile(path.resolve(resolvedPath, (name as string) + ".tvc")) ||
       utils.loadBase64FromFile(path.resolve(resolvedPath, (name as string) + ".base64"));
+
+    if (!tvc) {
+      throw new Error(`Not found TVC of Contract ${name as string}, need to provide .tvc or .base64 sources`);
+    }
+
     const abi = utils.loadJSONFromFile(path.resolve(resolvedPath, (name as string) + ".abi.json"));
     const { code } = await this.ever.splitTvc(tvc);
     if (code == null) {
