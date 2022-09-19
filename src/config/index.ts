@@ -108,6 +108,7 @@ const Config = ss.object({
         // NOTE: assign(object, union) doesn't work
         ss.union([
           ss.object({
+            id: ss.optional(ss.number()),
             group: ss.string(),
             type: ss.pattern(ss.string(), /graphql/),
             data: ss.object({
@@ -118,6 +119,7 @@ const Config = ss.object({
             }),
           }),
           ss.object({
+            id: ss.optional(ss.number()),
             group: ss.string(),
             type: ss.pattern(ss.string(), /jrpc/),
             data: ss.object({
