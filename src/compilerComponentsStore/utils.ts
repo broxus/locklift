@@ -1,6 +1,5 @@
-import axios from "axios";
-
 import { ComponentType } from "./constants";
+import { httpService } from "../httpService";
 
 const platforms = {
   isWin32: process.platform === "win32",
@@ -63,12 +62,16 @@ export const executableFileName: Record<ComponentType, (arg: { version: string }
 export const getSupportedVersions = ({ component }: { component: ComponentType }): Promise<Array<string>> => {
   switch (component) {
     case ComponentType.COMPILER:
-      return axios.get<{ solc: Array<string> }>("https://binaries.tonlabs.io/solc.json").then(res => res.data.solc);
+      return httpService
+        .get<{ solc: Array<string> }>("https://binaries.tonlabs.io/solc.json")
+        .then(res => res.data.solc);
     case ComponentType.LINKER:
-      return axios
+      return httpService
         .get<{ tvm_linker: Array<string> }>("https://binaries.tonlabs.io/tvm_linker.json")
         .then(res => res.data.tvm_linker);
     case ComponentType.LIB:
-      return axios.get<{ solc: Array<string> }>("https://binaries.tonlabs.io/solc.json").then(res => res.data.solc);
+      return httpService
+        .get<{ solc: Array<string> }>("https://binaries.tonlabs.io/solc.json")
+        .then(res => res.data.solc);
   }
 };

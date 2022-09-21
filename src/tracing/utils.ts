@@ -1,6 +1,7 @@
-import axios from "axios";
+// import axios from "axios";
 import { AllowedCodes, MsgTree, RevertedBranch, TraceType } from "./types";
 import { logger } from "../logger";
+import { httpService } from "../httpService";
 
 export const fetchMsgData = async (msgId: string, endpoint: string): Promise<MsgTree> => {
   const msgQuery = `{
@@ -51,7 +52,7 @@ export const fetchMsgData = async (msgId: string, endpoint: string): Promise<Msg
       bounce
     }
   }`;
-  const response = await axios
+  const response = await httpService
     .post<{ data: { messages: Array<MsgTree> } }>(endpoint, { query: msgQuery })
 
     .then(res => res.data.data);

@@ -1,5 +1,4 @@
 import path from "path";
-import axios from "axios";
 import fs from "fs-extra";
 import { ungzip } from "node-gzip";
 
@@ -7,6 +6,7 @@ import { getPathToVersion, isComponentVersionExists } from "./dirUtils";
 import { downloadLinks, executableFileName, fileNames, getGzFileName, getSupportedVersions } from "./utils";
 import { ComponentType } from "./constants";
 import { logger } from "../logger";
+import { httpService } from "../httpService";
 
 export const getComponent = async ({
   version,
@@ -52,7 +52,7 @@ export const getComponent = async ({
 export async function download(fileUrl: string, outputLocationPath: string) {
   const writer = fs.createWriteStream(outputLocationPath);
 
-  return axios({
+  return httpService({
     method: "get",
     url: fileUrl,
     responseType: "stream",
