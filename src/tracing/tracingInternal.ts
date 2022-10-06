@@ -7,6 +7,7 @@ import { AllowedCodes, MsgTree, OptionalContracts, RevertedBranch, TraceParams }
 import { Factory } from "../factory";
 import _, { difference } from "lodash";
 import { logger } from "../logger";
+import { ViewTracingTree } from "./viewTracingTree";
 
 export class TracingInternal {
   private readonly consoleContract: Contract<ConsoleAbi>;
@@ -80,11 +81,12 @@ export class TracingInternal {
         Array.isArray(objValue) ? objValue.concat(srcValue) : undefined,
       );
       const traceTree = await this.buildTracingTree(msgTree, allowedCodesExtended);
+
       const reverted = this.findRevertedBranch(traceTree);
       if (reverted) {
         throwErrorInConsole(reverted);
       }
-      return msgTree;
+      return new ViewTracingTree(traceTree);
     }
     logger.printWarn("You need to provide tracing endPoint to enable trace");
   }

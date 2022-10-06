@@ -7,7 +7,7 @@ import { contractContractInformation, decoder, isErrorExistsInAllowedArr } from 
 import { TracingInternal } from "../tracingInternal";
 
 export class Trace<Abi = any> {
-  outTraces: Array<any> = [];
+  outTraces: Array<Trace> = [];
   error: any = null;
 
   type: TraceType | null = null;

@@ -4,6 +4,7 @@ import { Factory } from "../factory";
 import { TracingInternal } from "./tracingInternal";
 import { extractTransactionFromParams, Transactions } from "../utils";
 import { TransactionParameter } from "../types";
+import { ViewTracingTree } from "./viewTracingTree";
 
 export class Tracing {
   constructor(
@@ -14,13 +15,13 @@ export class Tracing {
   public trace = async <T extends TransactionParameter>(
     transactionProm: Promise<T>,
     config?: Omit<TraceParams, "inMsgId">,
-  ): Promise<T> => {
+  ): Promise<T & { traceTree: ViewTracingTree | undefined }> => {
     return this.features
       .waitFinalized(transactionProm)
       .then(transaction =>
         this.tracingInternal
           .trace({ inMsgId: extractTransactionFromParams(transaction).inMessage.hash, ...config })
-          .then(() => transaction),
+          .then(traceTree => ({ ...transaction, traceTree })),
       );
   };
   public get allowedCodes(): AllowedCodes {

@@ -29,6 +29,7 @@ export type { LockliftConfig } from "./config";
 export type { Giver } from "./factory";
 export { toNano, fromNano, getRandomNonce, convertAmount } from "./utils";
 export { WalletTypes } from "./types";
+export { TraceType, InteractionType } from "./tracing/types";
 
 export class Locklift<FactorySource extends FactoryType> {
   public readonly utils = utils;

@@ -58,7 +58,19 @@ export type DecoderOutput<Abi> =
   | DecodedEvent<Abi, AbiEventName<Abi>>
   | undefined;
 
-export type DecodedMsg = {
-  method?: string;
-  params?: Record<string, any>;
+export type DecodedMsg<M extends string = string, P extends Record<string, any> | any = Record<string, any>> = {
+  method?: M;
+  params?: P;
 };
+export type ViewTrace<M extends string = string, P extends Record<string, any> | any = Record<string, any>> = Pick<
+  Trace,
+  "msg" | "type"
+> & { decodedMsg: DecodedMsg<M, P> | undefined };
+export type ViewTraceTree<M extends string = string, P extends Record<string, any> = Record<string, any>> = ViewTrace<
+  M,
+  P
+> & { outTraces: Array<ViewTraceTree<M, P>> };
+export enum InteractionType {
+  EVENT,
+  FUNCTION_CALL,
+}
