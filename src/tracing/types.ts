@@ -3,7 +3,7 @@ import { AbiEventName, AbiFunctionName } from "everscale-inpage-provider/dist/mo
 import { DecodedInput } from "everscale-inpage-provider/dist/contract";
 
 import { Trace } from "./trace/trace";
-import { Optional } from "../types";
+import { ContractWithName, Optional } from "../types";
 
 export enum TraceType {
   FUNCTION_CALL = "function_call",
@@ -35,6 +35,11 @@ export type MsgTree = {
     id: string;
     code_hash: string;
   };
+};
+
+export type AccountData = {
+  code_hash: string;
+  id: string;
 };
 
 export type RevertedBranch<Abi = unknown> = { totalActions: number; traceLog: Trace<Abi>; actionIdx: number };
@@ -69,7 +74,7 @@ export type ViewTrace<M extends string = string, P extends Record<string, any> |
 export type ViewTraceTree<M extends string = string, P extends Record<string, any> = Record<string, any>> = ViewTrace<
   M,
   P
-> & { outTraces: Array<ViewTraceTree<M, P>> };
+> & { outTraces: Array<ViewTraceTree<M, P>>; contract: ContractWithName };
 export enum InteractionType {
   EVENT,
   FUNCTION_CALL,

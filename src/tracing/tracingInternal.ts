@@ -86,7 +86,7 @@ export class TracingInternal {
       if (reverted) {
         throwErrorInConsole(reverted);
       }
-      return new ViewTracingTree(traceTree);
+      return new ViewTracingTree(traceTree, this.factory.getContractByCodeHash, this.endpoint);
     }
     logger.printWarn("You need to provide tracing endPoint to enable trace");
   }

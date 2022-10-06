@@ -1,7 +1,8 @@
 // import axios from "axios";
-import { AllowedCodes, MsgTree, RevertedBranch, TraceType } from "./types";
+import { AccountData, AllowedCodes, MsgTree, RevertedBranch, TraceType } from "./types";
 import { logger } from "../logger";
 import { httpService } from "../httpService";
+import { Address } from "everscale-inpage-provider";
 
 export const fetchMsgData = async (msgId: string, endpoint: string): Promise<MsgTree> => {
   const msgQuery = `{
@@ -58,7 +59,25 @@ export const fetchMsgData = async (msgId: string, endpoint: string): Promise<Msg
     .then(res => res.data.data);
   return response.messages[0];
 };
+export const fetchAccounts = async (accounts: Array<Address>, endpoint: string): Promise<Array<AccountData>> => {
+  const msgQuery = `{
+  accounts(
+    filter: {
+      id: {
+        in: ${JSON.stringify(accounts.map(account => account.toString()))}
+      }
+    }
+  ) {
+    code_hash
+    id
+  }
+}`;
+  const response = await httpService
+    .post<{ data: { accounts: Array<AccountData> } }>(endpoint, { query: msgQuery })
 
+    .then(res => res.data.data);
+  return response.accounts;
+};
 export const convert = (number: number, decimals = 9, precision = 4) => {
   if (number === null) {
     return null;
