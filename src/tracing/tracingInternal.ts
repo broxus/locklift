@@ -7,7 +7,7 @@ import { AllowedCodes, MsgTree, OptionalContracts, RevertedBranch, TraceParams }
 import { Factory } from "../factory";
 import _, { difference } from "lodash";
 import { logger } from "../logger";
-import { ViewTracingTree } from "./viewTracingTree";
+import { ViewTracingTree } from "./viewTraceTree/viewTracingTree";
 
 export class TracingInternal {
   private readonly consoleContract: Contract<ConsoleAbi>;

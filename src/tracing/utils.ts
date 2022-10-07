@@ -3,6 +3,7 @@ import { AccountData, AllowedCodes, MsgTree, RevertedBranch, TraceType } from ".
 import { logger } from "../logger";
 import { httpService } from "../httpService";
 import { Address } from "everscale-inpage-provider";
+import BigNumber from "bignumber.js";
 
 export const fetchMsgData = async (msgId: string, endpoint: string): Promise<MsgTree> => {
   const msgQuery = `{
@@ -45,6 +46,7 @@ export const fetchMsgData = async (msgId: string, endpoint: string): Promise<Msg
           result_code
           success
           total_action_fees
+          total_fwd_fees
         }
       }
       status
@@ -84,6 +86,8 @@ export const convert = (number: number, decimals = 9, precision = 4) => {
   }
   return (number / 10 ** decimals).toPrecision(precision);
 };
+
+export const convertForLogger = (amount: number) => new BigNumber(convert(amount, 9, 8) || 0);
 
 export const throwErrorInConsole = <Abi>(revertedBranch: Array<RevertedBranch<Abi>>) => {
   for (const { totalActions, actionIdx, traceLog } of revertedBranch) {

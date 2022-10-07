@@ -4,6 +4,7 @@ import { DecodedInput } from "everscale-inpage-provider/dist/contract";
 
 import { Trace } from "./trace/trace";
 import { ContractWithName, Optional } from "../types";
+import BigNumber from "bignumber.js";
 
 export enum TraceType {
   FUNCTION_CALL = "function_call",
@@ -17,7 +18,13 @@ export enum TraceType {
 
 export type MsgTree = {
   outMessages: Array<any>;
-  dst_transaction: any;
+  dst_transaction: any & {
+    total_fees: string;
+    action: {
+      total_fwd_fees: string;
+      total_action_fees: string;
+    };
+  };
   dst: string;
   msg_type: 0 | 1 | 2;
   body: string;
@@ -79,3 +86,8 @@ export enum InteractionType {
   EVENT,
   FUNCTION_CALL,
 }
+
+export type ViewTraceTreeWithTotalFee = Omit<ViewTraceTree, "outTraces"> & {
+  totalFees: BigNumber;
+  outTraces: Array<ViewTraceTreeWithTotalFee>;
+};

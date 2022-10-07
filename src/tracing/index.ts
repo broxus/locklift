@@ -4,7 +4,7 @@ import { Factory } from "../factory";
 import { TracingInternal } from "./tracingInternal";
 import { extractTransactionFromParams, Transactions } from "../utils";
 import { TransactionParameter } from "../types";
-import { ViewTracingTree } from "./viewTracingTree";
+import { ViewTracingTree } from "./viewTraceTree/viewTracingTree";
 
 export class Tracing {
   constructor(
