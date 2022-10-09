@@ -1,14 +1,29 @@
-import { MsgTree } from "../types";
+import { ViewTraceTree } from "../types";
 import BigNumber from "bignumber.js";
 import { ContractWithName } from "../../types";
 import _ from "lodash";
 import { Address } from "everscale-inpage-provider";
 import { isT } from "../utils";
 
-export const extractFeeFromMessage = (msg: MsgTree): BigNumber => {
-  return new BigNumber(msg.dst_transaction?.total_fees || 0)
-    .plus(msg.dst_transaction?.action?.total_fwd_fees || 0)
-    .minus(msg.dst_transaction?.action?.total_action_fees || 0);
+export const extractFeeAndSentValueFromMessage = (
+  traceTree: ViewTraceTree,
+): {
+  totalFees: BigNumber;
+  sentValue: BigNumber;
+  value: BigNumber;
+  balanceChange: BigNumber;
+} => {
+  const value = new BigNumber(traceTree.msg.value || 0);
+  const totalFees = new BigNumber(traceTree.msg.dst_transaction?.total_fees || 0)
+    .plus(traceTree.msg.dst_transaction?.action?.total_fwd_fees || 0)
+    .minus(traceTree.msg.dst_transaction?.action?.total_action_fees || 0);
+  const sentValue = traceTree.outTraces.reduce((acc, next) => acc.plus(next.msg.value || 0), new BigNumber(0));
+  return {
+    value,
+    totalFees,
+    sentValue,
+    balanceChange: value.minus(totalFees).minus(sentValue),
+  };
 };
 export const mapParams = (
   obj: Record<any, any> | Array<any> | undefined,

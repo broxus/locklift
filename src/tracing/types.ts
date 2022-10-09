@@ -76,7 +76,7 @@ export type DecodedMsg<M extends string = string, P extends Record<string, any> 
 };
 export type ViewTrace<M extends string = string, P extends Record<string, any> | any = Record<string, any>> = Pick<
   Trace,
-  "msg" | "type"
+  "msg" | "type" | "contract"
 > & { decodedMsg: DecodedMsg<M, P> | undefined };
 export type ViewTraceTree<M extends string = string, P extends Record<string, any> = Record<string, any>> = ViewTrace<
   M,
@@ -89,5 +89,14 @@ export enum InteractionType {
 
 export type ViewTraceTreeWithTotalFee = Omit<ViewTraceTree, "outTraces"> & {
   totalFees: BigNumber;
+  sentValue: BigNumber;
+  value: BigNumber;
+  balanceChange: BigNumber;
   outTraces: Array<ViewTraceTreeWithTotalFee>;
 };
+
+export type BalanceChangingInfo = {
+  balanceDiff: BigNumber;
+};
+
+export type BalanceChangeInfoStorage = Record<string, BalanceChangingInfo>;

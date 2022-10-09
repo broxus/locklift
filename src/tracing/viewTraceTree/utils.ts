@@ -4,7 +4,7 @@ import chalk from "chalk";
 import { ContractWithName } from "../../types";
 import { convertForLogger } from "../utils";
 
-import { extractFeeFromMessage, mapParams } from "./mappers";
+import { extractFeeAndSentValueFromMessage, mapParams } from "./mappers";
 import BigNumber from "bignumber.js";
 
 export const mapType: Record<TraceType, string> = {
@@ -26,7 +26,7 @@ export const colors: Record<"contractName" | "methodName" | "paramsKey", (param?
 export const applyTotalFees = (viewTrace: ViewTraceTree): ViewTraceTreeWithTotalFee => {
   return {
     ...viewTrace,
-    totalFees: extractFeeFromMessage(viewTrace.msg),
+    ...extractFeeAndSentValueFromMessage(viewTrace),
     outTraces: viewTrace.outTraces.map(applyTotalFees),
   };
 };
@@ -43,19 +43,22 @@ export const printer = (
   {
     type,
     decodedMsg,
-    msg,
     contract,
     totalFees,
-  }: Pick<ViewTraceTreeWithTotalFee, "type" | "decodedMsg" | "msg" | "contract" | "totalFees">,
-  { valueSent, contracts }: { valueSent: number; contracts: Array<ContractWithName | undefined> },
+    sentValue,
+    value,
+    balanceChange,
+  }: Pick<
+    ViewTraceTreeWithTotalFee,
+    "type" | "decodedMsg" | "msg" | "contract" | "totalFees" | "sentValue" | "value" | "balanceChange"
+  >,
+  { contracts }: { contracts: Array<ContractWithName | undefined> },
 ): string => {
-  const valueReceive = convertForLogger(msg.value);
-  const totalFeesConverted = convertForLogger(totalFees.toNumber());
-  const diff = valueReceive.minus(valueSent).minus(totalFeesConverted);
-
-  const valueParams = `{valueReceive: ${valueReceive},valueSent: ${valueSent}, rest: ${diff.toFixed(10)}${
-    diff.isLessThan(0) ? chalk.red("⮯") : chalk.green("⮬")
-  }, totalFees: ${totalFeesConverted}}`;
+  const valueParams = `{valueReceive: ${convertForLogger(value.toNumber())},valueSent: ${convertForLogger(
+    sentValue.toNumber(),
+  )}, rest: ${convertForLogger(Number(balanceChange.toFixed(10)))}${
+    balanceChange.isLessThan(0) ? chalk.red("⮯") : chalk.green("⮬")
+  }, totalFees: ${convertForLogger(totalFees.toNumber())}}`;
 
   const header = `${type && mapType[type]} ${colors.contractName(contract.name)}.${colors.methodName(
     decodedMsg?.method,
@@ -66,4 +69,37 @@ export const printer = (
     .split(", ")
     .slice(0, -1)
     .join(", ")})`;
+};
+
+export type BalanceChangingInfo = {
+  totalReceive: BigNumber;
+  totalSent: BigNumber;
+  balanceDiff: BigNumber;
+};
+
+type BalanceChangeInfoStorage = Record<string, BalanceChangingInfo>;
+export const getBalanceChangingInfo = (
+  viewTrace: ViewTraceTreeWithTotalFee,
+  accumulator: BalanceChangeInfoStorage = {},
+): BalanceChangeInfoStorage => {
+  const contractAddress = viewTrace.contract.contract.address.toString();
+  if (!(viewTrace.contract.contract.address.toString() in accumulator)) {
+    accumulator[contractAddress] = {
+      balanceDiff: new BigNumber(0),
+      totalReceive: new BigNumber(0),
+      totalSent: new BigNumber(0),
+    };
+  }
+  const { totalSent, totalReceive } = accumulator[contractAddress];
+  accumulator[contractAddress] = {
+    totalReceive: totalReceive.plus(viewTrace.msg.value || 0),
+    totalSent: totalSent.plus(viewTrace.sentValue || 0).plus(viewTrace.totalFees),
+    balanceDiff: totalReceive.plus(viewTrace.msg.value || 0).minus(totalSent.plus(viewTrace.sentValue || 0)),
+  };
+  return {
+    ...accumulator,
+    ...viewTrace.outTraces.reduce((acc, next) => {
+      return { ...acc, ...getBalanceChangingInfo(next, accumulator) };
+    }, {} as BalanceChangeInfoStorage),
+  };
 };

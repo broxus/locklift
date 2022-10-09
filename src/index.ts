@@ -30,7 +30,8 @@ export type { Giver } from "./factory";
 export { toNano, fromNano, getRandomNonce, convertAmount } from "./utils";
 export { WalletTypes } from "./types";
 export { TraceType, InteractionType } from "./tracing/types";
-
+export { lockliftChai } from "./chaiPlugin";
+import "./chaiPlugin/types";
 export class Locklift<FactorySource extends FactoryType> {
   public readonly utils = utils;
 

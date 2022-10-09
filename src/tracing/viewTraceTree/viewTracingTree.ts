@@ -1,10 +1,12 @@
-import { TraceType, ViewTrace, ViewTraceTree, ViewTraceTreeWithTotalFee } from "../types";
+import { BalanceChangeInfoStorage, TraceType, ViewTrace, ViewTraceTree, ViewTraceTreeWithTotalFee } from "../types";
 import _ from "lodash";
+import _fp from "lodash/fp";
+
 import { Address, Contract, DecodedEventWithTransaction } from "everscale-inpage-provider";
 import { AbiEventName } from "everscale-inpage-provider/dist/models";
-import { convertForLogger, fetchAccounts } from "../utils";
+import { extractStringAddress, fetchAccounts } from "../utils";
 import { ContractWithName } from "../../types";
-import { applyTotalFees, calculateTotalFees, printer } from "./utils";
+import { applyTotalFees, calculateTotalFees, getBalanceChangingInfo, printer } from "./utils";
 
 type NameAndType<T extends string = string> = { type: TraceType; name: T };
 type EventNames<
@@ -21,14 +23,29 @@ type EventParams<Abi, N extends string> = Extract<
   { event: N }
 >["data"];
 export class ViewTracingTree {
-  private readonly viewTraceTree: ViewTraceTreeWithTotalFee;
+  readonly viewTraceTree: ViewTraceTreeWithTotalFee;
+  balanceChangeInfo: BalanceChangeInfoStorage;
   constructor(
     viewTraceTree: ViewTraceTree,
     private readonly contractGetter: (codeHash: string, address: Address) => ContractWithName<any> | undefined,
     private readonly endpoint: string,
   ) {
     this.viewTraceTree = applyTotalFees(_.cloneDeep(viewTraceTree));
+    this.balanceChangeInfo = _(getBalanceChangingInfo(this.viewTraceTree)).mapValues(_fp.pick("balanceDiff")).value();
   }
+
+  getBalanceDiff = <T extends Contract<any> | Address | string>(
+    contracts: T[] | T,
+  ): T extends T[] ? Record<string, string> : string => {
+    if (Array.isArray(contracts)) {
+      return contracts.reduce((acc, contract) => {
+        const address = extractStringAddress(contract);
+        return { ...acc, [address as string]: this.balanceChangeInfo[address.toString()]?.balanceDiff.toString() };
+      }, {} as Record<string, string>) as T extends T[] ? Record<string, string> : string;
+    }
+    const address = extractStringAddress(contracts);
+    return this.balanceChangeInfo[address].balanceDiff.toString() as T extends T[] ? Record<string, string> : string;
+  };
 
   findForContract = <
     C extends Contract<any>,
@@ -46,7 +63,11 @@ export class ViewTracingTree {
     return this.findByType<N, E>({ name, type: TraceType.EVENT });
   };
 
-  findByType = <M extends string, P>(params: NameAndType) => this._findByType<M, P>(params, [this.viewTraceTree]);
+  findByType = <M extends string, P>(params: NameAndType) =>
+    this._findByType<M, P>(params, [this.viewTraceTree]).map(el => el.decodedMsg);
+
+  findByTypeWithFullData = <M extends string, P>(params: NameAndType) =>
+    this._findByType<M, P>(params, [this.viewTraceTree]);
 
   private _findByType = <M extends string, P>(
     { type, name }: NameAndType,
@@ -75,10 +96,6 @@ export class ViewTracingTree {
 
     return (
       printer(this.viewTraceTree, {
-        valueSent: this.viewTraceTree.outTraces.reduce(
-          (acc, next) => acc + Number(convertForLogger(next.msg.value)),
-          0,
-        ),
         contracts,
       }) +
       "\n" +
@@ -97,7 +114,6 @@ export class ViewTracingTree {
       traces =
         traces +
         `${Array(offset).fill(" ").join("")} ${printer(viewTraceInt, {
-          valueSent: viewTraceInt.outTraces.reduce((acc, next) => acc + Number(convertForLogger(next.msg.value)), 0),
           contracts,
         })}\n${this._beautyPrint(viewTraceInt, offset + 1, contracts)}`;
     }

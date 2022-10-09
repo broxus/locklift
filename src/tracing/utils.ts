@@ -2,7 +2,7 @@
 import { AccountData, AllowedCodes, MsgTree, RevertedBranch, TraceType } from "./types";
 import { logger } from "../logger";
 import { httpService } from "../httpService";
-import { Address } from "everscale-inpage-provider";
+import { Address, Contract } from "everscale-inpage-provider";
 import BigNumber from "bignumber.js";
 
 export const fetchMsgData = async (msgId: string, endpoint: string): Promise<MsgTree> => {
@@ -88,6 +88,7 @@ export const convert = (number: number, decimals = 9, precision = 4) => {
 };
 
 export const convertForLogger = (amount: number) => new BigNumber(convert(amount, 9, 8) || 0);
+export const hexToValue = (amount: number) => new BigNumber(convert(amount, 9, 9) || 0);
 
 export const throwErrorInConsole = <Abi>(revertedBranch: Array<RevertedBranch<Abi>>) => {
   for (const { totalActions, actionIdx, traceLog } of revertedBranch) {
@@ -166,3 +167,13 @@ export const getDefaultAllowedCodes = (): Omit<Required<AllowedCodes>, "contract
 export const isExistsInArr = <T>(srcArr: Array<T>, isExist: T): boolean => {
   return srcArr.some(item => item === isExist);
 };
+
+export const extractStringAddress = (contract: Contract<any> | Address | string) =>
+  typeof contract === "string"
+    ? contract
+    : contract instanceof Address
+    ? contract.toString()
+    : contract.address.toString();
+
+export const extractAddress = (contract: Contract<any> | Address | string): Address =>
+  new Address(extractStringAddress(contract));
