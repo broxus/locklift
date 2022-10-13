@@ -1,4 +1,12 @@
-import { BalanceChangeInfoStorage, TraceType, ViewTrace, ViewTraceTree, ViewTraceTreeWithTotalFee } from "../types";
+import {
+  BalanceChangeInfoStorage,
+  ErrorStore,
+  MsgError,
+  TraceType,
+  ViewTrace,
+  ViewTraceTree,
+  ViewTraceTreeWithTotalFee,
+} from "../types";
 import _ from "lodash";
 import _fp from "lodash/fp";
 
@@ -6,7 +14,8 @@ import { Address, Contract, DecodedEventWithTransaction } from "everscale-inpage
 import { AbiEventName } from "everscale-inpage-provider/dist/models";
 import { extractStringAddress, fetchAccounts } from "../utils";
 import { ContractWithName } from "../../types";
-import { applyTotalFees, calculateTotalFees, getBalanceChangingInfo, printer } from "./utils";
+import { applyTotalFees, calculateTotalFees, getBalanceChangingInfo, getErrorsInfo, printer } from "./utils";
+import { Tokens } from "./tokens";
 
 type NameAndType<T extends string = string> = { type: TraceType; name: T };
 type EventNames<
@@ -24,7 +33,9 @@ type EventParams<Abi, N extends string> = Extract<
 >["data"];
 export class ViewTracingTree {
   readonly viewTraceTree: ViewTraceTreeWithTotalFee;
+  readonly tokens: Tokens;
   balanceChangeInfo: BalanceChangeInfoStorage;
+  msgErrorsStore: ErrorStore;
   constructor(
     viewTraceTree: ViewTraceTree,
     private readonly contractGetter: (codeHash: string, address: Address) => ContractWithName<any> | undefined,
@@ -32,8 +43,14 @@ export class ViewTracingTree {
   ) {
     this.viewTraceTree = applyTotalFees(_.cloneDeep(viewTraceTree));
     this.balanceChangeInfo = _(getBalanceChangingInfo(this.viewTraceTree)).mapValues(_fp.pick("balanceDiff")).value();
+    this.msgErrorsStore = getErrorsInfo(this.viewTraceTree);
+    this.tokens = new Tokens(this.viewTraceTree);
   }
-
+  getErrorsByContract = <T extends Contract<any> | Address | string>(contract: T): Array<MsgError> => {
+    return this.msgErrorsStore[extractStringAddress(contract)];
+  };
+  getAllErrors = () =>
+    Object.entries(this.msgErrorsStore).flatMap(([key, errors]) => errors.map(error => ({ contract: key, ...error })));
   getBalanceDiff = <T extends Contract<any> | Address | string>(
     contracts: T[] | T,
   ): T extends T[] ? Record<string, string> : string => {

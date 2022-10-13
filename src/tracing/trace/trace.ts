@@ -8,7 +8,7 @@ import { TracingInternal } from "../tracingInternal";
 
 export class Trace<Abi = any> {
   outTraces: Array<Trace> = [];
-  error: any = null;
+  error: null | { phase: "compute" | "action"; code: number; ignored?: boolean } = null;
 
   type: TraceType | null = null;
   contract!: ContractWithName;

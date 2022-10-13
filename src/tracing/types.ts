@@ -1,4 +1,4 @@
-import { DecodedEvent, DecodedOutput } from "everscale-inpage-provider";
+import { Address, Contract, DecodedEvent, DecodedOutput } from "everscale-inpage-provider";
 import { AbiEventName, AbiFunctionName } from "everscale-inpage-provider/dist/models";
 import { DecodedInput } from "everscale-inpage-provider/dist/contract";
 
@@ -53,6 +53,7 @@ export type RevertedBranch<Abi = unknown> = { totalActions: number; traceLog: Tr
 export type TraceParams = {
   inMsgId: string;
   allowedCodes?: AllowedCodes;
+  rise?: boolean;
 };
 export type AllowErrorCodes = number | null;
 export type OptionalContracts = Optional<AllowedCodes, "contracts">;
@@ -76,7 +77,7 @@ export type DecodedMsg<M extends string = string, P extends Record<string, any> 
 };
 export type ViewTrace<M extends string = string, P extends Record<string, any> | any = Record<string, any>> = Pick<
   Trace,
-  "msg" | "type" | "contract"
+  "msg" | "type" | "contract" | "error"
 > & { decodedMsg: DecodedMsg<M, P> | undefined };
 export type ViewTraceTree<M extends string = string, P extends Record<string, any> = Record<string, any>> = ViewTrace<
   M,
@@ -100,3 +101,10 @@ export type BalanceChangingInfo = {
 };
 
 export type BalanceChangeInfoStorage = Record<string, BalanceChangingInfo>;
+export type ErrorStore = Record<string, Array<MsgError>>;
+export type MsgError = {
+  phase: "compute" | "action";
+  code: number;
+  trace: ViewTrace;
+};
+export type Addressable = Contract<any> | Address | string;

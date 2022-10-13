@@ -1,4 +1,4 @@
-import { TraceType, ViewTraceTree, ViewTraceTreeWithTotalFee } from "../types";
+import { MsgError, TraceType, ViewTraceTree, ViewTraceTreeWithTotalFee } from "../types";
 import chalk from "chalk";
 
 import { ContractWithName } from "../../types";
@@ -6,6 +6,7 @@ import { convertForLogger } from "../utils";
 
 import { extractFeeAndSentValueFromMessage, mapParams } from "./mappers";
 import BigNumber from "bignumber.js";
+import _ from "lodash";
 
 export const mapType: Record<TraceType, string> = {
   [TraceType.BOUNCE]: "BONCE",
@@ -17,10 +18,11 @@ export const mapType: Record<TraceType, string> = {
   [TraceType.TRANSFER]: "TRANSFER",
 };
 
-export const colors: Record<"contractName" | "methodName" | "paramsKey", (param?: string) => string> = {
+export const colors: Record<"contractName" | "methodName" | "paramsKey" | "error", (param?: string) => string> = {
   contractName: chalk.cyan,
   methodName: chalk.blueBright,
   paramsKey: chalk.magenta,
+  error: chalk.red,
 };
 
 export const applyTotalFees = (viewTrace: ViewTraceTree): ViewTraceTreeWithTotalFee => {
@@ -48,9 +50,10 @@ export const printer = (
     sentValue,
     value,
     balanceChange,
+    error,
   }: Pick<
     ViewTraceTreeWithTotalFee,
-    "type" | "decodedMsg" | "msg" | "contract" | "totalFees" | "sentValue" | "value" | "balanceChange"
+    "type" | "decodedMsg" | "msg" | "contract" | "totalFees" | "sentValue" | "value" | "balanceChange" | "error"
   >,
   { contracts }: { contracts: Array<ContractWithName | undefined> },
 ): string => {
@@ -60,15 +63,18 @@ export const printer = (
     balanceChange.isLessThan(0) ? chalk.red("⮯") : chalk.green("⮬")
   }, totalFees: ${convertForLogger(totalFees.toNumber())}}`;
 
-  const header = `${type && mapType[type]} ${colors.contractName(contract.name)}.${colors.methodName(
-    decodedMsg?.method,
-  )}${type === TraceType.EVENT ? "" : valueParams}`;
-  return `${header}(${Object.entries(mapParams(decodedMsg?.params, contracts))
+  const header = `${type && mapType[type]}${
+    error ? ` ERROR (phase: ${error.phase}, code: ${error.code})` : ""
+  } ${colors.contractName(contract.name)}.${colors.methodName(decodedMsg?.method)}${
+    type === TraceType.EVENT ? "" : valueParams
+  }`;
+  const printMsg = `${header}(${Object.entries(mapParams(decodedMsg?.params, contracts))
     .map(([key, value]) => `${colors.paramsKey(key)}=${JSON.stringify(value)}, `)
     .join("")
     .split(", ")
     .slice(0, -1)
     .join(", ")})`;
+  return error ? colors.error(printMsg) : printMsg;
 };
 
 export type BalanceChangingInfo = {
@@ -101,5 +107,31 @@ export const getBalanceChangingInfo = (
     ...viewTrace.outTraces.reduce((acc, next) => {
       return { ...acc, ...getBalanceChangingInfo(next, accumulator) };
     }, {} as BalanceChangeInfoStorage),
+  };
+};
+type ErrorInfoStorage = Record<string, Array<MsgError>>;
+export const getErrorsInfo = (
+  viewTrace: ViewTraceTreeWithTotalFee,
+  accumulator: ErrorInfoStorage = {},
+): ErrorInfoStorage => {
+  if (viewTrace.error) {
+    const newError = {
+      code: viewTrace.error.code,
+      phase: viewTrace.error.phase,
+      trace: _(viewTrace).omit("outTraces").value(),
+    };
+    const address = viewTrace.contract.contract.address.toString();
+    if (!(address in accumulator)) {
+      accumulator[address] = [];
+    }
+    accumulator[address].push(newError);
+  }
+
+  return {
+    ...accumulator,
+    ...viewTrace.outTraces.reduce(
+      (acc, internalTrace) => ({ ...acc, ...getErrorsInfo(internalTrace, accumulator) }),
+      {},
+    ),
   };
 };

@@ -7,7 +7,9 @@ declare namespace Chai {
   interface Assertion extends LanguageChains, NumericComparison, TypeComparison {
     reverted: AsyncAssertion;
     revertedWith(reason: string | RegExp): RevertedWithAssertion;
-    emit(eventName: string): EmitAssertion;
+    emit(eventName: string, contractOrAddress?: any): EmitAssertion;
+    call(methodName: string, contractOrAddress?: any): EmitAssertion;
+    errorMessage(errorCode?: number | null, contractOrAddress?: any): AsyncAssertion;
     properHex(length: number): void;
     hexEqual(other: string): void;
     properPrivateKey: void;
@@ -39,7 +41,6 @@ declare namespace Chai {
   interface AsyncAssertion extends Assertion, Promise<void> {}
 
   interface EmitAssertion extends AsyncAssertion {
-    withArgs(...args: any[]): AsyncAssertion;
     withNamedArgs(args: Record<string, unknown>, isPartial?: boolean): AsyncAssertion;
     count(count: number): EmitAssertion;
   }

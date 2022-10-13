@@ -1,8 +1,7 @@
-// import axios from "axios";
-import { AccountData, AllowedCodes, MsgTree, RevertedBranch, TraceType } from "./types";
+import { AccountData, Addressable, AllowedCodes, MsgTree, RevertedBranch, TraceType } from "./types";
 import { logger } from "../logger";
 import { httpService } from "../httpService";
-import { Address, Contract } from "everscale-inpage-provider";
+import { Address } from "everscale-inpage-provider";
 import BigNumber from "bignumber.js";
 
 export const fetchMsgData = async (msgId: string, endpoint: string): Promise<MsgTree> => {
@@ -168,12 +167,11 @@ export const isExistsInArr = <T>(srcArr: Array<T>, isExist: T): boolean => {
   return srcArr.some(item => item === isExist);
 };
 
-export const extractStringAddress = (contract: Contract<any> | Address | string) =>
+export const extractStringAddress = (contract: Addressable) =>
   typeof contract === "string"
     ? contract
     : contract instanceof Address
     ? contract.toString()
     : contract.address.toString();
 
-export const extractAddress = (contract: Contract<any> | Address | string): Address =>
-  new Address(extractStringAddress(contract));
+export const extractAddress = (contract: Addressable): Address => new Address(extractStringAddress(contract));

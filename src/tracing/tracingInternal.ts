@@ -74,7 +74,7 @@ export class TracingInternal {
     }
   }
   // allowed_codes example - {compute: [100, 50, 12], action: [11, 12], "ton_addr": {compute: [60], action: [2]}}
-  async trace({ inMsgId, allowedCodes }: TraceParams) {
+  async trace({ inMsgId, allowedCodes, rise = true }: TraceParams) {
     if (this.enabled) {
       const msgTree = await this.buildMsgTree(inMsgId, this.endpoint);
       const allowedCodesExtended = _.mergeWith(_.cloneDeep(this._allowedCodes), allowedCodes, (objValue, srcValue) =>
@@ -82,8 +82,8 @@ export class TracingInternal {
       );
       const traceTree = await this.buildTracingTree(msgTree, allowedCodesExtended);
 
-      const reverted = this.findRevertedBranch(traceTree);
-      if (reverted) {
+      const reverted = this.findRevertedBranch(_.cloneDeep(traceTree));
+      if (reverted && rise) {
         throwErrorInConsole(reverted);
       }
       return new ViewTracingTree(traceTree, this.factory.getContractByCodeHash, this.endpoint);

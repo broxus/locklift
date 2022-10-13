@@ -18,6 +18,7 @@ export const extractFeeAndSentValueFromMessage = (
     .plus(traceTree.msg.dst_transaction?.action?.total_fwd_fees || 0)
     .minus(traceTree.msg.dst_transaction?.action?.total_action_fees || 0);
   const sentValue = traceTree.outTraces.reduce((acc, next) => acc.plus(next.msg.value || 0), new BigNumber(0));
+
   return {
     value,
     totalFees,
@@ -41,7 +42,7 @@ const mapRules = (contracts: Array<ContractWithName | undefined>) => (value: any
     return contractName ? `${contractName}(${contractAddress})` : contractAddress;
   }
   if (typeof value === "string" && value.length >= 20) {
-    return value.slice(0, 5) + "..." + value.slice(-5);
+    return value.slice(0, 4) + "..." + value.slice(-4);
   }
   if (Array.isArray(value)) {
     return mapParams(value, contracts);
