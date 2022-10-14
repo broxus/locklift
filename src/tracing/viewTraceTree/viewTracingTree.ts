@@ -8,7 +8,6 @@ import {
   ViewTraceTreeWithTotalFee,
 } from "../types";
 import _ from "lodash";
-import _fp from "lodash/fp";
 
 import { Address, Contract, DecodedEventWithTransaction } from "everscale-inpage-provider";
 import { AbiEventName } from "everscale-inpage-provider/dist/models";
