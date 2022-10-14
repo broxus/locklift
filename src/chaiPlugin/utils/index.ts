@@ -56,7 +56,7 @@ export const objectIntersection = (
   if (Array.isArray(rootObject) && Array.isArray(partialObject)) {
     return rootObject
       .filter((_, idx) => !!partialObject[idx])
-      .map((value, idx) => objectIntersection(value, partialObject[idx]));
+      .map((value, idx) => (typeof value === "object" ? objectIntersection(value, partialObject[idx]) : value));
   }
 
   if (!Array.isArray(rootObject) && !Array.isArray(partialObject)) {

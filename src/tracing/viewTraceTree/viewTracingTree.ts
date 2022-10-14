@@ -14,8 +14,16 @@ import { Address, Contract, DecodedEventWithTransaction } from "everscale-inpage
 import { AbiEventName } from "everscale-inpage-provider/dist/models";
 import { extractStringAddress, fetchAccounts } from "../utils";
 import { ContractWithName } from "../../types";
-import { applyTotalFees, calculateTotalFees, getBalanceChangingInfo, getErrorsInfo, printer } from "./utils";
+import {
+  applyTotalFees,
+  calculateTotalFees,
+  getBalanceChangingInfo,
+  getBalanceDiff,
+  getErrorsInfo,
+  printer,
+} from "./utils";
 import { Tokens } from "./tokens";
+import { pipe } from "rxjs";
 
 type NameAndType<T extends string = string> = { type: TraceType; name: T };
 type EventNames<
@@ -42,7 +50,8 @@ export class ViewTracingTree {
     private readonly endpoint: string,
   ) {
     this.viewTraceTree = applyTotalFees(_.cloneDeep(viewTraceTree));
-    this.balanceChangeInfo = _(getBalanceChangingInfo(this.viewTraceTree)).mapValues(_fp.pick("balanceDiff")).value();
+    this.balanceChangeInfo = pipe(getBalanceChangingInfo, getBalanceDiff)(this.viewTraceTree);
+
     this.msgErrorsStore = getErrorsInfo(this.viewTraceTree);
     this.tokens = new Tokens(this.viewTraceTree);
   }
@@ -51,6 +60,7 @@ export class ViewTracingTree {
   };
   getAllErrors = () =>
     Object.entries(this.msgErrorsStore).flatMap(([key, errors]) => errors.map(error => ({ contract: key, ...error })));
+
   getBalanceDiff = <T extends Contract<any> | Address | string>(
     contracts: T[] | T,
   ): T extends T[] ? Record<string, string> : string => {

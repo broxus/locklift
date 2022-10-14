@@ -1,4 +1,4 @@
-import { MsgError, TraceType, ViewTraceTree, ViewTraceTreeWithTotalFee } from "../types";
+import { BalanceChangeInfoStorage, MsgError, TraceType, ViewTraceTree, ViewTraceTreeWithTotalFee } from "../types";
 import chalk from "chalk";
 
 import { ContractWithName } from "../../types";
@@ -83,15 +83,14 @@ export type BalanceChangingInfo = {
   balanceDiff: BigNumber;
 };
 
-type BalanceChangeInfoStorage = Record<string, BalanceChangingInfo>;
+type BalanceChangeInfo = Record<string, Omit<BalanceChangingInfo, "balanceDiff">>;
 export const getBalanceChangingInfo = (
   viewTrace: ViewTraceTreeWithTotalFee,
-  accumulator: BalanceChangeInfoStorage = {},
-): BalanceChangeInfoStorage => {
+  accumulator: BalanceChangeInfo = {},
+): BalanceChangeInfo => {
   const contractAddress = viewTrace.contract.contract.address.toString();
   if (!(viewTrace.contract.contract.address.toString() in accumulator)) {
     accumulator[contractAddress] = {
-      balanceDiff: new BigNumber(0),
       totalReceive: new BigNumber(0),
       totalSent: new BigNumber(0),
     };
@@ -100,14 +99,18 @@ export const getBalanceChangingInfo = (
   accumulator[contractAddress] = {
     totalReceive: totalReceive.plus(viewTrace.msg.value || 0),
     totalSent: totalSent.plus(viewTrace.sentValue || 0).plus(viewTrace.totalFees),
-    balanceDiff: totalReceive.plus(viewTrace.msg.value || 0).minus(totalSent.plus(viewTrace.sentValue || 0)),
   };
   return {
     ...accumulator,
     ...viewTrace.outTraces.reduce((acc, next) => {
       return { ...acc, ...getBalanceChangingInfo(next, accumulator) };
-    }, {} as BalanceChangeInfoStorage),
+    }, {} as BalanceChangeInfo),
   };
+};
+export const getBalanceDiff = (balanceChangeInfo: BalanceChangeInfo): BalanceChangeInfoStorage => {
+  return Object.entries(balanceChangeInfo).reduce((acc, [address, { totalSent, totalReceive }]) => {
+    return { ...acc, [address]: { balanceDiff: totalReceive.minus(totalSent) } };
+  }, {} as BalanceChangeInfoStorage);
 };
 type ErrorInfoStorage = Record<string, Array<MsgError>>;
 export const getErrorsInfo = (

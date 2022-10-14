@@ -20,7 +20,6 @@ export function supportWithNamedArgs(Assertion: Chai.AssertionStatic, utils: Cha
     };
     if (isPartial) {
       const partialEventArgs = objectIntersection(eventParamsWithUpdatedAddress, expectedArgsWithUpdatedAddress);
-
       new Assertion(partialEventArgs).to.be.deep.equal(expectedArgsWithUpdatedAddress, "Not partial equals");
       return this;
     }

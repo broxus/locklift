@@ -11,9 +11,10 @@ export const supportMessageErrors = (Assertion: Chai.AssertionStatic, utils: Cha
       const rewriteThis: AssertionStatic & { __flags: { negate: boolean; object: ViewTracingTree } } =
         this as AssertionStatic & { __flags: { negate: boolean; object: ViewTracingTree } };
       const viewTracingTree = rewriteThis.__flags.object;
-      const errors = contract
-        ? viewTracingTree.getErrorsByContract(contract).map(error => ({ ...error, contract }))
-        : viewTracingTree.getAllErrors();
+      const errors =
+        (contract
+          ? viewTracingTree.getErrorsByContract(contract)?.map(error => ({ ...error, contract }))
+          : viewTracingTree.getAllErrors()) || [];
       if (errorCode !== null && typeof errorCode !== "number") {
         this.assert(
           errors.length > 0,
