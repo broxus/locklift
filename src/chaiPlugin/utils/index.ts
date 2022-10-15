@@ -1,4 +1,4 @@
-import { Address, Contract } from "everscale-inpage-provider";
+import { Address } from "everscale-inpage-provider";
 import _ from "lodash";
 import { ViewTracingTree } from "../../tracing/viewTraceTree/viewTracingTree";
 import { Addressable, TraceType } from "../../tracing/types";
