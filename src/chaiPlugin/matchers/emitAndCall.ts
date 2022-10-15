@@ -1,13 +1,12 @@
 import { ViewTracingTree } from "../../tracing/viewTraceTree/viewTracingTree";
-import { TraceType } from "../../tracing/types";
+import { Addressable, TraceType } from "../../tracing/types";
 import { supportWithNamedArgs } from "./withNamedArgs";
-import { Address, Contract } from "everscale-inpage-provider";
 import { supportWithCount } from "./count";
 import { getMessage } from "../utils";
 import AssertionStatic = Chai.AssertionStatic;
 
 export const supportEmitAndCall = (Assertion: Chai.AssertionStatic, utils: Chai.ChaiUtils) => {
-  Assertion.addMethod("emit", function (this: AssertionStatic, eventName: string, contract?: Contract<any> | Address) {
+  Assertion.addMethod("emit", function (this: AssertionStatic, eventName: string, contract?: Addressable) {
     const rewriteThis: AssertionStatic & { __flags: { negate: boolean; object: ViewTracingTree } } =
       this as AssertionStatic & { __flags: { negate: boolean; object: ViewTracingTree } };
     const viewTracingTree = rewriteThis.__flags.object;
@@ -26,7 +25,7 @@ export const supportEmitAndCall = (Assertion: Chai.AssertionStatic, utils: Chai.
     utils.flag(this, "messages", events);
     return this;
   });
-  Assertion.addMethod("call", function (this: AssertionStatic, methodName: string, contract?: Contract<any> | Address) {
+  Assertion.addMethod("call", function (this: AssertionStatic, methodName: string, contract?: Addressable) {
     const rewriteThis: AssertionStatic & { __flags: { negate: boolean; object: ViewTracingTree } } =
       this as AssertionStatic & { __flags: { negate: boolean; object: ViewTracingTree } };
     const viewTracingTree = rewriteThis.__flags.object;

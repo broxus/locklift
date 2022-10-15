@@ -233,9 +233,9 @@ tracing will show the chain of calls that led to the error, as well as the error
 
 ```typescript
 // trace deploy
-const { contract: deployedContractInstance, tx } = await locklift.tracing.trace(locklift.factory.deployContract(...))
+const {contract: deployedContractInstance, tx} = await locklift.tracing.trace(locklift.factory.deployContract(...))
 // trace simple transaction
-const changeStateTransaction = await locklift.tracing.trace(MyContract.methods.changeCounterState({ newState: 10 }).sendExternal({ publicKey: signer.publicKey }))
+const changeStateTransaction = await locklift.tracing.trace(MyContract.methods.changeCounterState({newState: 10}).sendExternal({publicKey: signer.publicKey}))
 // trace runTarget
 const accountTransaction = await locklift.tracing.trace(myAccount.runTarget(...))
 ```
@@ -336,6 +336,175 @@ locklift.tracing.removeAllowedCodes({ compute: [60] });
 locklift.tracing.removeAllowedCodesForAddress(SOME_ADDRESS, { compute: [123] });
 ```
 
+### Tracing features
+
+For using this feature first of all need to wrap the transaction by tracing, and make **sure that tracing is enabled**.
+Otherwise, the `traceTree` will be **undefined**
+
+#### example
+
+```typescript
+const { traceTree } = await locklift.tracing.trace(myContract.method.myMethod().send());
+```
+
+#### `tracingTree` methods
+
+1. **Beauty print**
+
+#### example
+
+```typescript
+await traceTree?.beautyPrint();
+```
+
+#### example output
+
+```shell
+CALL Wallet.sendTransaction{valueReceive: 0,valueSent: 3.9, rest: -3.910662⮯, totalFees: 0.010662}(dest="StEverVault(0:5db...a9bcf)", value="3900000000", bounce=true, flags="3", payload="te6c...pQ==")
+ CALL StEverVault.startEmergencyProcess{valueReceive: 3.9,valueSent: 3.867427, rest: 0⮬, totalFees: 0.032573}(_poofNonce="50341")
+  CALL StEverAccount.onStartEmergency{valueReceive: 3.867427,valueSent: 3.857346, rest: 0⮬, totalFees: 0.010081}(_proofNonce="50341")
+   CALL StEverVault.startEmergencyRejected{valueReceive: 3.857346,valueSent: 3.831589, rest: 0⮬, totalFees: 0.025757}(_user="Wallet(0:ae6...10a56)", errcode="2004")
+    EVENT StEverVault.EmergencyProcessRejectedByAccount(emitter="Wallet(0:ae6...10a56)", errcode="2004")
+    TRANSFER Wallet.undefined{valueReceive: 3.831589,valueSent: 0, rest: 3.830589⮬, totalFees: 0.001}()
+
+```
+
+let's look at random raw in beaty print
+
+`(1)CALL (2)StEverVault.(3)startEmergencyRejected{(4)valueReceive: 3.857346,(5)valueSent: 3.831589, (6)rest: 0⮬, (7)totalFees: 0.025757}((8)_user="Wallet(0:ae6...10a56)", errcode="2004")`
+
+(1) Action type ,it can be (`CALL`, `EVENT`, `BOUNCE`, `TRANSFER`)
+
+(2) Contract name
+
+(3) Method name
+
+(4) How many value(ever) the method received
+
+(5) How many value(ever) the method sent
+
+(6) How many ever left on contract after current transaction step (`valueReceive - valueSent - totalFees`)
+
+(7) Total fees used in current step
+
+(8) Method params, if params are included addresses it can be tried to find associated contract for it
+
+2. **Ever balance diff**
+
+This method is providing information about changing ever balance for a particular address or addresses
+
+```typescript
+const balanceChange = traceTree.getBalanceDiff(account.address);
+// -1859458715 nano
+```
+
+3. **Token balance diff**
+
+This method is providing information about changing token balance by a particular **token wallet**
+
+```typescript
+const tokenBalanceChange = traceTree?.tokens.getTokenBalanceChange(myUSDTTokenWalletContract.address);
+// -1859458715 measurements depends of token decimals
+```
+
+4. **Getting information about calling methods and emitting events**
+
+```typescript
+// Events
+const addEvents = traceTree?.findEventsForContract({
+  contract: myContract,
+  name: "Add",
+});
+
+//Methods calls
+const depositCalls = traceTree?.findCallsForContract({
+  contract: myContract,
+  name: "deposit",
+});
+```
+
+5. **Total gas used**
+
+This method is providing information about how much gas used after evaluating the full transaction
+
+```typescript
+const gasUsed = traceTree?.totalGasUsed();
+// 256859 nano
+```
+
+### Tracing testing feature
+
+For better testing your contracts you can use our `chai` plugin that includes to `locklift` package.
+
+Just add this to your `locklift.config.ts`
+
+```typescript
+import { lockliftChai } from "locklift";
+import chai from "chai";
+
+chai.use(lockliftChai);
+```
+
+This plugin is providing useful things for testing everscale contract
+
+1. `.emit`
+
+With this method, you can test emitting events, like this
+
+```typescript
+expect(traceTree)
+  .to.emit("Deposit")
+  .withNamedArgs({
+    amount: "150",
+  })
+  .and.emit("AccountDeployed")
+  .withNamedArgs({
+    user: "user address",
+  })
+  .count(1);
+```
+
+`.emit` method gets the event name as a first parameter and an optional parameter with the type
+`type Addressable = Contract | Address | string;`
+
+2. `.call`
+
+With this method, you can test evaluating contract methods, as this
+
+```typescript
+expect(traceTree).to.call("depositToStrategies").withNamedArgs({...}).count(2)
+```
+
+`.call` parameters are the same as `.emit`
+
+3. `.error`
+
+With this method, you test cases with errors like this
+
+```typescript
+expect(traceTree).to.have.error(1025);
+// expect(traceTree).not.to.have.error(1025);
+```
+
+All `.error` parameters are optional, so you can test particular errors or all errors that happened or not happened
+
+And last but not least you can combine each of these methods e.g.
+
+```typescript
+expect(traceTree)
+  .to.call("deposit")
+  .withNamedArgs({
+    depositor: "userAddress",
+  })
+  .count(1)
+  .and.error(1065)
+  .and.emit("Deposit")
+  .withNamedArgs({
+    depositor: "userAddress",
+  })
+  .count(1);
+```
+
 ## Run script
 
 This command runs an arbitrary Node JS script with an already configured `locklift` module.
@@ -381,7 +550,7 @@ The module provides access to high-level control of transaction flow.
 This method allows you to wait until all transactions in the chain are finalized.
 
 ```typescript
-const transaction = await locklift.transactions.waitFinalized(tokenRoot.methods.deployWallet({ ...))
+const transaction = await locklift.transactions.waitFinalized(tokenRoot.methods.deployWallet({...))
 ```
 
 ## Full contract state (`locklift.provider.getFullContractState`)
@@ -447,15 +616,15 @@ Deploy specified contract and returns contract instance and transaction.
 
 ```typescript
 // Deploy
-const { contract: DeployedMyContract, tx } = locklift.factory.deployContract({
+const {contract: DeployedMyContract, tx} = locklift.factory.deployContract({
   // name of your contract
   contract: "MyContractName",
   // public key in init data
   publicKey: signer.publicKey,
   // static parameters of contract
-  initParams: { ... },
+  initParams: {...},
   // runtime deployment arguments
-  constructoParams: { ... },
+  constructoParams: {...},
   // this value will be transfered from giver to deployable contract
   value: toNano(2),
 });
@@ -499,7 +668,8 @@ myContract.methods.mint({}).send({
 });
 ```
 
-For this flow need to add accounts to the `locklift.factory.accounts`. We are supporting WalletV3, HighLoadWallet, MsigAccount
+For this flow need to add accounts to the `locklift.factory.accounts`. We are supporting WalletV3, HighLoadWallet,
+MsigAccount
 and other wallets which should provide directly
 
 ### Deploy and add new account to the account storage
@@ -573,9 +743,9 @@ can be used as example for own implementation
 #### example
 
 ```typescript
-import { GenericAccount } from 'locklift/everscale-standalone-client'
+import {GenericAccount} from 'locklift/everscale-standalone-client'
 
-const { abi: myMsigAccountAbi } = locklift.factory.getContractArtifacts("MyMsigAccount");
+const {abi: myMsigAccountAbi} = locklift.factory.getContractArtifacts("MyMsigAccount");
 
 //derived from https://github.com/broxus/everscale-standalone-client/blob/dev/src/client/AccountsStorage/Generic.ts#L61-L107
 class MyMsigAccount extends GenericAccount {
@@ -583,12 +753,12 @@ class MyMsigAccount extends GenericAccount {
     address: string | Address,
     publicKey?: string
   }) {
-    super({ abi: myMsigAccountAbi, ... });
+    super({abi: myMsigAccountAbi, ...});
   }
 }
 
 const signer = await locklift.keystore.getSigner('0')
-const { contract: myMsigContract } = await locklift.factory.deployContract({
+const {contract: myMsigContract} = await locklift.factory.deployContract({
   contract: "MyMsigAccount",
   constructorParams: {},
   initParams: {
@@ -597,7 +767,7 @@ const { contract: myMsigContract } = await locklift.factory.deployContract({
   value: toNano(10),
   publicKey: signer.publicKey,
 });
-const myMsigAccount = new MyMsigAccount({ address: myMsigContract.address, publicKey: signer.publicKey })
+const myMsigAccount = new MyMsigAccount({address: myMsigContract.address, publicKey: signer.publicKey})
 locklift.factory.accounts.storage.addAccount(myMsigAccount)
 
 await myContract.methods.mint({}).send({
@@ -667,12 +837,12 @@ Now you can use it for deploying contract or getting deployed ones
 ### Deploy
 
 ```typescript
-const { contract: MyAccount, tx } = accountsFactory.deployNewAccount({
+const {contract: MyAccount, tx} = accountsFactory.deployNewAccount({
   publicKey: signer.publicKey,
   initParams: {
     _randomNonce: getRandomNonce(),
   },
-  constructorParams: { ... },
+  constructorParams: {...},
   value: locklift.utils.toNano(100000)
 });
 ```

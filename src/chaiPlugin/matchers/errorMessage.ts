@@ -6,15 +6,17 @@ import AssertionStatic = Chai.AssertionStatic;
 
 export const supportMessageErrors = (Assertion: Chai.AssertionStatic, utils: Chai.ChaiUtils) => {
   Assertion.addMethod(
-    "errorMessage",
+    "error",
     function (this: AssertionStatic, errorCode?: number | null, contract?: Contract<any> | Address | string) {
-      const rewriteThis: AssertionStatic & { __flags: { negate: boolean; object: ViewTracingTree } } =
-        this as AssertionStatic & { __flags: { negate: boolean; object: ViewTracingTree } };
+      const rewriteThis: AssertionStatic & { __flags: { object: ViewTracingTree } } = this as AssertionStatic & {
+        __flags: { negate: boolean; object: ViewTracingTree };
+      };
       const viewTracingTree = rewriteThis.__flags.object;
-      const errors =
-        (contract
-          ? viewTracingTree.getErrorsByContract(contract)?.map(error => ({ ...error, contract }))
-          : viewTracingTree.getAllErrors()) || [];
+
+      const errors = contract
+        ? viewTracingTree.getErrorsByContract(contract)?.map(error => ({ ...error, contract })) || []
+        : viewTracingTree.getAllErrors();
+
       if (errorCode !== null && typeof errorCode !== "number") {
         this.assert(
           errors.length > 0,
@@ -33,8 +35,8 @@ export const supportMessageErrors = (Assertion: Chai.AssertionStatic, utils: Cha
       } else {
         this.assert(
           errors.filter(({ code }) => code === errorCode).length > 0,
-          `Expected error "${errorCode}" to be through, but it wasn't`,
-          `Expected error "${errorCode}" NOT to be through, but it was`,
+          `Expected error "${errorCode}" to be thrown, but it wasn't`,
+          `Expected error "${errorCode}" NOT to be thrown, but it was`,
           true,
         );
       }

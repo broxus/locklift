@@ -1,7 +1,8 @@
 import { Address, Contract } from "everscale-inpage-provider";
 import _ from "lodash";
 import { ViewTracingTree } from "../../tracing/viewTraceTree/viewTracingTree";
-import { TraceType } from "../../tracing/types";
+import { Addressable, TraceType } from "../../tracing/types";
+import { extractAddress } from "../../tracing/utils";
 
 export const getMessage = ({
   viewTracingTree,
@@ -10,7 +11,7 @@ export const getMessage = ({
   msgName,
 }: {
   viewTracingTree: ViewTracingTree;
-  contract?: Contract<any> | Address;
+  contract?: Addressable;
   msgName: string;
   msgType: TraceType;
 }) => {
@@ -23,7 +24,7 @@ export const getMessage = ({
       }
       return contract instanceof Address
         ? event.contract.contract.address.equals(contract)
-        : contract.address.equals(event.contract.contract.address);
+        : extractAddress(contract).equals(event.contract.contract.address);
     });
 };
 export const mapAddressesToString = (obj: Record<any, any> | Array<any>): Record<any, any> => {

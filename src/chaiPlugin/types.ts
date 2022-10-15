@@ -5,47 +5,15 @@
 
 declare namespace Chai {
   interface Assertion extends LanguageChains, NumericComparison, TypeComparison {
-    reverted: AsyncAssertion;
-    revertedWith(reason: string | RegExp): RevertedWithAssertion;
     emit(eventName: string, contractOrAddress?: any): EmitAssertion;
     call(methodName: string, contractOrAddress?: any): EmitAssertion;
-    errorMessage(errorCode?: number | null, contractOrAddress?: any): AsyncAssertion;
-    properHex(length: number): void;
-    hexEqual(other: string): void;
-    properPrivateKey: void;
-    properAddress: void;
-    /**
-     * @deprecated Use `changeEtherBalance()` instead.
-     */
-    changeBalance(account: any, balance: any): AsyncAssertion;
-    /**
-     * @deprecated Use `changeEtherBalances()` instead.
-     */
-    changeBalances(accounts: any[], balances: any[]): AsyncAssertion;
-    changeEtherBalance(account: any, balance: any, options?: any): AsyncAssertion;
-    changeEtherBalances(accounts: any[], balances: any[], options?: any): AsyncAssertion;
-    changeTokenBalance(token: any, account: any, balance: any): AsyncAssertion;
-    changeTokenBalances(token: any, accounts: any[], balances: any[]): AsyncAssertion;
-    calledOnContract(contract: any): void;
-    calledOnContractWith(contract: any, parameters: any[]): void;
-  }
-
-  interface NumberComparer {
-    (value: any, message?: string): Assertion;
-  }
-
-  interface CloseTo {
-    (expected: any, delta: any, message?: string): Assertion;
+    error(errorCode?: number | null, contractOrAddress?: any): AsyncAssertion;
   }
 
   interface AsyncAssertion extends Assertion, Promise<void> {}
 
   interface EmitAssertion extends AsyncAssertion {
-    withNamedArgs(args: Record<string, unknown>, isPartial?: boolean): AsyncAssertion;
+    withNamedArgs(args: Record<string, unknown>, message?: string): AsyncAssertion;
     count(count: number): EmitAssertion;
-  }
-
-  interface RevertedWithAssertion extends AsyncAssertion {
-    withArgs(...args: any[]): AsyncAssertion;
   }
 }

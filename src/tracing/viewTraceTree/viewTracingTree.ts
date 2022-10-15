@@ -1,4 +1,5 @@
 import {
+  Addressable,
   BalanceChangeInfoStorage,
   ErrorStore,
   MsgError,
@@ -11,7 +12,7 @@ import _ from "lodash";
 
 import { Address, Contract, DecodedEventWithTransaction } from "everscale-inpage-provider";
 import { AbiEventName } from "everscale-inpage-provider/dist/models";
-import { extractStringAddress, fetchAccounts } from "../utils";
+import { extractAddress, extractStringAddress, fetchAccounts, isT } from "../utils";
 import { ContractWithName } from "../../types";
 import {
   applyTotalFees,
@@ -24,13 +25,10 @@ import {
 import { Tokens } from "./tokens";
 import { pipe } from "rxjs";
 
-type NameAndType<T extends string = string> = { type: TraceType; name: T };
-type EventNames<
-  T extends Contract<any>,
-  Abi extends T extends Contract<infer f> ? f : never,
-> = DecodedEventWithTransaction<Abi, AbiEventName<Abi>>["event"];
+type NameAndType<T extends string = string> = { type: TraceType; name: T; contract?: Addressable };
+type EventNames<Abi> = DecodedEventWithTransaction<Abi, AbiEventName<Abi>>["event"];
 
-type EventsNamesInner<T extends Contract<any>> = EventNames<T, T extends Contract<infer f> ? f : never>;
+type EventsNamesInner<T extends Contract<any>> = EventNames<T extends Contract<infer f> ? f : never>;
 
 //@ts-ignore
 type MethodParams<C extends Contract<any>, N extends keyof C["methods"]> = Parameters<C["methods"][N]>[0];
@@ -73,7 +71,28 @@ export class ViewTracingTree {
     return this.balanceChangeInfo[address].balanceDiff.toString() as T extends T[] ? Record<string, string> : string;
   };
 
-  findForContract = <
+  findCallsForContract = <C extends Contract<any>, N extends keyof C["methods"] & string>({
+    contract,
+    name,
+  }: { contract: C } & { name: N }) => {
+    return this.findForContract({ contract, name })
+      .map(el => el?.params)
+      .filter(isT);
+  };
+
+  findEventsForContract = <
+    C extends Contract<any>,
+    Abi extends C extends Contract<infer f> ? f : never,
+    N extends EventNames<Abi>,
+  >({
+    contract,
+    name,
+  }: { contract: C } & { name: N }) =>
+    this.findForContract({ name, contract })
+      .map(el => el?.params)
+      .filter(isT);
+
+  private findForContract = <
     C extends Contract<any>,
     N extends (keyof C["methods"] & string) | EventsNamesInner<C>,
     Abi extends C extends Contract<infer f> ? f : never,
@@ -84,19 +103,19 @@ export class ViewTracingTree {
   }: { contract: C } & { name: N }) => {
     //@ts-ignore
     if (name in contract._functions) {
-      return this.findByType<N, MethodParams<C, N>>({ name, type: TraceType.FUNCTION_CALL });
+      return this.findByType<N, MethodParams<C, N>>({ name, type: TraceType.FUNCTION_CALL, contract });
     }
-    return this.findByType<N, E>({ name, type: TraceType.EVENT });
+    return this.findByType<N, E>({ name, type: TraceType.EVENT, contract });
   };
 
-  findByType = <M extends string, P>(params: NameAndType) =>
+  findByType = <M extends string, P>(params: NameAndType): Array<ViewTrace<M, P>["decodedMsg"]> =>
     this._findByType<M, P>(params, [this.viewTraceTree]).map(el => el.decodedMsg);
 
   findByTypeWithFullData = <M extends string, P>(params: NameAndType) =>
     this._findByType<M, P>(params, [this.viewTraceTree]);
 
   private _findByType = <M extends string, P>(
-    { type, name }: NameAndType,
+    { type, name, contract }: NameAndType,
     tree: Array<ViewTraceTree>,
   ): Array<ViewTrace<M, P>> => {
     if (tree.length === 0) {
@@ -104,28 +123,33 @@ export class ViewTracingTree {
     }
     const matchedMethods: Array<ViewTrace<M, P>> = [];
     for (const trace of tree) {
-      if (type === trace.type && name === trace.decodedMsg?.method) {
+      if (
+        type === trace.type &&
+        name === trace.decodedMsg?.method &&
+        (contract ? extractAddress(contract).equals(extractAddress(trace.contract.contract)) : true)
+      ) {
         matchedMethods.push(trace as any);
       }
       if (trace.outTraces.length > 0) {
-        return [...matchedMethods, ...this._findByType<M, P>({ name, type }, trace.outTraces)];
+        return [...matchedMethods, ...this._findByType<M, P>({ name, type, contract }, trace.outTraces)];
       }
     }
     return matchedMethods;
   };
-  gasUsed = () => calculateTotalFees(this.viewTraceTree).toNumber();
-  beautyPrint = async () => {
+  totalGasUsed = () => calculateTotalFees(this.viewTraceTree).toNumber();
+
+  beautyPrint = async (): Promise<void> => {
     const result = _(extractAllAddresses(this.viewTraceTree)).uniq().value();
     const contracts = (await fetchAccounts(result, this.endpoint)).map(({ code_hash: codeHash, id }) =>
       this.contractGetter(codeHash, new Address(id)),
     );
 
-    return (
+    console.log(
       printer(this.viewTraceTree, {
         contracts,
       }) +
-      "\n" +
-      this._beautyPrint(this.viewTraceTree, 0, contracts)
+        "\n" +
+        this._beautyPrint(this.viewTraceTree, 0, contracts),
     );
   };
 

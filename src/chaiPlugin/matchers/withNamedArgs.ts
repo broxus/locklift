@@ -5,10 +5,10 @@ import { mapAddressesToString, objectIntersection } from "../utils";
 /**
  * Used for testing the arguments of events or custom errors, naming the arguments.
  * Can test the subset of all arguments.
- * Should be used after .emit matcher.
+ * Should be used after .emit or .call matcher.
  */
 export function supportWithNamedArgs(Assertion: Chai.AssertionStatic, utils: Chai.ChaiUtils) {
-  Assertion.addMethod("withNamedArgs", function (this: any, expectedArgs: Record<string, unknown>, isPartial = true) {
+  Assertion.addMethod("withNamedArgs", function (this: any, expectedArgs: Record<string, unknown>, message?: string) {
     const events = utils.flag(this, "messages") as ViewTrace<string, unknown>[];
     const firstEvent = events[0];
     if (!firstEvent.decodedMsg?.params) {
@@ -18,12 +18,8 @@ export function supportWithNamedArgs(Assertion: Chai.AssertionStatic, utils: Cha
       eventParamsWithUpdatedAddress: mapAddressesToString(firstEvent.decodedMsg.params),
       expectedArgsWithUpdatedAddress: mapAddressesToString(expectedArgs),
     };
-    if (isPartial) {
-      const partialEventArgs = objectIntersection(eventParamsWithUpdatedAddress, expectedArgsWithUpdatedAddress);
-      new Assertion(partialEventArgs).to.be.deep.equal(expectedArgsWithUpdatedAddress, "Not partial equals");
-      return this;
-    }
-    new Assertion(eventParamsWithUpdatedAddress).to.be.deep.equal(expectedArgsWithUpdatedAddress, "Not equals");
+    const partialEventArgs = objectIntersection(eventParamsWithUpdatedAddress, expectedArgsWithUpdatedAddress);
+    new Assertion(partialEventArgs).to.be.deep.equal(expectedArgsWithUpdatedAddress, message);
     return this;
   });
 }
