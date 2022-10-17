@@ -336,7 +336,7 @@ locklift.tracing.removeAllowedCodes({ compute: [60] });
 locklift.tracing.removeAllowedCodesForAddress(SOME_ADDRESS, { compute: [123] });
 ```
 
-### Tracing features (_experimental, so api can change at any time_)
+### Tracing features (EXPERIMENTAL FEATURES)
 
 For using this feature first of all need to wrap the transaction by tracing, and make **sure that tracing is enabled**.
 Otherwise, the `traceTree` will be **undefined**
