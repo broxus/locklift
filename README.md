@@ -336,7 +336,7 @@ locklift.tracing.removeAllowedCodes({ compute: [60] });
 locklift.tracing.removeAllowedCodesForAddress(SOME_ADDRESS, { compute: [123] });
 ```
 
-### Tracing features
+### Tracing features (_experimental, so api can change at any time_)
 
 For using this feature first of all need to wrap the transaction by tracing, and make **sure that tracing is enabled**.
 Otherwise, the `traceTree` will be **undefined**
@@ -413,7 +413,7 @@ const tokenBalanceChange = traceTree?.tokens.getTokenBalanceChange(myUSDTTokenWa
 // Events
 const addEvents = traceTree?.findEventsForContract({
   contract: myContract,
-  name: "Add",
+  name: "Add" as const, // 'as const' is important thing for type saving
 });
 
 //Methods calls
