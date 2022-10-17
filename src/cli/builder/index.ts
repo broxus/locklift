@@ -18,7 +18,7 @@ import {
 const tablemark = require("tablemark");
 import { ParsedDoc } from "../types";
 import { promisify } from "util";
-import { catchError, concat, defer, filter, from, map, mergeMap, tap, throwError, toArray } from "rxjs";
+import { catchError, defer, filter, from, map, mergeMap, tap, throwError, toArray } from "rxjs";
 import { logger } from "../../logger";
 
 export type BuilderConfig = {
@@ -83,10 +83,15 @@ export class Builder {
             const resolvedPathCode = resolve(this.options.build, `${contractFileName}.code`);
             const resolvedPathAbi = resolve(this.options.build, `${contractFileName}.abi.json`);
             return defer(async () =>
-              promisify(exec)(`${this.config.linkerPath} compile "${resolvedPathCode}" -a "${resolvedPathAbi}" ${lib}`),
+              promisify(exec)(
+                `${this.config.linkerPath} compile -o ${resolve(
+                  this.options.build,
+                  `${contractFileName}.tvc`,
+                )} "${resolvedPathCode}" -a "${resolvedPathAbi}" ${lib}`,
+              ),
             ).pipe(
               map(tvmLinkerLog => {
-                return tvmLinkerLog.stdout.toString().match(new RegExp("Saved contract to file (.*)"));
+                return tvmLinkerLog.stdout.toString().match(new RegExp("Saved to file (.*)."));
               }),
               catchError(e => {
                 logger.printError(e?.stderr?.toString());
@@ -98,22 +103,19 @@ export class Builder {
                 }
                 return matchResult[1];
               }),
-              mergeMap(tvcFile => {
-                return concat(
-                  defer(() =>
-                    promisify(fs.writeFile)(
-                      resolve(this.options.build, `${contractFileName}.base64`),
-                      tvcToBase64(fs.readFileSync(tvcFile)),
-                    ),
+              mergeMap(tvcFile =>
+                defer(() =>
+                  promisify(fs.writeFile)(
+                    resolve(this.options.build, `${contractFileName}.base64`),
+                    tvcToBase64(fs.readFileSync(tvcFile)),
                   ),
-                  defer(() => promisify(fs.rename)(tvcFile, resolve(this.options.build, `${contractFileName}.tvc`))),
                 ).pipe(
                   catchError(e => {
                     logger.printError(e?.stderr?.toString());
                     return throwError(undefined);
                   }),
-                );
-              }),
+                ),
+              ),
             );
           }),
           toArray(),

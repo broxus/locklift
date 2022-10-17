@@ -163,7 +163,7 @@ export class ViewTracingTree {
     for (const viewTraceInt of viewTrace.outTraces) {
       traces =
         traces +
-        `${Array(offset).fill(" ").join("")} ${printer(viewTraceInt, {
+        `${Array(offset).fill("  ").join("")} ${printer(viewTraceInt, {
           contracts,
         })}\n${this._beautyPrint(viewTraceInt, offset + 1, contracts)}`;
     }
