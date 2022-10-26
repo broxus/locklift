@@ -19,6 +19,23 @@
   "engines": {
     "node": ">=14.0.0"
   },
+  "files": [
+    "chaiPlugin/",
+    "constants/",
+    "everscale-client/",
+    "everscale-provider/",
+    "internal/",
+    "plugins/",
+    "sample-project-typescript/",
+    "src/",
+    "types/",
+    "utils/",
+    "README.md",
+    "*.d.ts",
+    "*.d.ts.map",
+    "*.js",
+    "*.js.map"
+  ],
   "main": "index.js",
   "module": "index.js",
   "types": "index.d.ts",
