@@ -217,7 +217,7 @@ export class Builder {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const docs = [...output.matchAll(this.docRegex)].map(m =>
       //@ts-ignore
-      JSON.parse(m.groups!.doc),
+      JSON.parse(m.groups?.doc),
     );
 
     return _.zip(contracts, docs).reduce((acc: ParsedDoc[], [contract, doc]: string[]) => {

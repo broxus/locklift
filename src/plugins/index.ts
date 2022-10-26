@@ -1,6 +1,1 @@
-
-
-
-
-
-export {addPlugin} from "./addPlugin"
+export { addPlugin } from "./addPlugin";
