@@ -1,4 +1,4 @@
-import { ViewTrace } from "src/tracing/types";
+import { ViewTrace } from "src/internal/tracing/types";
 
 import { mapAddressesToString, objectIntersection } from "../utils";
 

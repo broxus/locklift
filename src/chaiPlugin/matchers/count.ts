@@ -1,4 +1,4 @@
-import { ViewTrace } from "src/tracing/types";
+import { ViewTrace } from "src/internal/tracing/types";
 
 export function supportWithCount(Assertion: Chai.AssertionStatic, utils: Chai.ChaiUtils) {
   Assertion.addMethod("count", function (this: any, count: number) {

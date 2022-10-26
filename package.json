@@ -1,26 +1,27 @@
 {
   "name": "locklift",
-  "version": "2.3.0",
+  "version": "2.2.3",
   "description": "Node JS framework for working with Ever contracts. Inspired by Truffle and Hardhat. Helps you to build, test, run and maintain your smart contracts.",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc",
+    "build": "tsc --build .",
     "lint": "npx eslint .",
     "format": "prettier --write .",
     "dev-deploy-local": "npm publish --registry http://localhost:4873/",
     "dev-deploy": "npm publish --registry http://95.216.205.173:4873/",
     "prepublishOnly": "npm run build",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "clean": "rimraf builtin-tasks internal chaiPlugin types utils everscale-inpage-provider everscale-standalone-client plugins everscale-provider everscale-client constants *.d.ts *.map *.js build-test tsconfig.tsbuildinfo"
   },
   "bin": {
-    "locklift": "build/cli/index.js"
+    "locklift": "internal/cli/cli.js"
   },
   "engines": {
     "node": ">=14.0.0"
   },
-  "main": "build/index.js",
-  "module": "build/index.js",
-  "types": "build/index.d.ts",
+  "main": "index.js",
+  "module": "index.js",
+  "types": "index.d.ts",
   "typesVersions": {
     "*": {
       ".": [
@@ -76,7 +77,7 @@
     "axios": "^0.27.2",
     "bignumber.js": "^9.0.1",
     "chalk": "^4.1.2",
-    "commander": "^7.2.0",
+    "commander": "^9.4.1",
     "directory-tree": "^3.2.2",
     "ejs": "^3.1.6",
     "env-paths": "^2.2.1",

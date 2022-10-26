@@ -1,8 +1,8 @@
 import { Address } from "everscale-inpage-provider";
 import _ from "lodash";
-import { ViewTracingTree } from "../../tracing/viewTraceTree/viewTracingTree";
-import { Addressable, TraceType } from "../../tracing/types";
-import { extractAddress } from "../../tracing/utils";
+import { ViewTracingTree } from "../../internal/tracing/viewTraceTree/viewTracingTree";
+import { Addressable, TraceType } from "../../internal/tracing/types";
+import { extractAddress } from "../../internal/tracing/utils";
 
 export const getMessage = ({
   viewTracingTree,

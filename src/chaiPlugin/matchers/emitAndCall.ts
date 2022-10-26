@@ -1,5 +1,5 @@
-import { ViewTracingTree } from "../../tracing/viewTraceTree/viewTracingTree";
-import { Addressable, TraceType } from "../../tracing/types";
+import { ViewTracingTree } from "../../internal/tracing/viewTraceTree/viewTracingTree";
+import { Addressable, TraceType } from "../../internal/tracing/types";
 import { supportWithNamedArgs } from "./withNamedArgs";
 import { supportWithCount } from "./count";
 import { getMessage } from "../utils";

@@ -10,28 +10,29 @@ import {
 } from "everscale-standalone-client/nodejs";
 import chalk from "chalk";
 
-import { Keys } from "./keys";
-import { ConfigState, LockliftConfig } from "./config";
+import { Keys } from "./internal/keys";
+import { ConfigState, LockliftConfig } from "./internal/config";
 import * as utils from "./utils";
-import { logger } from "./logger";
-import { FactoryType, Giver } from "./factory";
-import { Factory } from "./factory";
+import { logger } from "./internal/logger";
+import { FactoryType, Giver } from "./internal/factory";
+import { Factory } from "./internal/factory";
 import { Transactions } from "./utils";
-import { createTracing, Tracing } from "./tracing";
-import { getGiverKeyPair } from "./utilsInternal";
-import { createTimeMovement, TimeMovement } from "./timeMovement";
-import { LockliftContext } from "./context/lockliftContext";
+import { createTracing, Tracing } from "./internal/tracing";
+import { getGiverKeyPair } from "./internal/utilsInternal";
+import { createTimeMovement, TimeMovement } from "./internal/timeMovement";
+import { LockliftContext } from "./internal/context/lockliftContext";
 
 export * from "everscale-inpage-provider";
 export type { Signer } from "everscale-standalone-client";
 export { Dimension, zeroAddress } from "./constants";
-export type { LockliftConfig } from "./config";
-export type { Giver } from "./factory";
+export type { LockliftConfig } from "./internal/config";
+export type { Giver } from "./internal/factory";
 export { toNano, fromNano, getRandomNonce, convertAmount } from "./utils";
 export { WalletTypes } from "./types";
-export { TraceType, InteractionType } from "./tracing/types";
+export { TraceType, InteractionType } from "./internal/tracing/types";
 export { lockliftChai } from "./chaiPlugin";
 import "./chaiPlugin/types";
+import { initializeExtenders } from "./plugins/utils";
 export class Locklift<FactorySource extends FactoryType> {
   public readonly utils = utils;
 
@@ -96,7 +97,19 @@ export class Locklift<FactorySource extends FactoryType> {
     });
     const timeMovement = await createTimeMovement(clock, networkConfig);
     const context = new LockliftContext({ config: networkConfig, name: network });
-    return new Locklift<T>(factory, giver, provider, clock, keystore, transactions, tracing, timeMovement, context);
+    const locklift = new Locklift<T>(
+      factory,
+      giver,
+      provider,
+      clock,
+      keystore,
+      transactions,
+      tracing,
+      timeMovement,
+      context,
+    );
+    await initializeExtenders({ locklift, config, network });
+    return locklift;
   }
 }
 
