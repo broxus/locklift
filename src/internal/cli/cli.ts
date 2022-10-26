@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import * as path from "path";
+
 process.env.TS_NODE_PROJECT = path.join(__dirname, "../../tsconfig.json");
 process.env.TS_CONFIG_PATHS = "true";
 
@@ -8,8 +9,8 @@ import init from "./commands/init";
 import build from "./commands/build";
 import test from "./commands/test";
 import run from "./commands/run";
-import { commandInjector } from "../../plugins";
 import { loadConfig } from "../config";
+import { commandInjector } from "../../plugins/utils";
 
 // import gendoc from "./commands/gendoc";
 const main = async () => {
@@ -22,6 +23,7 @@ const main = async () => {
   // program.addCommand(gendoc);
 
   program.version(require("../../../../../package.json").version);
+
   commandInjector(program);
   program.parse(process.argv);
 };

@@ -5,7 +5,7 @@ import * as tsNode from "ts-node";
 
 export const initLockliftStep = async (
   config: LockliftConfig<ConfigState.INTERNAL>,
-  options: { network: string; script: string }
+  options: { network: string; script: string },
 ): Promise<Locklift<any>> => {
   // Initialize Locklift
   //@ts-ignore

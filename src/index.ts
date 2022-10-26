@@ -30,8 +30,9 @@ export type { Giver } from "./internal/factory";
 export { toNano, fromNano, getRandomNonce, convertAmount } from "./utils";
 export { WalletTypes } from "./types";
 export { TraceType, InteractionType } from "./internal/tracing/types";
-export { lockliftChai } from "./internal/chaiPlugin";
-import "./internal/chaiPlugin/types";
+export { lockliftChai } from "./chaiPlugin";
+import "./chaiPlugin/types";
+import { initializeExtenders } from "./plugins/utils";
 export class Locklift<FactorySource extends FactoryType> {
   public readonly utils = utils;
 
@@ -96,7 +97,19 @@ export class Locklift<FactorySource extends FactoryType> {
     });
     const timeMovement = await createTimeMovement(clock, networkConfig);
     const context = new LockliftContext({ config: networkConfig, name: network });
-    return new Locklift<T>(factory, giver, provider, clock, keystore, transactions, tracing, timeMovement, context);
+    const locklift = new Locklift<T>(
+      factory,
+      giver,
+      provider,
+      clock,
+      keystore,
+      transactions,
+      tracing,
+      timeMovement,
+      context,
+    );
+    await initializeExtenders({ locklift, config, network });
+    return locklift;
   }
 }
 

@@ -10,23 +10,15 @@ const program = new Command();
 program
   .name("build")
   .description("Build contracts by using Ever Solidity compiler and TVM linker")
-  .option(
-    "-c, --contracts <contracts>",
-    "Path to the contracts folder",
-    "contracts"
-  )
+  .option("-c, --contracts <contracts>", "Path to the contracts folder", "contracts")
   .option("-b, --build <build>", "Path to the build folder", "build")
-  .option(
-    "--disable-include-path",
-    "Disables including node_modules. Use this with old compiler versions",
-    false
-  )
+  .option("--disable-include-path", "Disables including node_modules. Use this with old compiler versions", false)
   .addOption(
     new Option("--config <config>", "Path to the config file")
       .default(async () => loadConfig("locklift.config.ts"))
-      .argParser((config) => () => loadConfig(config))
+      .argParser(config => () => loadConfig(config)),
   )
-  .action(async (options) => {
+  .action(async options => {
     const config = await options.config();
 
     fs.ensureDirSync(options.build);

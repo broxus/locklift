@@ -6,7 +6,6 @@ import { ProviderRpcClient } from "everscale-inpage-provider";
 import type { Ed25519KeyPair } from "everscale-standalone-client";
 import { ConnectionProperties } from "everscale-standalone-client";
 import { generateBip39Phrase } from "everscale-crypto";
-
 import { Giver } from "../factory";
 
 export enum ConfigState {
@@ -58,85 +57,88 @@ export type GiverConfig = {
 const MochaConfig = ss.type({
   tsconfig: ss.optional(ss.string()),
 });
-const Config = ss.object({
-  // NOTE: assign(object, union) doesn't work
-  compiler: ss.union([
-    ss.object({
-      includesPath: ss.optional(ss.string()),
-      externalContracts: ss.optional(ss.record(ss.string(), ss.array(ss.string()))),
-      path: ss.string(),
-    }),
-    ss.object({
-      includesPath: ss.optional(ss.string()),
-      externalContracts: ss.optional(ss.record(ss.string(), ss.array(ss.string()))),
-      version: ss.string(),
-    }),
-  ]),
-  linker: ss.union([
-    ss.object({
-      path: ss.string(),
-      lib: ss.string(),
-    }),
-    ss.object({
-      version: ss.string(),
-    }),
-  ]),
-  networks: ss.record(
-    ss.string(),
-    ss.object({
-      // NOTE: assign(object, union) doesn't work
-      giver: ss.union([
-        ss.object({
-          address: ss.string(),
-          giverFactory: ss.func() as unknown as ss.Struct<GiverConfig["giverFactory"], null>,
-          key: ss.string(),
-        }),
-        ss.object({
-          address: ss.string(),
-          giverFactory: ss.func(),
-          phrase: ss.string(),
-          accountId: ss.number(),
-        }),
-      ]),
-      keys: ss.object({
-        path: ss.optional(ss.string()),
-        phrase: ss.optional(ss.string()),
-        amount: ss.number(),
+const Config = ss.union([
+  ss.object({
+    // NOTE: assign(object, union) doesn't work
+    compiler: ss.union([
+      ss.object({
+        includesPath: ss.optional(ss.string()),
+        externalContracts: ss.optional(ss.record(ss.string(), ss.array(ss.string()))),
+        path: ss.string(),
       }),
-      connection: ss.union([
-        ss.string(),
+      ss.object({
+        includesPath: ss.optional(ss.string()),
+        externalContracts: ss.optional(ss.record(ss.string(), ss.array(ss.string()))),
+        version: ss.string(),
+      }),
+    ]),
+    linker: ss.union([
+      ss.object({
+        path: ss.string(),
+        lib: ss.string(),
+      }),
+      ss.object({
+        version: ss.string(),
+      }),
+    ]),
+    networks: ss.record(
+      ss.string(),
+      ss.object({
         // NOTE: assign(object, union) doesn't work
-        ss.union([
+        giver: ss.union([
           ss.object({
-            id: ss.optional(ss.number()),
-            group: ss.string(),
-            type: ss.pattern(ss.string(), /graphql/),
-            data: ss.object({
-              endpoints: ss.array(ss.string()),
-              local: ss.boolean(),
-              latencyDetectionInterval: ss.optional(ss.number()),
-              maxLatency: ss.optional(ss.number()),
-            }),
+            address: ss.string(),
+            giverFactory: ss.func() as unknown as ss.Struct<GiverConfig["giverFactory"], null>,
+            key: ss.string(),
           }),
           ss.object({
-            id: ss.optional(ss.number()),
-            group: ss.string(),
-            type: ss.pattern(ss.string(), /jrpc/),
-            data: ss.object({
-              endpoint: ss.string(),
-            }),
+            address: ss.string(),
+            giverFactory: ss.func(),
+            phrase: ss.string(),
+            accountId: ss.number(),
           }),
         ]),
-      ]),
-      tracing: ss.optional(
-        ss.object({
-          endpoint: ss.string(),
+        keys: ss.object({
+          path: ss.optional(ss.string()),
+          phrase: ss.optional(ss.string()),
+          amount: ss.number(),
         }),
-      ),
-    }),
-  ),
-  mocha: MochaConfig,
-});
+        connection: ss.union([
+          ss.string(),
+          // NOTE: assign(object, union) doesn't work
+          ss.union([
+            ss.object({
+              id: ss.optional(ss.number()),
+              group: ss.string(),
+              type: ss.pattern(ss.string(), /graphql/),
+              data: ss.object({
+                endpoints: ss.array(ss.string()),
+                local: ss.boolean(),
+                latencyDetectionInterval: ss.optional(ss.number()),
+                maxLatency: ss.optional(ss.number()),
+              }),
+            }),
+            ss.object({
+              id: ss.optional(ss.number()),
+              group: ss.string(),
+              type: ss.pattern(ss.string(), /jrpc/),
+              data: ss.object({
+                endpoint: ss.string(),
+              }),
+            }),
+          ]),
+        ]),
+        tracing: ss.optional(
+          ss.object({
+            endpoint: ss.string(),
+          }),
+        ),
+      }),
+    ),
+    mocha: MochaConfig,
+  }),
+  ss.object(),
+]);
 
 export function loadConfig(configPath: string): LockliftConfig<ConfigState.INTERNAL> {
   const resolvedConfigPath = path.resolve(process.cwd(), configPath);

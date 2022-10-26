@@ -1,4 +1,4 @@
-import { ViewTracingTree } from "../../tracing/viewTraceTree/viewTracingTree";
+import { ViewTracingTree } from "../../internal/tracing/viewTraceTree/viewTracingTree";
 
 import { Address, Contract } from "everscale-inpage-provider";
 

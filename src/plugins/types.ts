@@ -8,7 +8,7 @@ export type Extender = {
     locklift: Locklift<any>;
     config: LockliftConfig<ConfigState.INTERNAL>;
     network: keyof LockliftConfig["networks"];
-  }) => Promise<void>;
+  }) => Promise<any>;
   skipSteps?: {
     build?: boolean;
   };

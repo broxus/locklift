@@ -12,30 +12,19 @@ program
   .name("run")
   .description("Run arbitrary locklift script")
   .option("--disable-build", "Disable automatic contracts build", false)
-  .option(
-    "-c, --contracts <contracts>",
-    "Path to the contracts folder",
-    "contracts"
-  )
+  .option("-c, --contracts <contracts>", "Path to the contracts folder", "contracts")
   .option("-b, --build <build>", "Path to the build folder", "build")
-  .option(
-    "--disable-include-path",
-    "Disables including node_modules. Use this with old compiler versions",
-    false
-  )
+  .option("--disable-include-path", "Disables including node_modules. Use this with old compiler versions", false)
 
-  .requiredOption(
-    "-n, --network <network>",
-    "Network to use, choose from configuration"
-  )
+  .requiredOption("-n, --network <network>", "Network to use, choose from configuration")
   .addOption(
     new Option("--config <config>", "Path to the config file")
       .default(() => loadConfig("locklift.config.ts"))
-      .argParser((config) => () => loadConfig(config))
+      .argParser(config => () => loadConfig(config)),
   )
   .requiredOption("-s, --script <script>", "Script to run")
   .allowUnknownOption()
-  .action(async (options) => {
+  .action(async options => {
     const config = await options.config();
 
     if (config.networks[options.network] === undefined) {

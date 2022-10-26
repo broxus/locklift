@@ -17,29 +17,18 @@ program
   .description("Run mocha tests")
   .option("--disable-build", "Disable automatic contracts build", false)
   .option("-t, --test <test>", "Path to Mocha test folder", "test")
-  .option(
-    "-c, --contracts <contracts>",
-    "Path to the contracts folder",
-    "contracts"
-  )
+  .option("-c, --contracts <contracts>", "Path to the contracts folder", "contracts")
   .option("-b, --build <build>", "Path to the build folder", "build")
-  .option(
-    "--disable-include-path",
-    "Disables including node_modules. Use this with old compiler versions",
-    false
-  )
-  .requiredOption(
-    "-n, --network <network>",
-    "Network to use, choose from configuration"
-  )
+  .option("--disable-include-path", "Disables including node_modules. Use this with old compiler versions", false)
+  .requiredOption("-n, --network <network>", "Network to use, choose from configuration")
   .addOption(
     new Option("--config <config>", "Path to the config file")
       .default(async () => loadConfig("locklift.config.ts"))
-      .argParser((config) => () => loadConfig(config))
+      .argParser(config => () => loadConfig(config)),
   )
   .option("--tests [tests...]", "Set of tests to run, separated by comma")
   .allowUnknownOption()
-  .action(async (options) => {
+  .action(async options => {
     const config = await options.config();
     if (config.networks[options.network] === undefined) {
       console.error(`Can't find configuration for ${options.network} network!`);
@@ -67,15 +56,12 @@ program
     if (Array.isArray(options.tests)) {
       testFiles = options.tests;
     } else {
-      const testNestedTree = dirTree(
-        path.resolve(process.cwd(), options.test),
-        { extensions: /\.(js|ts)/ }
-      );
+      const testNestedTree = dirTree(path.resolve(process.cwd(), options.test), { extensions: /\.(js|ts)/ });
 
-      testFiles = utils.flatDirTree(testNestedTree)?.map((t) => t.path) || [];
+      testFiles = utils.flatDirTree(testNestedTree)?.map(t => t.path) || [];
     }
     testFiles.forEach((file: string) => mocha.addFile(file));
-    mocha.run((fail) => process.exit(fail ? 1 : 0));
+    mocha.run(fail => process.exit(fail ? 1 : 0));
   });
 
 export default program;
