@@ -22,7 +22,7 @@ const main = async () => {
   program.addCommand(run);
   // program.addCommand(gendoc);
 
-  program.version(require("../../../../../package.json").version);
+  program.version(require("../../package.json").version);
 
   commandInjector(program);
   program.parse(process.argv);
