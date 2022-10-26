@@ -88,8 +88,8 @@ export const getBalanceChangingInfo = (
   viewTrace: ViewTraceTreeWithTotalFee,
   accumulator: BalanceChangeInfo = {},
 ): BalanceChangeInfo => {
-  const contractAddress = viewTrace.contract.contract.address.toString();
-  if (!(viewTrace.contract.contract.address.toString() in accumulator)) {
+  const contractAddress = viewTrace.contract?.contract.address.toString();
+  if (!(viewTrace.contract?.contract?.address.toString() in accumulator)) {
     accumulator[contractAddress] = {
       totalReceive: new BigNumber(0),
       totalSent: new BigNumber(0),
@@ -123,7 +123,7 @@ export const getErrorsInfo = (
       phase: viewTrace.error.phase,
       trace: _(viewTrace).omit("outTraces").value(),
     };
-    const address = viewTrace.contract.contract.address.toString();
+    const address = viewTrace.contract?.contract?.address.toString();
     if (!(address in accumulator)) {
       accumulator[address] = [];
     }
