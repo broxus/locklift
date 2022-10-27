@@ -14,3 +14,12 @@ export type Extender = {
   };
   commandBuilders?: Array<(command: commander.Command) => commander.Command>;
 };
+
+export type ExtenderActionParams = {
+  config: () => LockliftConfig;
+  locklift: Locklift<any>;
+  script?: string;
+  build?: string;
+  network: string;
+  contracts?: string;
+};

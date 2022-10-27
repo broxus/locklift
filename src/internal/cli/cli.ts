@@ -9,13 +9,14 @@ import init from "./commands/init";
 import build from "./commands/build";
 import test from "./commands/test";
 import run from "./commands/run";
-import { loadConfig } from "../config";
 import { commandInjector } from "../../plugins/utils";
+import { tryToAttachEntryFile } from "./utils";
 
-// import gendoc from "./commands/gendoc";
 const main = async () => {
   global.extenders = [];
-  loadConfig("locklift.config.ts");
+
+  tryToAttachEntryFile();
+
   program.addCommand(init);
   program.addCommand(test);
   program.addCommand(build);
