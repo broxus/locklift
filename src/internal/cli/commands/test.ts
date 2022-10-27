@@ -24,7 +24,7 @@ program
   .addOption(
     new Option("--config <config>", "Path to the config file")
       .default(() => loadConfig("locklift.config.ts"))
-      .argParser(config => loadConfig(config)),
+      .argParser(config => () => loadConfig(config)),
   )
   .option("--tests [tests...]", "Set of tests to run, separated by comma")
   .allowUnknownOption()
