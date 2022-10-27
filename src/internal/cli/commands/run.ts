@@ -25,7 +25,7 @@ program
   .requiredOption("-s, --script <script>", "Script to run")
   .allowUnknownOption()
   .action(async options => {
-    const config = await options.config();
+    const config = options.config();
 
     if (config.networks[options.network] === undefined) {
       console.error(`Can't find configuration for ${options.network} network!`);

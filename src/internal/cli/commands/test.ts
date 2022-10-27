@@ -23,13 +23,13 @@ program
   .requiredOption("-n, --network <network>", "Network to use, choose from configuration")
   .addOption(
     new Option("--config <config>", "Path to the config file")
-      .default(async () => loadConfig("locklift.config.ts"))
-      .argParser(config => () => loadConfig(config)),
+      .default(() => loadConfig("locklift.config.ts"))
+      .argParser(config => loadConfig(config)),
   )
   .option("--tests [tests...]", "Set of tests to run, separated by comma")
   .allowUnknownOption()
   .action(async options => {
-    const config = await options.config();
+    const config = options.config();
     if (config.networks[options.network] === undefined) {
       console.error(`Can't find configuration for ${options.network} network!`);
 
