@@ -9,10 +9,12 @@ export type Extender = {
     config: LockliftConfig<ConfigState.INTERNAL>;
     network: keyof LockliftConfig["networks"];
   }) => Promise<any>;
-  skipSteps?: {
-    build?: boolean;
-  };
-  commandBuilders?: Array<(command: commander.Command) => commander.Command>;
+  commandBuilders?: Array<{
+    commandCreator: (command: commander.Command) => commander.Command;
+    skipSteps?: {
+      build?: boolean;
+    };
+  }>;
 };
 
 export type ExtenderActionParams = {

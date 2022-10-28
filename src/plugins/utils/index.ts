@@ -35,8 +35,8 @@ export const commandInjector = (rootProgram: commander.Command) => {
   }
   global.extenders
     .filter((extender): extender is Required<Extender> => !!extender.commandBuilders)
-    .forEach(({ commandBuilders, skipSteps }) =>
-      commandBuilders.forEach(commandBuilder => {
+    .forEach(({ commandBuilders }) =>
+      commandBuilders.forEach(({ commandCreator, skipSteps }) => {
         const command = new Command();
         command
           .option("-c, --contracts <contracts>", "Path to the contracts folder", "contracts")
@@ -63,7 +63,7 @@ export const commandInjector = (rootProgram: commander.Command) => {
 
               process.exit(1);
             }
-            if (!skipSteps.build) {
+            if (!skipSteps?.build) {
               await buildStep(config, options as any);
             }
 
@@ -72,7 +72,7 @@ export const commandInjector = (rootProgram: commander.Command) => {
             thisCommand.setOptionValue("locklift", locklift);
           });
 
-        rootProgram.addCommand(commandBuilder(command));
+        rootProgram.addCommand(commandCreator(command));
       }),
     );
 };
