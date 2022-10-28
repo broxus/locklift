@@ -124,7 +124,7 @@ export class TracingInternal {
     allowedCodes: AllowedCodes = { compute: [], action: [], contracts: { any: { compute: [], action: [] } } },
   ): Promise<Trace> {
     const trace = new Trace(this, msgTree, null);
-    await trace.buildTree(allowedCodes, this.factory.getContractByCodeHash);
+    await trace.buildTree(allowedCodes, this.factory.getContractByCodeHashOrDefault);
     return trace;
   }
 
