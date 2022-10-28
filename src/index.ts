@@ -68,7 +68,6 @@ export class Locklift<FactorySource extends FactoryType> {
     );
 
     keystore.addKeyPair("giver", giverKeys);
-    keystore.addKeyPair("giver1", giverKeys);
 
     await ensureConnectionValid(networkConfig.connection);
     const accountsStorage = new SimpleAccountsStorage();
