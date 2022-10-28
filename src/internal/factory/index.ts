@@ -7,7 +7,7 @@ import * as utils from "../../utils";
 import { Giver } from "./giver";
 import { AccountFactory } from "./account";
 import { Deployer } from "./deployer";
-import { validateAccountAbi } from "./utils";
+import { emptyContractAbi, tryToDetectContract, validateAccountAbi } from "./utils";
 import { flatDirTree } from "../cli/builder/utils";
 import { AccountFactory2 } from "./account2";
 import { SimpleAccountsStorage } from "everscale-standalone-client/nodejs";
@@ -91,7 +91,7 @@ export class Factory<T extends FactoryType> {
     name: ContractName,
     address: Address,
   ): Contract<T[ContractName]> => {
-    return new this.ever.Contract(this.getContractArtifacts(name as ContractName).abi, address);
+    return new this.ever.Contract(this.getContractArtifacts(name as ContractName)?.abi, address);
   };
 
   public initializeContract = async <key extends keyof T>(
@@ -147,6 +147,18 @@ export class Factory<T extends FactoryType> {
         name: contractArtifacts.contractName as string,
       }
     );
+  };
+
+  public getContractByCodeHashOrDefault = (codeHash: string, address: Address): ContractWithName => {
+    const existingContract = this.getContractByCodeHash(codeHash, address);
+    if (existingContract) {
+      return existingContract;
+    }
+    const contractName = tryToDetectContract(address, codeHash);
+    return {
+      contract: new this.ever.Contract(emptyContractAbi, address),
+      name: contractName,
+    };
   };
 
   private async getContractsArtifacts(): Promise<{ artifacts: ContractData<T[keyof T]>; contractName: keyof T }[]> {

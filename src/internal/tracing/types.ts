@@ -3,7 +3,7 @@ import { AbiEventName, AbiFunctionName } from "everscale-inpage-provider/dist/mo
 import { DecodedInput } from "everscale-inpage-provider/dist/contract";
 
 import { Trace } from "./trace/trace";
-import { ContractWithName, Optional } from "../../types";
+import { Optional } from "../../types";
 import BigNumber from "bignumber.js";
 
 export enum TraceType {
@@ -82,7 +82,7 @@ export type ViewTrace<M extends string = string, P extends Record<string, any> |
 export type ViewTraceTree<M extends string = string, P extends Record<string, any> = Record<string, any>> = ViewTrace<
   M,
   P
-> & { outTraces: Array<ViewTraceTree<M, P>>; contract: ContractWithName };
+> & { outTraces: Array<ViewTraceTree<M, P>> };
 export enum InteractionType {
   EVENT,
   FUNCTION_CALL,
