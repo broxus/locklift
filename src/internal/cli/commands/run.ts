@@ -32,9 +32,9 @@ program
 
       process.exit(1);
     }
-
-    await buildStep(config, options);
-
+    if (!options.disableBuild) {
+      await buildStep(config, options);
+    }
     // Initialize Locklift
     await initLockliftStep(config, options);
     require(path.resolve(process.cwd(), options.script));
