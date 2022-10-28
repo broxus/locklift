@@ -1,11 +1,8 @@
 include:
     - project: "infrastructure/gitlab-ci"
       ref: main
-      file: "/templates/cloudbuild-common.gitlab-ci.yaml"
+      file: "/templates/test-locklift.gitlab-ci.yaml"
   
 stages:
-  - cloudbuild
-  
-cloudbuild:test:
-  extends: .cloudbuild:locklift
+  - test
   
