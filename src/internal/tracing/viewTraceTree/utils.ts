@@ -65,7 +65,7 @@ export const printer = (
 
   const header = `${type && mapType[type]}${
     error ? ` ERROR (phase: ${error.phase}, code: ${error.code})` : ""
-  } ${colors.contractName(contract?.name)}.${colors.methodName(decodedMsg?.method)}${
+  } ${colors.contractName(contract.name)}.${colors.methodName(decodedMsg?.method)}${
     type === TraceType.EVENT ? "" : valueParams
   }`;
   const printMsg = `${header}(${Object.entries(mapParams(decodedMsg?.params, contracts))
@@ -88,22 +88,18 @@ export const getBalanceChangingInfo = (
   viewTrace: ViewTraceTreeWithTotalFee,
   accumulator: BalanceChangeInfo = {},
 ): BalanceChangeInfo => {
-  if (viewTrace.contract) {
-    const contractAddress = viewTrace.contract?.contract.address.toString();
-    if (!(viewTrace.contract?.contract?.address.toString() in accumulator)) {
-      accumulator[contractAddress] = {
-        totalReceive: new BigNumber(0),
-        totalSent: new BigNumber(0),
-      };
-    }
-
-    const { totalSent, totalReceive } = accumulator[contractAddress];
+  const contractAddress = viewTrace.contract?.contract.address.toString();
+  if (!(viewTrace.contract?.contract?.address.toString() in accumulator)) {
     accumulator[contractAddress] = {
-      totalReceive: totalReceive.plus(viewTrace.msg.value || 0),
-      totalSent: totalSent.plus(viewTrace.sentValue || 0).plus(viewTrace.totalFees),
+      totalReceive: new BigNumber(0),
+      totalSent: new BigNumber(0),
     };
   }
-
+  const { totalSent, totalReceive } = accumulator[contractAddress];
+  accumulator[contractAddress] = {
+    totalReceive: totalReceive.plus(viewTrace.msg.value || 0),
+    totalSent: totalSent.plus(viewTrace.sentValue || 0).plus(viewTrace.totalFees),
+  };
   return {
     ...accumulator,
     ...viewTrace.outTraces.reduce((acc, next) => {
@@ -128,12 +124,10 @@ export const getErrorsInfo = (
       trace: _(viewTrace).omit("outTraces").value(),
     };
     const address = viewTrace.contract?.contract?.address.toString();
-    if (address) {
-      if (!(address in accumulator)) {
-        accumulator[address] = [];
-      }
-      accumulator[address].push(newError);
+    if (!(address in accumulator)) {
+      accumulator[address] = [];
     }
+    accumulator[address].push(newError);
   }
 
   return {

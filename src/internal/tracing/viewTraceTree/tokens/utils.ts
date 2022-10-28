@@ -6,7 +6,7 @@ export const getTokenBalanceChange = (viewTrace: ViewTraceTree, tokenWallet: Add
   const msg = viewTrace.decodedMsg;
 
   const balanceChange =
-    viewTrace.contract?.contract.address.equals(extractAddress(tokenWallet)) && isChangeTokenBalanceTransaction(msg)
+    viewTrace.contract.contract.address.equals(extractAddress(tokenWallet)) && isChangeTokenBalanceTransaction(msg)
       ? getBalanceUpdates({ amount: msg.params.amount, method: msg.method })
       : new BigNumber(0);
 
