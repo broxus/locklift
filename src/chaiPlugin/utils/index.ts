@@ -63,7 +63,7 @@ export const objectIntersection = (
   if (!Array.isArray(rootObject) && !Array.isArray(partialObject)) {
     return Object.entries(rootObject).reduce(
       (acc, [key, value]) =>
-        partialObject[key]
+        key in partialObject
           ? {
               ...acc,
               [key]: typeof value === "object" ? objectIntersection(value, partialObject[key]) : value,
