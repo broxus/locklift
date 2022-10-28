@@ -3,7 +3,7 @@ import { AbiEventName, AbiFunctionName } from "everscale-inpage-provider/dist/mo
 import { DecodedInput } from "everscale-inpage-provider/dist/contract";
 
 import { Trace } from "./trace/trace";
-import { ContractWithName, Optional } from "../../types";
+import { Optional } from "../../types";
 import BigNumber from "bignumber.js";
 
 export enum TraceType {
