@@ -1,12 +1,17 @@
 import { LockliftConfig } from "locklift";
 import { FactorySource } from "./build/factorySource";
-import { SimpleGiver, GiverWallet } from "./giverSettings";
+import { SimpleGiver, GiverWallet, BroxusEverWallet } from "./giverSettings";
 
 declare global {
   const locklift: import("locklift").Locklift<FactorySource>;
 }
 
 const LOCAL_NETWORK_ENDPOINT = process.env.NETWORK_ENDPOINT || "http://localhost/graphql";
+const DEVNET_NETWORK_ENDPOINT = process.env.DEVNET_NETWORK_ENDPOINT || "https://devnet-sandbox.evercloud.dev/graphql";
+
+// Create your own link on https://dashboard.evercloud.dev/
+const MAINNET_NETWORK_ENDPOINT = process.env.MAINNET_NETWORK_ENDPOINT || "https://mainnet.evercloud.dev/XXX/graphql";
+
 
 const config: LockliftConfig = {
   compiler: {
@@ -60,15 +65,53 @@ const config: LockliftConfig = {
         amount: 20,
       },
     },
-    mainnet: {
-      // Specify connection settings for https://github.com/broxus/everscale-standalone-client/
-      connection: "mainnet",
-      // This giver is default Wallet
-      giver: {
-        // Check if you need provide custom giver
+    devnet: {
+      connection: {
+        id: 1,
+        type: "graphql",
+        group: "dev",
+        data : {
+          endpoints: [DEVNET_NETWORK_ENDPOINT],
+          latencyDetectionInterval: 1000,
+          local: false
+        }
+      },
+       giver: {
         giverFactory: (ever, keyPair, address) => new GiverWallet(ever, keyPair, address),
-        address: "0:ece57bcc6c530283becbbd8a3b24d3c5987cdddc3c8b7b33be6e4a6312490415",
-        key: "172af540e43a524763dd53b26a066d472a97c4de37d5498170564510608250c3",
+        address: "0:643d0fb053652ae024c970a20302ca8d5d06e4ee6fa4d3848a1d2031d810f9d0",
+        phrase: "wet marine air vague urban history fish virtual mandate future charge busy",
+        accountId: 0
+      },
+      tracing: {
+        endpoint: DEVNET_NETWORK_ENDPOINT,
+      },
+      keys: {
+        // Use everdev to generate your phrase
+        // !!! Never commit it in your repos !!!
+        // phrase: "action inject penalty envelope rabbit element slim tornado dinner pizza off blood",
+        amount: 20,
+      },     
+    },
+    mainnet: {
+      connection: {
+        id: 1,
+        type: "graphql",
+        group: "main",
+        data : {
+          endpoints: [MAINNET_NETWORK_ENDPOINT],
+          latencyDetectionInterval: 1000,
+          local: false,
+        },
+      },
+      // fill giver settings
+       giver : {
+        giverFactory: (ever, keyPair, address) => new BroxusEverWallet(ever, keyPair, address),
+        address: "",
+        phrase: "",
+        accountId: 0
+       },
+       tracing: {
+        endpoint: MAINNET_NETWORK_ENDPOINT,
       },
       keys: {
         // Use everdev to generate your phrase
