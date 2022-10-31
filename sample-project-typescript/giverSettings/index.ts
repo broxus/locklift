@@ -102,7 +102,7 @@ const giverWallet = {
   events: [],
 } as const;
 
-export class BroxusEverWallet implements Giver {
+export class GiverWalletV2_3 implements Giver {
   public giverContract: Contract<typeof broxusEverWallet>;
 
   constructor(ever: ProviderRpcClient, readonly keyPair: Ed25519KeyPair, address: string) {

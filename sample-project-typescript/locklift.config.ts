@@ -1,6 +1,6 @@
 import { LockliftConfig } from "locklift";
 import { FactorySource } from "./build/factorySource";
-import { SimpleGiver, GiverWallet, BroxusEverWallet } from "./giverSettings";
+import { SimpleGiver, GiverWallet, GiverWalletV2_3 } from "./giverSettings";
 
 declare global {
   const locklift: import("locklift").Locklift<FactorySource>;
@@ -77,8 +77,8 @@ const config: LockliftConfig = {
       },
       giver: {
         giverFactory: (ever, keyPair, address) => new GiverWallet(ever, keyPair, address),
-        address: "0:643d0fb053652ae024c970a20302ca8d5d06e4ee6fa4d3848a1d2031d810f9d0",
-        phrase: "wet marine air vague urban history fish virtual mandate future charge busy",
+        address: "",
+        phrase: "",
         accountId: 0,
       },
       tracing: {
@@ -105,7 +105,7 @@ const config: LockliftConfig = {
       },
       // This giver is default Wallet
       giver: {
-        giverFactory: (ever, keyPair, address) => new BroxusEverWallet(ever, keyPair, address),
+        giverFactory: (ever, keyPair, address) => new GiverWalletV2_3(ever, keyPair, address),
         address: "",
         phrase: "",
         accountId: 0,
