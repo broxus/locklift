@@ -1,12 +1,16 @@
 import { LockliftConfig } from "locklift";
 import { FactorySource } from "./build/factorySource";
-import { SimpleGiver, GiverWallet } from "./giverSettings";
+import { SimpleGiver, GiverWallet, BroxusEverWallet } from "./giverSettings";
 
 declare global {
   const locklift: import("locklift").Locklift<FactorySource>;
 }
 
 const LOCAL_NETWORK_ENDPOINT = process.env.NETWORK_ENDPOINT || "http://localhost/graphql";
+const DEV_NET_NETWORK_ENDPOINT = process.env.DEV_NET_NETWORK_ENDPOINT || "https://devnet-sandbox.evercloud.dev/graphql";
+
+// Create your own link on https://dashboard.evercloud.dev/
+const MAIN_NET_NETWORK_ENDPOINT = process.env.MAIN_NET_NETWORK_ENDPOINT || "https://mainnet.evercloud.dev/XXX/graphql";
 
 const config: LockliftConfig = {
   compiler: {
@@ -60,15 +64,54 @@ const config: LockliftConfig = {
         amount: 20,
       },
     },
-    mainnet: {
+    dev: {
+      connection: {
+        id: 1,
+        type: "graphql",
+        group: "dev",
+        data: {
+          endpoints: [DEV_NET_NETWORK_ENDPOINT],
+          latencyDetectionInterval: 1000,
+          local: false,
+        },
+      },
+      giver: {
+        giverFactory: (ever, keyPair, address) => new GiverWallet(ever, keyPair, address),
+        address: "0:643d0fb053652ae024c970a20302ca8d5d06e4ee6fa4d3848a1d2031d810f9d0",
+        phrase: "wet marine air vague urban history fish virtual mandate future charge busy",
+        accountId: 0,
+      },
+      tracing: {
+        endpoint: DEV_NET_NETWORK_ENDPOINT,
+      },
+      keys: {
+        // Use everdev to generate your phrase
+        // !!! Never commit it in your repos !!!
+        // phrase: "action inject penalty envelope rabbit element slim tornado dinner pizza off blood",
+        amount: 20,
+      },
+    },
+    main: {
       // Specify connection settings for https://github.com/broxus/everscale-standalone-client/
-      connection: "mainnet",
+      connection: {
+        id: 1,
+        type: "graphql",
+        group: "main",
+        data: {
+          endpoints: [MAIN_NET_NETWORK_ENDPOINT],
+          latencyDetectionInterval: 1000,
+          local: false,
+        },
+      },
       // This giver is default Wallet
       giver: {
-        // Check if you need provide custom giver
-        giverFactory: (ever, keyPair, address) => new GiverWallet(ever, keyPair, address),
-        address: "0:ece57bcc6c530283becbbd8a3b24d3c5987cdddc3c8b7b33be6e4a6312490415",
-        key: "172af540e43a524763dd53b26a066d472a97c4de37d5498170564510608250c3",
+        giverFactory: (ever, keyPair, address) => new BroxusEverWallet(ever, keyPair, address),
+        address: "",
+        phrase: "",
+        accountId: 0,
+      },
+      tracing: {
+        endpoint: MAIN_NET_NETWORK_ENDPOINT,
       },
       keys: {
         // Use everdev to generate your phrase
