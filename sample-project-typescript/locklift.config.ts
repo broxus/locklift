@@ -64,7 +64,7 @@ const config: LockliftConfig = {
         amount: 20,
       },
     },
-    dev: {
+    test: {
       connection: {
         id: 1,
         type: "graphql",
