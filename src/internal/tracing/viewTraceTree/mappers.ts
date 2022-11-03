@@ -29,19 +29,22 @@ export const extractFeeAndSentValueFromMessage = (
 export const mapParams = (
   obj: Record<any, any> | Array<any> | undefined,
   contracts: Array<ContractWithName | undefined>,
+  isFullPrint?: boolean,
 ): Record<any, any> => {
   if (Array.isArray(obj)) {
-    return obj.map(mapRules(contracts));
+    return obj.map(mapRules(contracts, isFullPrint));
   }
-  return _(obj).mapValues(mapRules(contracts)).value();
+  return _(obj).mapValues(mapRules(contracts, isFullPrint)).value();
 };
-const mapRules = (contracts: Array<ContractWithName | undefined>) => (value: any) => {
+const mapRules = (contracts: Array<ContractWithName | undefined>, isFullPrint?: boolean) => (value: any) => {
   if (value instanceof Address) {
     const contractName = contracts?.filter(isT).find(contract => contract.contract.address.equals(value))?.name;
-    const contractAddress = value.toString().slice(0, 5) + "..." + value.toString().slice(-5);
+    const contractAddress = isFullPrint
+      ? value.toString()
+      : value.toString().slice(0, 5) + "..." + value.toString().slice(-5);
     return contractName ? `${contractName}(${contractAddress})` : contractAddress;
   }
-  if (typeof value === "string" && value.length >= 20) {
+  if (typeof value === "string" && value.length >= 20 && !isFullPrint) {
     return value.slice(0, 4) + "..." + value.slice(-4);
   }
   if (Array.isArray(value)) {

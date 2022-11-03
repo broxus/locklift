@@ -35,8 +35,9 @@ program
 
       process.exit(1);
     }
-
-    await buildStep(config, options);
+    if (!options.disableBuild) {
+      await buildStep(config, options);
+    }
     // Initialize Locklift and pass it into tests context
     const locklift = await Locklift.setup(config, options.network);
 

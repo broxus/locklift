@@ -108,3 +108,4 @@ export type MsgError = {
   trace: ViewTrace;
 };
 export type Addressable = Contract<any> | Address | string;
+export type LabelsMap = Map<string, string>;

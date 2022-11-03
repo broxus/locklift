@@ -40,22 +40,22 @@ export const calculateTotalFees = (traceTree: ViewTraceTreeWithTotalFee): BigNum
       .reduce((acc, next) => acc.plus(next), new BigNumber(0)),
   );
 };
-
+export type PrinterConfig =
+  | {
+      fullPrint: boolean;
+    }
+  | {
+      printFullAddresses: boolean;
+    }
+  | { printFillParams: boolean };
+export type PrinterProps = Pick<
+  ViewTraceTreeWithTotalFee,
+  "type" | "decodedMsg" | "msg" | "contract" | "totalFees" | "sentValue" | "value" | "balanceChange" | "error"
+>;
 export const printer = (
-  {
-    type,
-    decodedMsg,
-    contract,
-    totalFees,
-    sentValue,
-    value,
-    balanceChange,
-    error,
-  }: Pick<
-    ViewTraceTreeWithTotalFee,
-    "type" | "decodedMsg" | "msg" | "contract" | "totalFees" | "sentValue" | "value" | "balanceChange" | "error"
-  >,
+  { type, decodedMsg, contract, totalFees, sentValue, value, balanceChange, error }: PrinterProps,
   { contracts }: { contracts: Array<ContractWithName | undefined> },
+  printerConfig: PrinterConfig = {} as PrinterConfig,
 ): string => {
   const valueParams = `{valueReceive: ${convertForLogger(value.toNumber())},valueSent: ${convertForLogger(
     sentValue.toNumber(),
@@ -63,12 +63,21 @@ export const printer = (
     balanceChange.isLessThan(0) ? chalk.red("⮯") : chalk.green("⮬")
   }, totalFees: ${convertForLogger(totalFees.toNumber())}}`;
 
+  const contractAddress = contract.contract.address.toString();
+
+  const printAddress =
+    "fullPrint" in printerConfig || "printFullAddresses" in printerConfig
+      ? contractAddress
+      : contractAddress.slice(0, 5) + "..." + contractAddress.slice(-5);
+
   const header = `${type && mapType[type]}${
     error ? ` ERROR (phase: ${error.phase}, code: ${error.code})` : ""
-  } ${colors.contractName(contract.name)}.${colors.methodName(decodedMsg?.method)}${
+  } ${colors.methodName(printAddress)} ${colors.contractName(contract.name)}.${colors.methodName(decodedMsg?.method)}${
     type === TraceType.EVENT ? "" : valueParams
   }`;
-  const printMsg = `${header}(${Object.entries(mapParams(decodedMsg?.params, contracts))
+  const printMsg = `${header}(${Object.entries(
+    mapParams(decodedMsg?.params, contracts, "printFillParams" in printerConfig && printerConfig.printFillParams),
+  )
     .map(([key, value]) => `${colors.paramsKey(key)}=${JSON.stringify(value)}, `)
     .join("")
     .split(", ")

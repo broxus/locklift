@@ -21,6 +21,7 @@ import {
   getBalanceDiff,
   getErrorsInfo,
   printer,
+  PrinterConfig,
 } from "./utils";
 import { Tokens } from "./tokens";
 import { pipe } from "rxjs";
@@ -138,18 +139,22 @@ export class ViewTracingTree {
   };
   totalGasUsed = () => calculateTotalFees(this.viewTraceTree).toNumber();
 
-  beautyPrint = async (): Promise<void> => {
+  beautyPrint = async (printerConfig?: PrinterConfig): Promise<void> => {
     const result = _(extractAllAddresses(this.viewTraceTree)).uniq().value();
     const contracts = (await fetchAccounts(result, this.endpoint)).map(({ code_hash: codeHash, id }) =>
       this.contractGetter(codeHash, new Address(id)),
     );
 
     console.log(
-      printer(this.viewTraceTree, {
-        contracts,
-      }) +
+      printer(
+        this.viewTraceTree,
+        {
+          contracts,
+        },
+        printerConfig,
+      ) +
         "\n" +
-        this._beautyPrint(this.viewTraceTree, 0, contracts),
+        this._beautyPrint(this.viewTraceTree, 0, contracts, printerConfig),
     );
   };
 
@@ -157,15 +162,20 @@ export class ViewTracingTree {
     viewTrace: ViewTraceTreeWithTotalFee,
     offset: number,
     contracts: Array<ContractWithName | undefined>,
+    printerConfig?: PrinterConfig,
   ): string => {
     let traces = "";
 
     for (const viewTraceInt of viewTrace.outTraces) {
       traces =
         traces +
-        `${Array(offset).fill("  ").join("")} ${printer(viewTraceInt, {
-          contracts,
-        })}\n${this._beautyPrint(viewTraceInt, offset + 1, contracts)}`;
+        `${Array(offset).fill("  ").join("")} ${printer(
+          viewTraceInt,
+          {
+            contracts,
+          },
+          printerConfig,
+        )}\n${this._beautyPrint(viewTraceInt, offset + 1, contracts, printerConfig)}`;
     }
     return traces;
   };

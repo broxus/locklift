@@ -11,7 +11,12 @@ export class Tracing {
     private readonly ever: ProviderRpcClient,
     private readonly tracingInternal: TracingInternal,
     private readonly features: Transactions,
-  ) {}
+  ) {
+    this.setContractLabels = tracingInternal.setContractLabels;
+  }
+
+  public setContractLabels: TracingInternal["setContractLabels"];
+
   public trace = async <T extends TransactionParameter>(
     transactionProm: Promise<T>,
     config?: Omit<TraceParams, "inMsgId">,
