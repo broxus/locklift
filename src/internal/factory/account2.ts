@@ -2,13 +2,16 @@ import { ContractData, DeployContractParams, FactoryType, Giver } from "./index"
 import { Address, Contract } from "everscale-inpage-provider";
 import { CreateAccountOutput, DeployTransaction, WalletTypes } from "../../types";
 import {
+  Account,
+  EverWalletAccount,
+  HighloadWalletV2,
+  MsigAccount,
   SimpleAccountsStorage,
   WalletV3Account,
-  HighloadWalletV2,
-  Account,
-  MsigAccount,
 } from "everscale-standalone-client/nodejs";
 import { validateAccountAbi } from "./utils";
+
+type MSigType = ConstructorParameters<typeof MsigAccount>[0]["type"];
 
 type CreateAccountParams<T extends FactoryType> =
   | {
@@ -16,11 +19,20 @@ type CreateAccountParams<T extends FactoryType> =
       publicKey: string;
       value: string;
     }
-  | ({ type: WalletTypes.MsigAccount } & DeployContractParams<T, keyof T>);
+  | {
+      type: WalletTypes.EverWallet;
+      publicKey: string;
+      value: string;
+      nonce?: number;
+    }
+  | ({ type: WalletTypes.MsigAccount } & DeployContractParams<T, keyof T> & {
+        mSigType: MSigType;
+      });
 
 type AddExistingAccountParams =
   | { type: WalletTypes.HighLoadWalletV2 | WalletTypes.WalletV3; publicKey: string }
-  | { type: WalletTypes.MsigAccount; publicKey?: string; address: Address };
+  | { type: WalletTypes.EverWallet; address: Address }
+  | { type: WalletTypes.MsigAccount; publicKey?: string; address: Address; mSigType: MSigType };
 
 /*
 AccountFactory2 is service based on everscale-standalone-client SimpleAccountsStorage
@@ -68,8 +80,20 @@ export class AccountFactory2<T extends FactoryType> {
         const { abi } = this.sourceFactory.getContractArtifacts(params.contract);
         validateAccountAbi(abi);
         const contractWithTx = await this.sourceFactory.deployContract(params);
-        const account = new MsigAccount({ publicKey: params.publicKey, address: contractWithTx.contract.address });
+        const account = new MsigAccount({
+          publicKey: params.publicKey,
+          address: contractWithTx.contract.address,
+          type: params.mSigType,
+        });
         return { tx: contractWithTx.tx, account };
+      }
+      case WalletTypes.EverWallet: {
+        const account = await EverWalletAccount.fromPubkey({ publicKey: params.publicKey, nonce: params.nonce });
+        const depositTransaction = await this.sender(account.address, params.value);
+        return {
+          account,
+          tx: depositTransaction,
+        };
       }
     }
   };
@@ -89,7 +113,9 @@ export class AccountFactory2<T extends FactoryType> {
       case WalletTypes.WalletV3:
         return WalletV3Account.fromPubkey({ publicKey: params.publicKey });
       case WalletTypes.MsigAccount:
-        return new MsigAccount({ publicKey: params.publicKey, address: params.address });
+        return new MsigAccount({ publicKey: params.publicKey, address: params.address, type: params.mSigType });
+      case WalletTypes.EverWallet:
+        return new EverWalletAccount(params.address);
     }
   };
 

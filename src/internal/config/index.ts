@@ -109,11 +109,11 @@ const Config = ss.union([
           ss.union([
             ss.object({
               id: ss.optional(ss.number()),
-              group: ss.string(),
+              group: ss.optional(ss.string()),
               type: ss.pattern(ss.string(), /graphql/),
               data: ss.object({
                 endpoints: ss.array(ss.string()),
-                local: ss.boolean(),
+                local: ss.optional(ss.boolean()),
                 latencyDetectionInterval: ss.optional(ss.number()),
                 maxLatency: ss.optional(ss.number()),
               }),

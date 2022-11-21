@@ -211,7 +211,7 @@ contract Sample {
 Note: `console.log` functionality working only with tracing e.g:
 
 ```typescript
-await lockLift.tracing.trace(sampleContract.testFunc({ input: 10 }).sendExternal({ pubkey: keyPair.publicKey }));
+await lockLift.tracing.trace(sampleContract.testFunc({input: 10}).sendExternal({pubkey: keyPair.publicKey}));
 ```
 
 And then you will see this in your terminal:
@@ -305,7 +305,7 @@ We can ignore errors on specific call:
 // Here 51 compute and 30 action errors will be ignored for all transacions in msg chain and 60 compute error
 // will be ignored only on specific address
 const transaction = await locklift.tracing.trace(
-  tokenRoot.methods.sendTokens({ walletOwner: "" }).sendExternal({ publicKey: signer.publicKey }),
+  tokenRoot.methods.sendTokens({walletOwner: ""}).sendExternal({publicKey: signer.publicKey}),
   {
     allowedCodes: {
       //compute or action phase for all contracts
@@ -325,15 +325,15 @@ Or set ignoring by default for all further calls:
 
 ```typescript
 // ignore compute(or acton) phase errors for all transactions
-locklift.tracing.setAllowedCodes({ compute: [52, 60] });
+locklift.tracing.setAllowedCodes({compute: [52, 60]});
 // ignore more errors for specific address
-locklift.tracing.setAllowedCodesForAddress(SOME_ADDRESS, { compute: [123], action: [111] });
+locklift.tracing.setAllowedCodesForAddress(SOME_ADDRESS, {compute: [123], action: [111]});
 
 // remove code from a default list of ignored errors so that only 51 errors will be ignored
 // this affects only global rules, per-address rules are not modified
-locklift.tracing.removeAllowedCodes({ compute: [60] });
+locklift.tracing.removeAllowedCodes({compute: [60]});
 // remove code from deault list of ignored errors for specific address
-locklift.tracing.removeAllowedCodesForAddress(SOME_ADDRESS, { compute: [123] });
+locklift.tracing.removeAllowedCodesForAddress(SOME_ADDRESS, {compute: [123]});
 ```
 
 ### Tracing features (EXPERIMENTAL FEATURES)
@@ -344,7 +344,7 @@ Otherwise, the `traceTree` will be **undefined**
 #### example
 
 ```typescript
-const { traceTree } = await locklift.tracing.trace(myContract.method.myMethod().send());
+const {traceTree} = await locklift.tracing.trace(myContract.method.myMethod().send());
 ```
 
 #### `tracingTree` methods
@@ -439,7 +439,7 @@ For better testing your contracts you can use our `chai` plugin that includes to
 Just add this to your `locklift.config.ts`
 
 ```typescript
-import { lockliftChai } from "locklift";
+import {lockliftChai} from "locklift";
 import chai from "chai";
 
 chai.use(lockliftChai);
@@ -560,7 +560,7 @@ Get full account state
 ##### Example
 
 ```typescript
-expect(await locklift.provider.getFullContractState({ address: addr }).then(res => res.state?.isDeployed)).to.be.true;
+expect(await locklift.provider.getFullContractState({address: addr}).then(res => res.state?.isDeployed)).to.be.true;
 ```
 
 ## Testing (`locklift.testing`)
@@ -631,7 +631,7 @@ const {contract: DeployedMyContract, tx} = locklift.factory.deployContract({
 // Ot you can get instance of already deployed contract
 const GettedMyContract = await locklift.factory.getDeployedContract(
   "Wallet", // name of your contract
-  new Address("NyAddress"),
+  new Address("MyAddress"),
 );
 // In this example 'DeployedMyContract' and 'GettedMyContract' are the same contract
 ```
@@ -647,13 +647,13 @@ const MyContract = locklift.factory.getDeployedContract(
   new Address("MyAddress"),
 );
 // Send External
-await MyContract.methods.changeCounterState({ newState: 10 }).sendExternal({ publicKey: signer.publicKey });
+await MyContract.methods.changeCounterState({newState: 10}).sendExternal({publicKey: signer.publicKey});
 // Run getter or view method
 const counterSatate = await MyContract.methods.getCounterState({}).call();
 // Await event that is still not emitted
-const futureEvent = await MyContract.waitForEvent({ filter: event => event.event === "StateChanged" });
+const futureEvent = await MyContract.waitForEvent({filter: event => event.event === "StateChanged"});
 // Get past events
-const pastEvents = await MyContract.getPastEvents({ filter: event => event.event === "Deposit" });
+const pastEvents = await MyContract.getPastEvents({filter: event => event.event === "Deposit"});
 ```
 
 ## locklift.factory.accounts
@@ -681,7 +681,7 @@ deploys new account
 
 ```typescript
 const account = await locklift.factory.accounts.addNewAccount({
-  type: WalletTypes.WalletV3, // or WalletTypes.HighLoadWallet,
+  type: WalletTypes.EverWallet, // or WalletTypes.HighLoadWallet or WalletTypes.WalletV3,
   //Value which will send to the new account from a giver
   value: toNano(100000),
   //owner publicKey
@@ -700,6 +700,8 @@ from** [Account](https://github.com/broxus/ever-contracts/blob/master/contracts/
 ```typescript
 const account = await locklift.factory.accounts.addNewAccount({
   type: WalletTypes.MsigAccount,
+  // Multisig type SafeMultisig supports 2.0 ABI version, multisig2 supports 2.3 ABI version
+  mSigType: 'SafeMultisig', // or SafeMultisig
   //Contract should included to the locklift.config.externalContracts or should compiled from contracts folder
   contract: "Account",
   //Value which will send to the new account from a giver
@@ -717,12 +719,14 @@ And then `account.address` can be used as sender.
 #### Full example:
 
 ```typescript
+
 const account = await locklift.factory.accounts.addNewAccount({
-  type: WalletTypes.WalletV3, // or WalletTypes.HighLoadWallet,
+  type: WalletTypes.EverWallet, // or WalletTypes.HighLoadWallet or WalletTypes.WalletV3,
   //Value which will send to the new account from a giver
   value: toNano(100000),
   //owner publicKey
   publicKey: signer.publicKey,
+  nonce: getRandomNonce()
 });
 
 await myContract.methods.mint({}).send({
@@ -781,11 +785,16 @@ await myContract.methods.mint({}).send({
 ### Using an existing account
 
 ```typescript
+
+const everWalletAccount = await locklift.factory.accounts.addExistingAccount({
+  address: 'MyAddress',
+  type: WalletTypes.EverWallet,
+});
+
 const walletV3Account = await locklift.factory.accounts.addExistingAccount({
   publicKey: signer.publicKey,
   type: WalletTypes.WalletV3,
-});
-
+})
 const mySafeMultisigAccount = await locklift.factory.accounts.addExistingAccount({
   publicKey: signer.publicKey,
   type: WalletTypes.Custom,
@@ -812,11 +821,11 @@ accountAbiBase = {
     {
       name: "sendTransaction",
       inputs: [
-        { name: "dest", type: "address" },
-        { name: "value", type: "uint128" },
-        { name: "bounce", type: "bool" },
-        { name: "flags", type: "uint8" },
-        { name: "payload", type: "cell" },
+        {name: "dest", type: "address"},
+        {name: "value", type: "uint128"},
+        {name: "bounce", type: "bool"},
+        {name: "flags", type: "uint8"},
+        {name: "payload", type: "cell"},
       ],
       outputs: [],
     },
@@ -900,7 +909,7 @@ This module provides some utility functions for more convenient work with Ever o
 ##### Example
 
 ````typescript
-import { toNano, fromNano, getRandomNonce, convertAmount } from "locklift";
+import {toNano, fromNano, getRandomNonce, convertAmount} from "locklift";
 
 toNano(10); // 10000000000
 fromNano(10000000000); // 10```

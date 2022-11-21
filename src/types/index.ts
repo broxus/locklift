@@ -51,6 +51,11 @@ export enum WalletTypes {
    * ```
    */
   MsigAccount,
+
+  /**
+   * EverWallet
+   */
+  EverWallet,
 }
 export type CreateAccountOutput = {
   account: Account;
