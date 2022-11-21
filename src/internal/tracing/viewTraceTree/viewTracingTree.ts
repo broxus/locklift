@@ -110,20 +110,17 @@ export class ViewTracingTree {
   };
 
   findByType = <M extends string, P>(params: NameAndType): Array<ViewTrace<M, P>["decodedMsg"]> =>
-    this._findByType<M, P>(params, [this.viewTraceTree]).map(el => el.decodedMsg);
+    this._findByType<M, P>(params, this.viewTraceTree).map(el => el.decodedMsg);
 
   findByTypeWithFullData = <M extends string, P>(params: NameAndType) =>
-    this._findByType<M, P>(params, [this.viewTraceTree]);
+    this._findByType<M, P>(params, this.viewTraceTree);
 
   private _findByType = <M extends string, P>(
     { type, name, contract }: NameAndType,
-    tree: Array<ViewTraceTree>,
+    tree: ViewTraceTree,
   ): Array<ViewTrace<M, P>> => {
-    if (tree.length === 0) {
-      return [];
-    }
     const matchedMethods: Array<ViewTrace<M, P>> = [];
-    for (const trace of tree) {
+    for (const trace of tree.outTraces) {
       if (
         type === trace.type &&
         name === trace.decodedMsg?.method &&
@@ -132,7 +129,7 @@ export class ViewTracingTree {
         matchedMethods.push(trace as any);
       }
       if (trace.outTraces.length > 0) {
-        return [...matchedMethods, ...this._findByType<M, P>({ name, type, contract }, trace.outTraces)];
+        matchedMethods.push(...this._findByType<M, P>({ name, type, contract }, trace));
       }
     }
     return matchedMethods;
