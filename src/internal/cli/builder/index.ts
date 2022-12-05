@@ -92,11 +92,18 @@ export class Builder {
             const lib = this.config.linkerLibPath ? ` --lib ${this.config.linkerLibPath} ` : "";
             const resolvedPathCode = resolve(this.options.build, `${contractFileName}.code`);
             const resolvedPathAbi = resolve(this.options.build, `${contractFileName}.abi.json`);
-            return defer(async () =>
-              promisify(exec)(`${this.config.linkerPath} compile "${resolvedPathCode}" -a "${resolvedPathAbi}" ${lib}`),
-            ).pipe(
+            return defer(async () => {
+              const command = `${
+                this.config.linkerPath
+              } compile "${resolvedPathCode}" -a "${resolvedPathAbi}" -o ${resolve(
+                this.options.build,
+                `${contractFileName}.tvc`,
+              )} ${lib}`;
+
+              return promisify(exec)(command);
+            }).pipe(
               map(tvmLinkerLog => {
-                return tvmLinkerLog.stdout.toString().match(new RegExp("Saved contract to file (.*)"));
+                return tvmLinkerLog.stdout.toString().match(new RegExp("Saved to file (.*)."));
               }),
               catchError(e => {
                 logger.printError(e?.stderr?.toString());
@@ -116,7 +123,6 @@ export class Builder {
                       tvcToBase64(fs.readFileSync(tvcFile)),
                     ),
                   ),
-                  defer(() => promisify(fs.rename)(tvcFile, resolve(this.options.build, `${contractFileName}.tvc`))),
                 ).pipe(
                   catchError(e => {
                     logger.printError(e?.stderr?.toString());
