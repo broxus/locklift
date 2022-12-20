@@ -251,7 +251,7 @@ export class Builder {
 
   private getContractsTree() {
     const contractsNestedTree = dirTree(this.options.contracts, {
-      extensions: /\.sol/,
+      extensions: /\.(sol|tsol)/,
     });
 
     return flatDirTree(contractsNestedTree);
