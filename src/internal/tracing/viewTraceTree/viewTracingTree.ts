@@ -190,7 +190,7 @@ const extractAddressFromObject = (obj: Record<any, any>): Array<Address> => {
     if (value instanceof Address) {
       return [...acc, value.toString()];
     }
-    if (typeof value === "object") {
+    if (value instanceof Object) {
       return [...acc, ...extractAddressFromObject(value)];
     }
 

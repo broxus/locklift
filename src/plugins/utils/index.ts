@@ -47,7 +47,7 @@ export const commandInjector = (rootProgram: commander.Command) => {
             false,
           )
 
-          .requiredOption("-n, --network <network>", "Network to use, choose from configuration")
+          .option("-n, --network <network>", "Network to use, choose from configuration")
           .addOption(
             new Option("--config <config>", "Path to the config file")
               .default(() => loadConfig("locklift.config.ts"))
@@ -58,11 +58,6 @@ export const commandInjector = (rootProgram: commander.Command) => {
             const options = thisCommand.opts();
             const config = await options.config();
 
-            if (config.networks[options.network] === undefined) {
-              console.error(`Can't find configuration for ${options.network} network!`);
-
-              process.exit(1);
-            }
             if (!skipSteps?.build) {
               await buildStep(config, options as any);
             }
