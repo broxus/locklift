@@ -1,6 +1,9 @@
 import { expect } from "chai";
 import { Contract, Signer } from "locklift";
 import { FactorySource } from "../build/factorySource";
+import { lockliftChai } from "locklift";
+import chai from "chai";
+chai.use(lockliftChai);
 
 let sample: Contract<FactorySource["Sample"]>;
 let signer: Signer;
