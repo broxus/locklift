@@ -1,6 +1,6 @@
 {
   "name": "locklift",
-  "version": "2.4.7",
+  "version": "2.4.8",
   "description": "Node JS framework for working with Ever contracts. Inspired by Truffle and Hardhat. Helps you to build, test, run and maintain your smart contracts.",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -104,7 +104,7 @@
     "env-paths": "^2.2.1",
     "everscale-crypto": "^0.1.1",
     "everscale-inpage-provider": "^0.3.45",
-    "everscale-standalone-client": "^2.1.5",
+    "everscale-standalone-client": "^2.1.11",
     "fs-extra": "^10.1.0",
     "lodash": "^4.17.21",
     "mocha": "^10.0.0",
