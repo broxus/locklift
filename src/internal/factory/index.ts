@@ -40,15 +40,15 @@ export class Factory<T extends FactoryType> {
   public accounts: AccountFactory2<T>;
   private constructor(
     private readonly ever: ProviderRpcClient,
-    private readonly giver: Giver,
+    private readonly giver: () => Giver,
     private readonly accountsStorage: SimpleAccountsStorage,
   ) {
-    this.accounts = new AccountFactory2(this, giver.sendTo.bind(giver), accountsStorage);
+    this.accounts = new AccountFactory2(this, (...params) => giver().sendTo(...params), accountsStorage);
   }
 
   public static async setup<T extends FactoryType>(
     ever: ProviderRpcClient,
-    giver: Giver,
+    giver: () => Giver,
     accountsStorage: SimpleAccountsStorage,
   ): Promise<Factory<T>> {
     const factory = new Factory<T>(ever, giver, accountsStorage);
@@ -61,7 +61,7 @@ export class Factory<T extends FactoryType> {
   }
 
   private get deployer() {
-    return new Deployer(this.ever, this.giver);
+    return new Deployer(this.ever, this.giver());
   }
 
   public deployContract = async <ContractName extends keyof T>(

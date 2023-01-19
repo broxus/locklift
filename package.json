@@ -93,6 +93,7 @@
   },
   "homepage": "https://github.com/broxus/locklift#readme",
   "dependencies": {
+    "@types/commander": "^2.12.2",
     "@types/yargs": "^17.0.13",
     "axios": "^0.27.2",
     "bignumber.js": "^9.0.1",
@@ -103,9 +104,8 @@
     "env-paths": "^2.2.1",
     "everscale-crypto": "^0.1.1",
     "everscale-inpage-provider": "^0.3.45",
-    "everscale-standalone-client": "^2.1.9",
+    "everscale-standalone-client": "^2.1.5",
     "fs-extra": "^10.1.0",
-    "ipfs-http-client": "^51.0.1",
     "lodash": "^4.17.21",
     "mocha": "^10.0.0",
     "node-gzip": "^1.1.2",

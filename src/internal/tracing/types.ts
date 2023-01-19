@@ -53,7 +53,7 @@ export type RevertedBranch<Abi = unknown> = { totalActions: number; traceLog: Tr
 export type TraceParams = {
   inMsgId: string;
   allowedCodes?: AllowedCodes;
-  rise?: boolean;
+  raise?: boolean;
 };
 export type AllowErrorCodes = number | null;
 export type OptionalContracts = Optional<AllowedCodes, "contracts">;

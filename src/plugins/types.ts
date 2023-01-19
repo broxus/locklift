@@ -7,7 +7,7 @@ export type Extender = {
   initializer?: (params: {
     locklift: Locklift<any>;
     config: LockliftConfig<ConfigState.INTERNAL>;
-    network: keyof LockliftConfig["networks"];
+    network?: keyof LockliftConfig["networks"];
   }) => Promise<any>;
   commandBuilders?: Array<{
     commandCreator: (command: commander.Command) => commander.Command;

@@ -9,7 +9,7 @@ import { initLockliftStep } from "../../internal/cli/steps/initLocklift";
 export const initializeExtenders = (params: {
   locklift: Locklift<any>;
   config: LockliftConfig<ConfigState.INTERNAL>;
-  network: keyof LockliftConfig["networks"];
+  network?: keyof LockliftConfig["networks"];
 }): Promise<void> => {
   const extenders = global.extenders.filter((extender): extender is Required<Extender> => !!extender.initializer);
   if (extenders.length === 0) {
