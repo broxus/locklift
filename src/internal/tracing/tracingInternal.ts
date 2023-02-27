@@ -107,7 +107,16 @@ export class TracingInternal {
   }
 
   private async buildMsgTree(inMsgId: string, endpoint: string, onlyRoot = false) {
-    const msg = await retryWithDelay(() => fetchMsgData(inMsgId, endpoint), { delay: 300, count: 5 });
+    const msg = await retryWithDelay(
+      () =>
+        fetchMsgData(inMsgId, endpoint).then(res => {
+          if (!res) {
+            throw new Error(`Not found msg by ${inMsgId} id`);
+          }
+          return res;
+        }),
+      { delay: 300, count: 5 },
+    );
     if (onlyRoot) {
       return msg;
     }
