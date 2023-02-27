@@ -8,6 +8,7 @@ import { Factory } from "../factory";
 import _, { difference } from "lodash";
 import { logger } from "../logger";
 import { ViewTracingTree } from "./viewTraceTree/viewTracingTree";
+import { retryWithDelay } from "../httpService";
 
 export class TracingInternal {
   private labelsMap = new Map<string, string>();
@@ -106,7 +107,7 @@ export class TracingInternal {
   }
 
   private async buildMsgTree(inMsgId: string, endpoint: string, onlyRoot = false) {
-    const msg = await fetchMsgData(inMsgId, endpoint);
+    const msg = await retryWithDelay(() => fetchMsgData(inMsgId, endpoint), { delay: 300, count: 5 });
     if (onlyRoot) {
       return msg;
     }
