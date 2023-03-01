@@ -93,7 +93,7 @@ export class ViewTracingTree {
       .map(el => el?.params)
       .filter(isT);
 
-  private findForContract = <
+  findForContract = <
     C extends Contract<any>,
     N extends (keyof C["methods"] & string) | EventsNamesInner<C>,
     Abi extends C extends Contract<infer f> ? f : never,
