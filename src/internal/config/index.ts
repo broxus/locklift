@@ -127,7 +127,7 @@ export const JoiConfig = Joi.object<LockliftConfig>({
   mocha: Joi.object({
     tsconfig: Joi.string().optional(),
   }).unknown(true),
-});
+}).unknown();
 
 export function loadConfig(configPath: string): LockliftConfig<ConfigState.INTERNAL> {
   const resolvedConfigPath = path.resolve(process.cwd(), configPath);
