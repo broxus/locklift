@@ -115,7 +115,7 @@ export class TracingInternal {
           }
           return res;
         }),
-      { delay: 300, count: 5 },
+      { delay: 1500, count: 5 },
     );
     if (onlyRoot) {
       return msg;
