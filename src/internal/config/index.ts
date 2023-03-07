@@ -51,7 +51,7 @@ export type NetworkValue<T extends ConfigState = ConfigState.EXTERNAL> = {
 export type ExternalCotracts = Record<string, Array<string>>;
 export type GiverConfig = {
   address: string;
-  giverFactory: (ever: ProviderRpcClient, keyPair: Ed25519KeyPair, address: string) => Giver;
+  giverFactory?: (ever: ProviderRpcClient, keyPair: Ed25519KeyPair, address: string) => Giver;
 } & ({ key: string } | { phrase: string; accountId: number });
 
 export const JoiConfig = Joi.object<LockliftConfig>({
@@ -80,19 +80,19 @@ export const JoiConfig = Joi.object<LockliftConfig>({
     Joi.string(),
 
     Joi.object({
-      giver: Joi.alternatives([
-        Joi.object({
+      giver: Joi.alternatives().conditional(Joi.object({ phrase: Joi.string().required() }).unknown(), {
+        then: Joi.object({
           address: Joi.string(),
-          giverFactory: Joi.any(),
-          key: Joi.string(),
-        }),
-        Joi.object({
-          address: Joi.string(),
-          giverFactory: Joi.any(),
+          giverFactory: Joi.any().optional(),
           phrase: Joi.string(),
           accountId: Joi.number(),
         }),
-      ]),
+        otherwise: Joi.object({
+          address: Joi.string(),
+          giverFactory: Joi.any().optional(),
+          key: Joi.string(),
+        }),
+      }),
       keys: Joi.object({
         path: Joi.string().optional(),
         phrase: Joi.string().optional(),
