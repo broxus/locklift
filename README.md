@@ -63,8 +63,6 @@ This command initializes new Locklift project, filled with samples:
 ├── locklift.config.ts
 ├── scripts
 │   └── 1-deploy-sample.ts
-├── giverSettings
-|   └── index.ts
 └── test
     └── sample-test.ts
 ```
@@ -117,7 +115,7 @@ const config: LockliftConfig = {
       // This giver is the default local-node giverV2
       giver: {
         // Check if you need to provide a custom giver
-        giverFactory: (ever, keyPair, address) => new SimpleGiver(ever, keyPair, address),
+        // giverFactory: (ever, keyPair, address) => new SimpleGiver(ever, keyPair, address),
         address: "0:ece57bcc6c530283becbbd8a3b24d3c5987cdddc3c8b7b33be6e4a6312490415",
         key: "172af540e43a524763dd53b26a066d472a97c4de37d5498170564510608250c3",
       },
@@ -136,7 +134,6 @@ const config: LockliftConfig = {
       connection: "mainnet",
       // Here, default SafeMultisig wallet is used as a giver
       giver: {
-        giverFactory: (ever, keyPair, address) => new GiverWallet(ever, keyPair, address),
         address: "0:ece57bcc6c530283becbbd8a3b24d3c5987cdddc3c8b7b33be6e4a6312490415",
         // you can use bip39 phrase instead of key
         phrase: "action inject penalty envelope rabbit element slim tornado dinner pizza off blood",
@@ -156,6 +153,13 @@ const config: LockliftConfig = {
   },
 };
 ```
+
+### Note about Giver settings:
+
+Let's look at `networks.giver` this is giver settings filed. All known wallets and givers will be detected automatically e.g.
+`EverWallet` or `GiverV2` (from local node). You only need to provide giver credentials - (address, secret key, or phrase with account id).
+But if you want to use something custom you will need to provide `giverFactory`
+callback for `networks.giver.giverFactory` that callback should return something that implements `Giver` interface
 
 ## Build contracts
 
@@ -896,8 +900,7 @@ await userAccount1.runTarget(
 
 ## Giver (`locklift.giver`)
 
-This module allows you to send tokens. LockLift using GiverV2 by default, but you can use everything you want, just
-reimplement it in giverSettings/index.ts.
+This module allows you to send native tokens.
 `locklift.factory` is using the giver under the hood, for deploying contracts
 
 ## Utils
@@ -907,7 +910,7 @@ This module provides some utility functions for more convenient work with Ever o
 ##### Example
 
 ````typescript
-import { toNano, fromNano, getRandomNonce, convertAmount } from "locklift";
+import { toNano, fromNano, getRandomNonce, convertAmount, isValidEverAddress, stringToBytesArray } from "locklift";
 
 toNano(10); // 10000000000
 fromNano(10000000000); // 10```
