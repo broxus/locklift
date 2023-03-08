@@ -1,6 +1,5 @@
-import { deriveBip39Phrase, makeBip39Path, KeyPair } from "everscale-crypto";
-
 import { GiverConfig } from "../config";
+import { deriveBip39Phrase, KeyPair, makeBip39Path } from "everscale-crypto";
 import { getKeyPairFromSecret } from "../../utils";
 
 export const getGiverKeyPair = (giverSettings: GiverConfig): KeyPair => {

@@ -17,11 +17,12 @@ import { Transactions } from "./utils";
 import { logger } from "./internal/logger";
 import { Factory, FactoryType, Giver } from "./internal/factory";
 import { createTracing, Tracing } from "./internal/tracing";
-import { getGiverKeyPair } from "./internal/utilsInternal";
 import { createTimeMovement, TimeMovement } from "./internal/timeMovement";
 import { LockliftContext } from "./internal/context/lockliftContext";
 import "./chaiPlugin/types";
 import { initializeExtenders } from "./plugins/utils";
+import { getGiverKeyPair } from "./internal/giver/utils";
+import { getGiver } from "./internal/giver";
 
 export * from "everscale-inpage-provider";
 export type { Signer } from "everscale-standalone-client";
@@ -136,9 +137,7 @@ export class Locklift<FactorySource extends FactoryType> {
 
     const locklift = new Locklift<T>(provider, keystore, clock, transactions);
 
-    const giver =
-      networkConfig &&
-      networkConfig.giver.giverFactory(provider, getGiverKeyPair(networkConfig.giver), networkConfig.giver.address);
+    const giver = networkConfig && (await getGiver(networkConfig.giver, provider, accountsStorage));
     if (giver) {
       locklift.giver = giver;
     }

@@ -32,7 +32,10 @@ export const tryLoadTvcFromFile = (filePath: string): string | undefined => {
 
 export const toNano = (amount: number | string): string => new BigNumber(amount).shiftedBy(9).toFixed(0);
 export const fromNano = (amount: number | string): string => new BigNumber(amount).shiftedBy(-9).toString();
-
+export const isValidEverAddress = (address: string) => /^(?:-1|0):[0-9a-fA-F]{64}$/.test(address);
+export const stringToBytesArray = (dataString: string, encoding: BufferEncoding = "base64") => {
+  return Buffer.from(dataString).toString(encoding);
+};
 export const convertAmount = (amount: number | string, dimension: Dimension): string => {
   const crystalBN = new BigNumber(amount);
   switch (dimension) {
