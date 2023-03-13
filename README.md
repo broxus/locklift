@@ -12,6 +12,12 @@
     </p>
 </p>
 
+<p align="center">
+  <a href="https://github.com/venom-blockchain/developer-program">
+    <img src="https://raw.githubusercontent.com/venom-blockchain/developer-program/main/vf-dev-program.png" alt="Logo" width="366.8" height="146.4">
+  </a>
+</p>
+
 Locklift is a development environment aiming to help you with Everscale contracts development. With Locklift, you get:
 
 - Network management for working with any networks (main, test, local, ...)
