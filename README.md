@@ -915,3 +915,8 @@ import { toNano, fromNano, getRandomNonce, convertAmount, isValidEverAddress, st
 toNano(10); // 10000000000
 fromNano(10000000000); // 10```
 ````
+
+## Plugins
+1. [locklift-verify](https://github.com/broxus/locklift-verifier)
+2. [locklift-deploy](https://github.com/broxus/locklift-deploy)
+2. [locklift-plugin-boilerplate(example of implementation)](https://github.com/broxus/locklift-plugin-boilerplate)

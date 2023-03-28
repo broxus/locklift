@@ -33,6 +33,7 @@ export { toNano, fromNano, getRandomNonce, convertAmount } from "./utils";
 export { WalletTypes } from "./types";
 export { TraceType, InteractionType } from "./internal/tracing/types";
 export { lockliftChai } from "./chaiPlugin";
+export { NetworkValue, ConfigState } from "./internal/config";
 
 export class Locklift<FactorySource extends FactoryType> {
   public readonly utils = utils;

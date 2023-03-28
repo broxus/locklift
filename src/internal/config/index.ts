@@ -39,14 +39,14 @@ export type KeysConfig = {
 };
 
 export type Networks<T extends ConfigState = ConfigState.EXTERNAL> = Record<"local" | string, NetworkValue<T>>;
-export type NetworkValue<T extends ConfigState = ConfigState.EXTERNAL> = {
+export interface NetworkValue<T extends ConfigState = ConfigState.EXTERNAL> {
   giver: GiverConfig;
   keys: T extends ConfigState.EXTERNAL ? KeysConfig : Required<KeysConfig>;
   connection: ConnectionProperties;
   tracing?: {
     endpoint: string;
   };
-};
+}
 
 export type ExternalCotracts = Record<string, Array<string>>;
 export type GiverConfig = {
@@ -122,7 +122,7 @@ export const JoiConfig = Joi.object<LockliftConfig>({
       tracing: Joi.object({
         endpoint: Joi.string(),
       }).optional(),
-    }),
+    }).unknown(),
   ),
   mocha: Joi.object({
     tsconfig: Joi.string().optional(),

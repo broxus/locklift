@@ -71,6 +71,12 @@ export class Builder {
                 contractFileName: parse(contractFileName).name,
                 path,
               })),
+              catchError(e => {
+                logger.printError(
+                  `path: ${path}, contractFile: ${contractFileName} error: ${e?.stderr?.toString() || e}`,
+                );
+                return throwError(undefined);
+              }),
             );
           }),
           //Warnings
@@ -79,11 +85,7 @@ export class Builder {
               isValidCompilerOutputLog(output.output.stderr.toString()) &&
               logger.printBuilderLog(output.output.stderr.toString()),
           ),
-          //Errors
-          catchError(e => {
-            logger.printError(e?.stderr?.toString() || e);
-            return throwError(undefined);
-          }),
+
           filter(({ output }) => {
             //Only contracts
             return !!output?.stdout.toString();
@@ -106,7 +108,7 @@ export class Builder {
                 return tvmLinkerLog.stdout.toString().match(new RegExp("Saved to file (.*)."));
               }),
               catchError(e => {
-                logger.printError(e?.stderr?.toString());
+                logger.printError(`contractFileName: ${contractFileName} error:${e?.stderr?.toString()}`);
                 return throwError(undefined);
               }),
               map(matchResult => {
