@@ -102,8 +102,7 @@ export class ViewTracingTree {
     contract,
     name,
   }: { contract: C } & { name: N }) => {
-    //@ts-ignore
-    if (name in contract._functions) {
+    if (name in contract.methodsAbi) {
       return this.findByType<N, MethodParams<C, N>>({ name, type: TraceType.FUNCTION_CALL, contract });
     }
     return this.findByType<N, E>({ name, type: TraceType.EVENT, contract });
@@ -120,7 +119,8 @@ export class ViewTracingTree {
     tree: ViewTraceTree,
   ): Array<ViewTrace<M, P>> => {
     const matchedMethods: Array<ViewTrace<M, P>> = [];
-    for (const trace of tree.outTraces) {
+    const firstEl = { ...tree, outTraces: [] };
+    for (const trace of [firstEl, ...tree.outTraces]) {
       if (
         type === trace.type &&
         name === trace.decodedMsg?.method &&

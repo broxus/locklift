@@ -560,7 +560,7 @@ The module provides access to high-level control of transaction flow.
 This method allows you to wait until all transactions in the chain are finalized.
 
 ```typescript
-const transaction = await locklift.transactions.waitFinalized(tokenRoot.methods.deployWallet({...))
+const transaction = await locklift.transactions.waitFinalized(tokenRoot.methods.deployWallet({...}))
 ```
 
 ## Full contract state (`locklift.provider.getFullContractState`)
