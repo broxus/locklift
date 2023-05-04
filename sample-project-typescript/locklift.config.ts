@@ -8,6 +8,10 @@ declare global {
 const LOCAL_NETWORK_ENDPOINT = process.env.NETWORK_ENDPOINT || "http://localhost/graphql";
 const DEV_NET_NETWORK_ENDPOINT = process.env.DEV_NET_NETWORK_ENDPOINT || "https://devnet-sandbox.evercloud.dev/graphql";
 
+const VENOM_TESTNET_ENDPOINT = process.env.VENOM_TESTNET_ENDPOINT || "https://jrpc-testnet.venom.foundation/rpc";
+const VENOM_TESTNET_TRACE_ENDPOINT =
+  process.env.VENOM_TESTNET_TRACE_ENDPOINT || "https://gql-testnet.venom.foundation/graphql";
+
 // Create your own link on https://dashboard.evercloud.dev/
 const MAIN_NET_NETWORK_ENDPOINT = process.env.MAIN_NET_NETWORK_ENDPOINT || "https://mainnet.evercloud.dev/XXX/graphql";
 
@@ -79,6 +83,30 @@ const config: LockliftConfig = {
       },
       tracing: {
         endpoint: DEV_NET_NETWORK_ENDPOINT,
+      },
+      keys: {
+        // Use everdev to generate your phrase
+        // !!! Never commit it in your repos !!!
+        // phrase: "action inject penalty envelope rabbit element slim tornado dinner pizza off blood",
+        amount: 20,
+      },
+    },
+    venom_testnet: {
+      connection: {
+        id: 1000,
+        type: "jrpc",
+        group: "dev",
+        data: {
+          endpoint: VENOM_TESTNET_ENDPOINT,
+        },
+      },
+      giver: {
+        address: "0:0000000000000000000000000000000000000000000000000000000000000000",
+        phrase: "phrase",
+        accountId: 0,
+      },
+      tracing: {
+        endpoint: VENOM_TESTNET_TRACE_ENDPOINT,
       },
       keys: {
         // Use everdev to generate your phrase

@@ -1,6 +1,6 @@
 {
   "name": "locklift",
-  "version": "2.5.0",
+  "version": "2.5.2",
   "description": "Node JS framework for working with Ever contracts. Inspired by Truffle and Hardhat. Helps you to build, test, run and maintain your smart contracts.",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
