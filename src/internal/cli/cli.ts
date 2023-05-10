@@ -1,4 +1,8 @@
 #!/usr/bin/env node
+import * as path from "path";
+
+process.env.TS_NODE_PROJECT = path.join(__dirname, "../../tsconfig.json");
+process.env.TS_CONFIG_PATHS = "true";
 
 import { program } from "commander";
 import init from "./commands/init";
