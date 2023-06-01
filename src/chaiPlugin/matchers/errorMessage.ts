@@ -16,7 +16,6 @@ export const supportMessageErrors = (Assertion: Chai.AssertionStatic, utils: Cha
       const errors = contract
         ? viewTracingTree.getErrorsByContract(contract)?.map(error => ({ ...error, contract })) || []
         : viewTracingTree.getAllErrors();
-
       if (errorCode !== null && typeof errorCode !== "number") {
         this.assert(
           errors.length > 0,

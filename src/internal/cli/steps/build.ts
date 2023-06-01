@@ -12,7 +12,7 @@ export const buildStep = async (
   } & Pick<LockliftConfig, "compiler" | "linker">,
 ) => {
   fs.ensureDirSync(options.build);
-  const builder = new Builder(await compilerConfigResolver(config), {
+  const builder = Builder.create(await compilerConfigResolver(config), {
     build: options.build,
 
     disableIncludePath: options.disableIncludePath,

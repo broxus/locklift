@@ -23,7 +23,7 @@ program
 
     fs.ensureDirSync(options.build);
 
-    const builder = new Builder(await compilerConfigResolver(config), options);
+    const builder = Builder.create(await compilerConfigResolver(config), options);
 
     const status = await builder.buildContracts();
 
