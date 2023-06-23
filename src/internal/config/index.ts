@@ -7,6 +7,8 @@ import { ConnectionProperties, NETWORK_PRESETS } from "everscale-standalone-clie
 import { generateBip39Phrase } from "everscale-crypto";
 import { Giver } from "../factory";
 import Joi from "joi";
+import { MessageProperties } from "everscale-standalone-client/client";
+import * as nt from "nekoton-wasm";
 
 export enum ConfigState {
   EXTERNAL,
@@ -43,6 +45,10 @@ export interface NetworkValue<T extends ConfigState = ConfigState.EXTERNAL> {
   giver: GiverConfig;
   keys: T extends ConfigState.EXTERNAL ? KeysConfig : Required<KeysConfig>;
   connection: ConnectionProperties;
+  providerConfig?: {
+    message?: MessageProperties;
+    initInput?: nt.InitInput | Promise<nt.InitInput>;
+  };
   tracing?: {
     endpoint: string;
   };
@@ -118,6 +124,10 @@ export const JoiConfig = Joi.object<LockliftConfig>({
           }),
         }),
       ]),
+      providerConfig: Joi.object({
+        message: Joi.object({}).optional().unknown(),
+        initInput: Joi.any().optional(),
+      }).optional(),
 
       tracing: Joi.object({
         endpoint: Joi.string(),

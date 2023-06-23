@@ -65,10 +65,13 @@ export class Factory<T extends FactoryType> {
   }
 
   public deployContract = async <ContractName extends keyof T>(
-    args: DeployContractParams<T, ContractName>,
+    args: DeployContractParams<T, ContractName> & { giver?: Giver },
   ): Promise<{ contract: Contract<T[ContractName]> } & DeployTransaction> => {
     const { tvc, abi } = this.getContractArtifacts(args.contract);
-    return this.deployer.deployContract(
+
+    const deployer = args.giver ? new Deployer(this.ever, args.giver) : this.deployer;
+
+    return deployer.deployContract(
       abi,
       {
         tvc: args.tvc || tvc,

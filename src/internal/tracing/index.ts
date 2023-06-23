@@ -18,7 +18,7 @@ export class Tracing {
   public setContractLabels: TracingInternal["setContractLabels"];
 
   public trace = async <T extends TransactionParameter>(
-    transactionProm: Promise<T>,
+    transactionProm: Promise<T> | T,
     config?: Omit<TraceParams, "inMsgId">,
   ): Promise<T & { traceTree: ViewTracingTree | undefined }> => {
     return this.features

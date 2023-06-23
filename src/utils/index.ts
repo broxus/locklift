@@ -83,7 +83,7 @@ export const extractTransactionFromParams = (transaction: TransactionParameter):
 export class Transactions {
   constructor(private readonly provider: ProviderRpcClient) {}
 
-  public waitFinalized = async <T extends TransactionParameter>(transactionProm: Promise<T>): Promise<T> => {
+  public waitFinalized = async <T extends TransactionParameter>(transactionProm: Promise<T> | T): Promise<T> => {
     const transaction = await transactionProm;
     const subscription = new this.provider.Subscriber();
     return subscription
