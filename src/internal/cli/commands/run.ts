@@ -5,7 +5,6 @@ import { loadConfig } from "../../config";
 import { buildStep } from "../steps/build";
 import { initLockliftStep } from "../steps/initLocklift";
 import path from "path";
-import process from "node:process";
 
 const program = new Command();
 

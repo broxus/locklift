@@ -5,14 +5,12 @@ import dirTree from "directory-tree";
 import { ConstructorParams, ContractWithName, DeployTransaction, Optional } from "../../types";
 import * as utils from "../../utils";
 import { Giver } from "./giver";
-import { AccountFactory } from "./account";
 import { Deployer } from "./deployer";
-import { emptyContractAbi, tryToDetectContract, validateAccountAbi } from "./utils";
+import { emptyContractAbi, tryToDetectContract } from "./utils";
 import { flatDirTree } from "../cli/builder/utils";
 import { AccountFactory2 } from "./account2";
 import { SimpleAccountsStorage } from "everscale-standalone-client/nodejs";
 
-export { Account, AccountFactory } from "./account";
 export * from "./giver";
 export * from "./deployer";
 
@@ -82,12 +80,6 @@ export class Factory<T extends FactoryType> {
       args.constructorParams,
       args.value,
     );
-  };
-
-  public getAccountsFactory = <ContractName extends keyof T>(contractName: ContractName) => {
-    const { tvc, abi } = this.getContractArtifacts(contractName as ContractName);
-    validateAccountAbi(abi);
-    return new AccountFactory(this.deployer, this.ever, abi, tvc);
   };
 
   public getDeployedContract = <ContractName extends keyof T>(
