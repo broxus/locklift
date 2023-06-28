@@ -34,6 +34,7 @@ export { WalletTypes } from "./types";
 export { TraceType, InteractionType } from "./internal/tracing/types";
 export { lockliftChai } from "./chaiPlugin";
 export { NetworkValue, ConfigState } from "./internal/config";
+export { getProxyConnection } from "./internal/transport";
 
 export class Locklift<FactorySource extends FactoryType> {
   public readonly utils = utils;
@@ -175,13 +176,13 @@ or
   ${chalk.bold("docker run -d --name local-node -e USER_AGREEMENT=yes -p80:80 tonlabs/local-node")}`;
 
     if (e instanceof ConnectionError) {
-      const endpoints = e.params.type == "graphql" ? e.params.data.endpoints : [e.params.data.endpoint];
-      const additional = e.params.type == "graphql" && e.params.data.local ? localNodeInfo : "";
-      logger.printError(
-        `Failed to create ${e.params.type} connection. Please check your endpoints: ${endpoints.join(
-          " ",
-        )}${additional}`,
-      );
+      // const endpoints = e.params.type == "graphql" ? e.params.data.endpoints : [e.params.data.endpoint];
+      // const additional = e.params.type == "graphql" && e.params.data.local ? localNodeInfo : "";
+      // logger.printError(
+      //   `Failed to create ${e.params.type} connection. Please check your endpoints: ${endpoints.join(
+      //     " ",
+      //   )}${additional}`,
+      // );
       process.exit(1);
     } else {
       throw e;

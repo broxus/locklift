@@ -108,20 +108,9 @@ export const JoiConfig = Joi.object<LockliftConfig>({
         ...Object.keys(NETWORK_PRESETS).map(el => el),
         Joi.object({
           id: Joi.number().optional(),
-          type: Joi.alternatives(["graphql", "jrpc"]),
+          type: Joi.alternatives(["graphql", "jrpc", "proxy"]),
           group: Joi.string().optional(),
-          data: Joi.alternatives().conditional("type", {
-            is: "graphql",
-            then: Joi.object({
-              endpoints: Joi.array().items(Joi.string()),
-              local: Joi.boolean().optional(),
-              latencyDetectionInterval: Joi.number().optional(),
-              maxLatency: Joi.number().optional(),
-            }),
-            otherwise: Joi.object({
-              endpoint: Joi.string(),
-            }),
-          }),
+          data: Joi.object()
         }),
       ]),
       providerConfig: Joi.object({
