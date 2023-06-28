@@ -110,7 +110,27 @@ export const JoiConfig = Joi.object<LockliftConfig>({
           id: Joi.number().optional(),
           type: Joi.alternatives(["graphql", "jrpc", "proxy"]),
           group: Joi.string().optional(),
-          data: Joi.object()
+          data: Joi.alternatives().conditional("type", {
+            is: "graphql",
+            then: Joi.object({
+              endpoints: Joi.array().items(Joi.string()),
+              local: Joi.boolean().optional(),
+              latencyDetectionInterval: Joi.number().optional(),
+              maxLatency: Joi.number().optional(),
+            }),
+            otherwise: Joi.alternatives().conditional("type", {
+              is: "jrpc",
+              then: Joi.object({
+                endpoint: Joi.string(),
+              }),
+              otherwise: Joi.object().custom((value, helpers) => {
+                if (value instanceof nt.ProxyConnection) {
+                  return true;
+                }
+                return helpers.error("Invalid proxy connection");
+              }),
+            }),
+          }),
         }),
       ]),
       providerConfig: Joi.object({
@@ -147,7 +167,7 @@ export function loadConfig(configPath: string): LockliftConfig<ConfigState.INTER
     if (value.keys != null) {
       value.keys = {
         ...value.keys,
-        phrase: value.keys?.phrase || generateBip39Phrase(12),
+        phrase: value.keys?.phrase || "maze turn choose industry beauty sweet panther valve double report upset mother",
         path: value.keys.path || "m/44'/396'/0'/0/INDEX",
       };
     }

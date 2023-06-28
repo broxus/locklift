@@ -1,9 +1,6 @@
 import { ProviderRpcClient } from "everscale-inpage-provider";
 import {
-  checkConnection,
   Clock,
-  ConnectionError,
-  ConnectionProperties,
   EverscaleStandaloneClient,
   SimpleAccountsStorage,
   SimpleKeystore,
@@ -14,7 +11,6 @@ import { Keys } from "./internal/keys";
 import { ConfigState, LockliftConfig, NetworkValue } from "./internal/config";
 import * as utils from "./utils";
 import { Transactions } from "./utils";
-import { logger } from "./internal/logger";
 import { Factory, FactoryType, Giver } from "./internal/factory";
 import { createTracing, Tracing } from "./internal/tracing";
 import { createTimeMovement, TimeMovement } from "./internal/timeMovement";
@@ -23,6 +19,7 @@ import "./chaiPlugin/types";
 import { initializeExtenders } from "./plugins/utils";
 import { getGiverKeyPair } from "./internal/giver/utils";
 import { getGiver } from "./internal/giver";
+import { logger } from "./internal/logger";
 
 export * from "everscale-inpage-provider";
 export type { Signer } from "everscale-standalone-client";
@@ -120,7 +117,6 @@ export class Locklift<FactorySource extends FactoryType> {
       );
 
       keystore.addKeyPair("giver", giverKeys);
-      await ensureConnectionValid(networkConfig.connection);
     }
 
     const accountsStorage = new SimpleAccountsStorage();
@@ -134,7 +130,12 @@ export class Locklift<FactorySource extends FactoryType> {
           accountsStorage,
         }),
     });
-    await provider.ensureInitialized();
+    try {
+      await provider.ensureInitialized();
+    } catch (e: any) {
+      logger.printError(`${chalk.bold(`${e.message}\nMake sure local node is running. or...`)}`);
+      process.exit(1);
+    }
     const transactions = new Transactions(provider);
 
     const locklift = new Locklift<T>(provider, keystore, clock, transactions);
@@ -162,30 +163,5 @@ export class Locklift<FactorySource extends FactoryType> {
 
     await initializeExtenders({ locklift, config, network });
     return locklift;
-  }
-}
-
-async function ensureConnectionValid(connection: ConnectionProperties): Promise<void> {
-  try {
-    await checkConnection(connection);
-  } catch (e: any) {
-    const localNodeInfo = `
-Make sure local node is running. To start it use:
-  ${chalk.bold("everdev se start")}
-or
-  ${chalk.bold("docker run -d --name local-node -e USER_AGREEMENT=yes -p80:80 tonlabs/local-node")}`;
-
-    if (e instanceof ConnectionError) {
-      // const endpoints = e.params.type == "graphql" ? e.params.data.endpoints : [e.params.data.endpoint];
-      // const additional = e.params.type == "graphql" && e.params.data.local ? localNodeInfo : "";
-      // logger.printError(
-      //   `Failed to create ${e.params.type} connection. Please check your endpoints: ${endpoints.join(
-      //     " ",
-      //   )}${additional}`,
-      // );
-      process.exit(1);
-    } else {
-      throw e;
-    }
   }
 }
