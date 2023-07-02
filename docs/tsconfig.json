@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "es2020",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "strict": true,
+    "jsx": "preserve",
+    "sourceMap": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "lib": ["esnext", "dom"],
+    "types": ["vitepress", "node"],
+    "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": true
+  },
+  "include": ["src/**/*.ts", "src/**/*.vue", "src/**/*.md"],
+  "exclude": ["node_modules"]
+}

@@ -1,0 +1,95 @@
+.demo {
+  padding: 22px 24px;
+  border-radius: 8px;
+  box-shadow: var(--vp-shadow-2);
+  margin-bottom: 1.2em;
+  transition: background-color 0.5s ease;
+
+  &.dark {
+    background-color: var(--vp-c-bg-soft);
+  }
+
+  p {
+    margin: 0;
+  }
+
+  button {
+    background-color: var(--vp-c-bg-mute);
+    transition: background-color 0.1s;
+    padding: 5px 12px;
+    border: 1px solid var(--vp-c-divider);
+    border-radius: 8px;
+    font-size: 0.9em;
+    font-weight: 600;
+
+    &:hover {
+      background-color: var(--vp-c-bg-soft);
+    }
+
+    &:active {
+      background-color: var(--vp-c-bg-alt);
+    }
+
+    & + button {
+      margin-left: 1em;
+    }
+  }
+
+  input,
+  textarea,
+  select {
+    border: 1px solid var(--vp-c-divider);
+    border-radius: 4px;
+    padding: 0.2em 0.6em;
+    margin-bottom: 10px;
+    background: transparent;
+    transition: background-color 0.5s;
+
+    &.dark {
+      background: var(--vp-c-bg-soft);
+    }
+  }
+
+  select option {
+    background: transparent;
+  }
+
+  select {
+    -webkit-appearance: listbox;
+    &[multiple] {
+      width: 100px;
+    }
+  }
+
+  label {
+    margin: 0 1em 0 0;
+  }
+
+  h1 {
+    margin: 10px 0 0;
+  }
+
+  pre {
+    overflow-x: scroll;
+    margin-top: 1.5rem;
+
+    &.error {
+      color: var(--vp-c-red);
+    }
+  }
+}
+
+.toggle-layout-button {
+  display: none;
+  cursor: none;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: 1px solid var(--vp-c-brand) !important;
+}
+
+input {
+  font-size: 16px;
+}

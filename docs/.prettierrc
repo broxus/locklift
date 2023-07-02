@@ -1,0 +1,18 @@
+{
+  "tabWidth": 2,
+  "printWidth": 100,
+  "useTabs": false,
+  "semi": true,
+  "singleQuote": true,
+  "trailingComma": "es5",
+  "bracketSpacing": true,
+  "arrowParens": "avoid",
+  "overrides": [
+    {
+      "files": "*.md",
+      "options": {
+        "printWidth": 70
+      }
+    }
+  ]
+}

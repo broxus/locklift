@@ -1,0 +1,86 @@
+{
+  "root": true,
+  "env": {
+    "browser": true,
+    "node": true
+  },
+  "extends": [
+    "plugin:vue/recommended",
+    "plugin:import/errors",
+    "plugin:import/warnings",
+    "plugin:import/typescript",
+    "plugin:sonarjs/recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:import/recommended",
+    "plugin:import/typescript",
+    "prettier"
+  ],
+  "plugins": ["@typescript-eslint", "import", "prettier", "sonarjs", "vue"],
+  "parser": "vue-eslint-parser",
+  "parserOptions": {
+    "parser": "@typescript-eslint/parser",
+    "project": "./tsconfig.eslint.json",
+    "extraFileExtensions": [".vue"]
+  },
+  "settings": {
+    "import/extensions": [".ts", ".tsx", ".js", ".scss", ".css", ".vue"],
+    "import/parsers": {
+      "@typescript-eslint/parser": [".ts", ".tsx"]
+    },
+    "import/resolver": {
+      "typescript": {
+        "alwaysTryTypes": true
+      }
+    }
+  },
+  "rules": {
+    "import/no-named-as-default": 0,
+    "prettier/prettier": "error",
+    "import/order": [
+      "error",
+      {
+        "groups": [["external", "builtin"], "internal", ["parent", "sibling", "index"]],
+        "alphabetize": {
+          "order": "asc",
+          "caseInsensitive": true
+        },
+        "newlines-between": "always"
+      }
+    ],
+    "newline-before-return": ["error"],
+    "comma-dangle": [
+      "error",
+      {
+        "arrays": "always-multiline",
+        "objects": "always-multiline",
+        "imports": "always-multiline",
+        "exports": "always-multiline",
+        "functions": "never"
+      }
+    ],
+
+    "import/no-default-export": "off",
+    "import/default": "off",
+    "no-restricted-exports": ["error", { "restrictedNamedExports": ["default"] }],
+    "curly": "error",
+    "no-console": "error",
+    "no-shadow": "off",
+    "@typescript-eslint/no-shadow": ["error"],
+    "@typescript-eslint/no-unused-vars": "error",
+    "@typescript-eslint/no-explicit-any": "error",
+    "@typescript-eslint/no-unnecessary-type-assertion": "error",
+    "@typescript-eslint/promise-function-async": "error",
+    "@typescript-eslint/prefer-for-of": "error",
+    "@typescript-eslint/no-useless-constructor": "error",
+    "@typescript-eslint/no-use-before-define": "error",
+    "@typescript-eslint/no-this-alias": "error",
+    "@typescript-eslint/no-require-imports": "error",
+    "@typescript-eslint/no-for-in-array": "error",
+    "@typescript-eslint/no-array-constructor": "error",
+    "@typescript-eslint/await-thenable": "error",
+    "@typescript-eslint/require-array-sort-compare": "error",
+    "@typescript-eslint/ban-ts-comment": "warn",
+    "no-restricted-imports": "error",
+    "vue/no-v-html": "off"
+  }
+}

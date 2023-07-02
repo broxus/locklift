@@ -1,0 +1,42 @@
+{
+  "name": "docs-template",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "clean:docs": "rm -rf ./docs/build",
+    "build:docs": "npm run lint && npm run clean:docs && npx vitepress build",
+    "lint": "eslint './**/*.{js,ts,jsx,tsx,vue}'",
+    "lint:fix": "eslint './**/*.{js,ts,jsx,tsx,vue}' --fix",
+    "dev": "npx vitepress dev"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@algolia/client-search": "^4.17.2",
+    "@typescript-eslint/eslint-plugin": "^5.60.0",
+    "@types/node": "^20.3.1",
+    "@vitejs/plugin-vue": "^4.2.3",
+    "dotenv": "^16.0.3",
+    "escodegen": "^2.0.0",
+    "eslint": "8.43.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-import-resolver-typescript": "^3.5.0",
+    "eslint-plugin-flowtype": "^8.0.3",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-sonarjs": "^0.19.0",
+    "eslint-plugin-vue": "^9.15.1",
+    "everscale-inpage-provider": "0.3.61",
+    "everscale-standalone-client": "2.1.19",
+    "flexsearch": "^0.7.31",
+    "rollup": "^3.25.1",
+    "sass": "^1.63.6",
+    "search-insights": "^1.10.0",
+    "typescript": "5.0.4",
+    "unplugin-vue-components": "^0.24.1",
+    "vite": "^4.3.9",
+    "vite-plugin-externals": "^0.6.2",
+    "vite-plugin-resolve-extension-vue": "^0.1.0",
+    "vitepress": "1.0.0-beta.3",
+    "vue": "^3.2.47"
+  }
+}
