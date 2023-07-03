@@ -125,7 +125,7 @@ export const JoiConfig = Joi.object<LockliftConfig>({
               }),
               otherwise: Joi.object().custom((value, helpers) => {
                 if (value instanceof nt.ProxyConnection) {
-                  return true;
+                  return value;
                 }
                 return helpers.error("Invalid proxy connection");
               }),
