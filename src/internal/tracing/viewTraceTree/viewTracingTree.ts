@@ -11,7 +11,7 @@ import {
 import _ from "lodash";
 
 import { Address, Contract, DecodedEventWithTransaction } from "everscale-inpage-provider";
-import { AbiEventName } from "everscale-inpage-provider/dist/models";
+import { AbiEventName } from "everscale-inpage-provider";
 import { extractStringAddress, fetchAccounts, isT } from "../utils";
 import { ContractWithName } from "../../../types";
 import {

@@ -1,6 +1,6 @@
 import { AllowErrorCodes, DecodedMsg, MsgTree, TraceType } from "../types";
 import { ContractWithName } from "../../../types";
-import { AbiEventName, AbiFunctionName } from "everscale-inpage-provider/dist/models";
+import { AbiEventName, AbiFunctionName } from "everscale-inpage-provider";
 
 enum TargetType {
   DST = "DST",

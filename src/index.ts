@@ -31,7 +31,6 @@ export { WalletTypes } from "./types";
 export { TraceType, InteractionType } from "./internal/tracing/types";
 export { lockliftChai } from "./chaiPlugin";
 export { NetworkValue, ConfigState } from "./internal/config";
-export { getProxyConnection } from "./internal/transport";
 
 export class Locklift<FactorySource extends FactoryType> {
   public readonly utils = utils;

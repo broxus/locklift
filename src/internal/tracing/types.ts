@@ -1,6 +1,6 @@
 import { Address, Contract, DecodedEvent, DecodedOutput } from "everscale-inpage-provider";
-import { AbiEventName, AbiFunctionName } from "everscale-inpage-provider/dist/models";
-import { DecodedInput } from "everscale-inpage-provider/dist/contract";
+import { AbiEventName, AbiFunctionName } from "everscale-inpage-provider";
+import { DecodedInput } from "everscale-inpage-provider";
 
 import { Trace } from "./trace/trace";
 import { Optional } from "../../types";
