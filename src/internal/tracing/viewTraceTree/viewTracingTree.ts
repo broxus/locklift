@@ -45,7 +45,7 @@ export class ViewTracingTree {
   msgErrorsStore: ErrorStore;
   constructor(
     viewTraceTree: ViewTraceTree,
-    private readonly contractGetter: (codeHash: string, address: Address) => ContractWithName<any> | undefined,
+    private readonly contractGetter: (codeHash: string | undefined, address: Address) => ContractWithName<any> | undefined,
     private readonly accounts: AccountData[]
   ) {
     this.viewTraceTree = applyTotalFees(_.cloneDeep(viewTraceTree));

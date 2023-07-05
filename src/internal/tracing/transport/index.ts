@@ -1,32 +1,36 @@
 import {Address, ProviderRpcClient} from "everscale-inpage-provider";
-import {AccountData} from "../types";
-import {TracingGqlTransport} from "./gql";
-import {TracingProxyTransport} from "./proxy";
-import {TracingJrpcTransport} from "./jrpc";
+import {AccountData, TracingTransportConnection} from "../types";
+import {TracingGqlConnection} from "./gql";
+import {TracingProxyConnection} from "./proxy";
+import {TracingJrpcConnection} from "./jrpc";
 
 
 export class TracingTransport {
   constructor(
-    readonly provider: ProviderRpcClient
+    private readonly provider: ProviderRpcClient,
+    private readonly connection: TracingTransportConnection
   ) {}
 
   static fromGqlConnection(endpoint: string, provider: ProviderRpcClient): TracingTransport {
-    return new TracingGqlTransport(provider, endpoint);
+    const connection = new TracingGqlConnection(provider, endpoint);
+    return new TracingTransport(provider, connection);
   }
 
   static fromProxyConnection(provider: ProviderRpcClient): TracingTransport {
-    return new TracingProxyTransport(provider)
+    const connection = new TracingProxyConnection(provider);
+    return new TracingTransport(provider, connection);
   }
 
   static fromJrpcConnection(provider: ProviderRpcClient): TracingTransport {
-    return new TracingJrpcTransport(provider);
+    const connection = new TracingJrpcConnection(provider);
+    return new TracingTransport(provider, connection);
   }
 
   async getAccountData(address: Address): Promise<AccountData> {
-    throw new Error("Method not implemented.");
+    return this.connection.getAccountData(address);
   }
 
   async getAccountsData(accounts: Address[]): Promise<AccountData[]> {
-    throw new Error("Method not implemented.");
+    return this.connection.getAccountsData(accounts);
   }
 }

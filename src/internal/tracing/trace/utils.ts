@@ -1,7 +1,7 @@
 import {AllowErrorCodes, DecodedMsg, MessageTree, TraceContext, TraceType} from "../types";
 import { ContractWithName } from "../../../types";
 import { AbiEventName, AbiFunctionName } from "everscale-inpage-provider";
-import {MessageType} from "../../../../../nekoton-wasm/pkg";
+import {MessageType} from "nekoton-wasm";
 
 enum TargetType {
   DST = "DST",
@@ -23,7 +23,7 @@ const getCodeAndAddress = (msg: MessageTree, targetType: TargetType, ctx: TraceC
       };
     case TargetType.DEPLOY:
       return {
-        codeHash: msg.init.codeHash,
+        codeHash: msg.init?.codeHash,
         address: msg.dst,
       };
   }

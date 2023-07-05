@@ -1,12 +1,10 @@
-import {ProviderRpcClient, TransactionWithAccount} from "everscale-inpage-provider";
+import {ProviderRpcClient} from "everscale-inpage-provider";
 import {AllowedCodes, TraceParams} from "./types";
 import {Factory} from "../factory";
 import {TracingInternal} from "./tracingInternal";
-import {extractTransactionFromParams, Transactions} from "../../utils";
+import {Transactions} from "../../utils";
 import {TransactionParameter} from "../../types";
 import {ViewTracingTree} from "./viewTraceTree/viewTracingTree";
-import {Transaction, decodeRawTransaction} from "nekoton-wasm";
-import {buildMsgTree} from "./utils";
 import {TracingTransport} from "./transport";
 
 export class Tracing {

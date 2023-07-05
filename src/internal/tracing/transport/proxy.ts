@@ -1,12 +1,14 @@
-import {TracingTransport} from "./index";
-import {Address} from "everscale-inpage-provider";
-import {AccountData} from "../types";
+import {Address, ProviderRpcClient} from "everscale-inpage-provider";
+import {AccountData, TracingTransportConnection} from "../types";
 
 
-export class TracingProxyTransport extends TracingTransport {
+export class TracingProxyConnection implements TracingTransportConnection {
+  constructor(
+    readonly provider: ProviderRpcClient
+  ) {}
   async getAccountData(account: Address): Promise<AccountData> {
-    const full_acc = await this.provider.getFullContractState({address: account});
-    return {id: account.toString(), codeHash: full_acc.state!.codeHash!};
+    const fullAcc = await this.provider.getFullContractState({address: account});
+    return {id: account.toString(), codeHash: fullAcc.state?.codeHash};
   }
 
   async getAccountsData(accounts: Address[]): Promise<AccountData[]> {

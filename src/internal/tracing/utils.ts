@@ -19,13 +19,13 @@ export const buildMsgTree = (transactions: TransactionWithAccount[]): MessageTre
     outMessages: Array<JsRawMessage>;
   }
   // restructure transaction inside out for more convenient access in later processing
-  let hashToMsg: {[msg_hash: string]: _ShortMessageTree} = {};
+  const hashToMsg: {[msg_hash: string]: _ShortMessageTree} = {};
   const msgs = transactions.map((tx): _ShortMessageTree => {
-    const extended_tx = decodeRawTransaction(tx.boc);
-    const inMsg: JsRawMessage = popKey(extended_tx, "inMessage");
-    const description = popKey(extended_tx, "description");
-    const outMsgs: JsRawMessage[] = popKey(extended_tx, "outMessages");
-    const msg: _ShortMessageTree = {...inMsg, dstTransaction: {...extended_tx, ...description}, outMessages: outMsgs};
+    const extendedTx = decodeRawTransaction(tx.boc);
+    const inMsg: JsRawMessage = popKey(extendedTx, "inMessage");
+    const description = popKey(extendedTx, "description");
+    const outMsgs: JsRawMessage[] = popKey(extendedTx, "outMessages");
+    const msg: _ShortMessageTree = {...inMsg, dstTransaction: {...extendedTx, ...description}, outMessages: outMsgs};
     hashToMsg[msg.hash] = msg;
     return msg;
   });

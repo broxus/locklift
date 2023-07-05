@@ -151,13 +151,13 @@ export class Trace<Abi = any> {
       // internal - deploy or function call or bound or transfer
       case "IntMsg":
         // code hash is presented, deploy
-        if (this.msg.init.codeHash !== null) {
+        if (this.msg.init?.codeHash !== undefined) {
           this.type = TraceType.DEPLOY;
           // bounced msg
         } else if (this.msg.bounced) {
           this.type = TraceType.BOUNCE;
           // empty body, just transfer
-        } else if (this.msg.body === null) {
+        } else if (this.msg.body === undefined) {
           this.type = TraceType.TRANSFER;
         } else {
           this.type = TraceType.FUNCTION_CALL;
@@ -165,7 +165,7 @@ export class Trace<Abi = any> {
         return;
       // extIn - deploy or function call
       case "ExtIn":
-        if (this.msg.init.codeHash !== null) {
+        if (this.msg.init?.codeHash !== undefined) {
           this.type = TraceType.DEPLOY;
         } else {
           this.type = TraceType.FUNCTION_CALL;

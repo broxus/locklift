@@ -97,8 +97,8 @@ export class TracingInternal {
   // allowed_codes example - {compute: [100, 50, 12], action: [11, 12], "ton_addr": {compute: [60], action: [2]}}
   async trace<T>({ finalizedTx, allowedCodes, raise = true }: TraceParams<T>): Promise<ViewTracingTree | undefined> {
     // @ts-ignore
-    const external_tx = extractTransactionFromParams(finalizedTx) as TransactionWithAccount;
-    const msgTree = buildMsgTree([external_tx, ...finalizedTx.transactions]);
+    const externalTx = extractTransactionFromParams(finalizedTx.extTransaction) as TransactionWithAccount;
+    const msgTree = buildMsgTree([externalTx, ...finalizedTx.transactions]);
     const accounts = extractAccountsFromMsgTree(msgTree);
     const accountDataList = await this.tracingTransport.getAccountsData(accounts);
     const accountDataMap = accountDataList.reduce((acc, accountData) => ({...acc, [accountData.id]: accountData}), {});

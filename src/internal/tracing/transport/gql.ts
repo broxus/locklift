@@ -1,14 +1,13 @@
-import {TracingTransport} from "./index";
 import {Address, ProviderRpcClient} from "everscale-inpage-provider";
 import {httpService} from "../../httpService";
-import {AccountData} from "../types";
+import {AccountData, TracingTransportConnection} from "../types";
 
 
-export class TracingGqlTransport extends TracingTransport {
+export class TracingGqlConnection implements TracingTransportConnection {
   constructor(
     readonly provider: ProviderRpcClient,
     readonly gqlEndpoint: string
-  ) {super(provider)}
+  ) {}
 
   async getAccountData(account: Address): Promise<AccountData> {
     return (await this.getAccountsData([account]))[0];

@@ -1,11 +1,19 @@
-import {Address, Contract, DecodedEvent, DecodedOutput, TransactionWithAccount} from "everscale-inpage-provider";
-import { AbiEventName, AbiFunctionName } from "everscale-inpage-provider";
-import { DecodedInput } from "everscale-inpage-provider";
+import {
+  AbiEventName,
+  AbiFunctionName,
+  Address,
+  Contract,
+  DecodedEvent,
+  DecodedInput,
+  DecodedOutput,
+  ProviderRpcClient,
+  TransactionWithAccount
+} from "everscale-inpage-provider";
 
-import { Trace } from "./trace/trace";
-import { Optional } from "../../types";
+import {Trace} from "./trace/trace";
+import {Optional} from "../../types";
 import BigNumber from "bignumber.js";
-import {JsRawMessage, JsRawTransaction} from "../../../../nekoton-wasm/pkg";
+import {JsRawMessage, JsRawTransaction} from "nekoton-wasm";
 
 export enum TraceType {
   FUNCTION_CALL = "function_call",
@@ -25,7 +33,7 @@ export type MessageTree = JsRawMessage & {
 }
 
 export type AccountData = {
-  codeHash: string;
+  codeHash: string | undefined;
   id: string;
 };
 
@@ -59,6 +67,12 @@ export type DecoderOutput<Abi> =
   | DecodedInput<Abi, AbiFunctionName<Abi>>
   | DecodedEvent<Abi, AbiEventName<Abi>>
   | undefined;
+
+export interface TracingTransportConnection {
+  provider: ProviderRpcClient;
+  getAccountData(address: Address): Promise<AccountData>;
+  getAccountsData(accounts: Address[]): Promise<AccountData[]>;
+}
 
 export type DecodedMsg<M extends string = string, P extends Record<string, any> | any = Record<string, any>> = {
   method?: M;
