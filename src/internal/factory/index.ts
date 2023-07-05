@@ -133,7 +133,7 @@ export class Factory<T extends FactoryType> {
     })) as unknown as Array<{ contractName: keyof T; artifacts: ContractData<T[keyof T]> }>;
   };
 
-  public getContractByCodeHash = (codeHash: string, address: Address): ContractWithName | undefined => {
+  public getContractByCodeHash = (codeHash: string | undefined, address: Address): ContractWithName | undefined => {
     const contractArtifacts = this.getAllArtifacts().find(({ artifacts }) => artifacts.codeHash === codeHash);
 
     return (

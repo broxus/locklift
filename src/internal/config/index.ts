@@ -1,13 +1,12 @@
 import fs from "fs";
 import path from "path";
 import commander from "commander";
-import { ProviderRpcClient } from "everscale-inpage-provider";
-import type { Ed25519KeyPair } from "everscale-standalone-client";
-import { ConnectionProperties, NETWORK_PRESETS } from "everscale-standalone-client/nodejs";
-import { generateBip39Phrase } from "everscale-crypto";
-import { Giver } from "../factory";
+import {ProviderRpcClient} from "everscale-inpage-provider";
+import type {Ed25519KeyPair} from "everscale-standalone-client";
+import {ConnectionProperties, NETWORK_PRESETS} from "everscale-standalone-client/nodejs";
+import {Giver} from "../factory";
 import Joi from "joi";
-import { MessageProperties } from "everscale-standalone-client/client";
+import {MessageProperties} from "everscale-standalone-client/client";
 import * as nt from "nekoton-wasm";
 
 export enum ConfigState {
