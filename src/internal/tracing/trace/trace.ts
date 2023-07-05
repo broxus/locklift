@@ -1,10 +1,10 @@
-import { CONSOLE_ADDRESS } from "../constants";
-import { AllowedCodes, DecodedMsg, MsgTree, TraceType } from "../types";
-import { Address } from "everscale-inpage-provider";
+import {CONSOLE_ADDRESS} from "../constants";
+import {AllowedCodes, DecodedMsg, MessageTree, TraceContext, TraceType} from "../types";
+import {Address} from "everscale-inpage-provider";
 
-import { ContractWithName } from "../../../types";
-import { contractContractInformation, decoder, isErrorExistsInAllowedArr } from "./utils";
-import { TracingInternal } from "../tracingInternal";
+import {ContractWithName} from "../../../types";
+import {contractInformation, decoder, isErrorExistsInAllowedArr} from "./utils";
+import {TracingInternal} from "../tracingInternal";
 
 export class Trace<Abi = any> {
   outTraces: Array<Trace> = [];
@@ -16,8 +16,9 @@ export class Trace<Abi = any> {
   hasErrorInTree = false;
   constructor(
     private readonly tracing: TracingInternal,
-    readonly msg: MsgTree,
-    private readonly srcTrace: any = null,
+    readonly msg: MessageTree,
+    private readonly srcTrace: Trace | null,
+    private readonly context: TraceContext
   ) {}
 
   async buildTree(
@@ -26,13 +27,13 @@ export class Trace<Abi = any> {
   ) {
     this.setMsgType();
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const { codeHash, address } = contractContractInformation({ msg: this.msg, type: this.type! });
+    const { codeHash, address } = contractInformation({ msg: this.msg, type: this.type!, ctx: this.context});
     const contract = contractGetter(codeHash || "", new Address(address));
 
     this.checkForErrors(allowedCodes);
     await this.decode(contract);
     for (const msg of this.msg.outMessages) {
-      const trace = new Trace(this.tracing, msg, this);
+      const trace = new Trace(this.tracing, msg, this, this.context);
       await trace.buildTree(allowedCodes, contractGetter);
       if (trace.hasErrorInTree) {
         this.hasErrorInTree = true;
@@ -45,14 +46,14 @@ export class Trace<Abi = any> {
   checkForErrors(
     allowedCodes: AllowedCodes = { compute: [], action: [], contracts: { any: { compute: [], action: [] } } },
   ) {
-    const tx = this.msg.dst_transaction;
+    const tx = this.msg.dstTransaction;
 
     if (this.msg.dst === CONSOLE_ADDRESS) {
       return;
     }
 
     let skipComputeCheck = false;
-    if (tx && (tx.compute.success || tx.compute.compute_type === 0) && !tx.aborted) {
+    if (tx && (tx.compute.success || tx.compute.status === "skipped") && !tx.aborted) {
       skipComputeCheck = true;
     }
     let skipActionCheck = false;
@@ -61,21 +62,21 @@ export class Trace<Abi = any> {
     }
 
     // error occured during compute phase
-    if (!skipComputeCheck && tx && tx.compute.exit_code !== 0) {
-      this.error = { phase: "compute", code: tx.compute.exit_code };
+    if (!skipComputeCheck && tx && tx.compute.exitCode !== 0) {
+      this.error = { phase: "compute", code: tx.compute.exitCode };
       // we didnt expect this error, save error
       if (
-        isErrorExistsInAllowedArr(allowedCodes.compute, tx.compute.exit_code) ||
-        isErrorExistsInAllowedArr(allowedCodes.contracts?.[this.msg.dst]?.compute, tx.compute.exit_code)
+        isErrorExistsInAllowedArr(allowedCodes.compute, tx.compute.exitCode) ||
+        isErrorExistsInAllowedArr(allowedCodes.contracts?.[this.msg.dst]?.compute, tx.compute.exitCode)
       ) {
         this.error.ignored = true;
       }
-    } else if (!skipActionCheck && tx && tx.action && tx.action.result_code !== 0) {
-      this.error = { phase: "action", code: tx.action.result_code };
+    } else if (!skipActionCheck && tx && tx.action && tx.action.resultCode !== 0) {
+      this.error = { phase: "action", code: tx.action.resultCode };
       // we didnt expect this error, save error
       if (
-        isErrorExistsInAllowedArr(allowedCodes.action, tx.action.result_code) ||
-        isErrorExistsInAllowedArr(allowedCodes.contracts?.[this.msg.dst]?.action, tx.action.result_code)
+        isErrorExistsInAllowedArr(allowedCodes.action, tx.action.resultCode) ||
+        isErrorExistsInAllowedArr(allowedCodes.contracts?.[this.msg.dst]?.action, tx.action.resultCode)
       ) {
         this.error.ignored = true;
       }
@@ -106,7 +107,9 @@ export class Trace<Abi = any> {
 
     if (this.type === TraceType.FUNCTION_CALL && this.srcTrace) {
       // this is responsible callback with answerId = 0, we cant decode it, however contract doesnt need it too
-      if (this.srcTrace.decoded_msg && this.srcTrace.decoded_msg.value?.answerId === "0") {
+      // TODO: check
+      // @ts-ignore
+      if (this.srcTrace.decodedMsg && this.srcTrace.decodedMsg.value?.answerId === "0") {
         return;
       }
     }
@@ -127,7 +130,7 @@ export class Trace<Abi = any> {
 
     return await decoder({
       msgBody: this.msg.body,
-      msgType: this.msg.msg_type,
+      msgType: this.msg.msgType,
       contract,
       initialType: this.type,
     });
@@ -144,11 +147,11 @@ export class Trace<Abi = any> {
   }
 
   setMsgType() {
-    switch (this.msg.msg_type) {
+    switch (this.msg.msgType) {
       // internal - deploy or function call or bound or transfer
-      case 0:
+      case "IntMsg":
         // code hash is presented, deploy
-        if (this.msg.code_hash !== null) {
+        if (this.msg.init.codeHash !== null) {
           this.type = TraceType.DEPLOY;
           // bounced msg
         } else if (this.msg.bounced) {
@@ -161,17 +164,17 @@ export class Trace<Abi = any> {
         }
         return;
       // extIn - deploy or function call
-      case 1:
-        if (this.msg.code_hash !== null) {
+      case "ExtIn":
+        if (this.msg.init.codeHash !== null) {
           this.type = TraceType.DEPLOY;
         } else {
           this.type = TraceType.FUNCTION_CALL;
         }
         return;
       // extOut - event or return
-      case 2:
+      case "ExtOut":
         // if this msg was produced by extIn msg, this can be return or event
-        if (this.srcTrace !== null && this.srcTrace.msg.msg_type === 1) {
+        if (this.srcTrace !== null && this.srcTrace.msg.msgType === "ExtIn") {
           this.type = TraceType.EVENT_OR_FUNCTION_RETURN;
         } else {
           this.type = TraceType.EVENT;

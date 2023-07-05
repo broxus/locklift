@@ -1,4 +1,5 @@
 import {
+  AccountData,
   Addressable,
   BalanceChangeInfoStorage,
   ErrorStore,
@@ -10,10 +11,9 @@ import {
 } from "../types";
 import _ from "lodash";
 
-import { Address, Contract, DecodedEventWithTransaction } from "everscale-inpage-provider";
-import { AbiEventName } from "everscale-inpage-provider";
-import { extractStringAddress, fetchAccounts, isT } from "../utils";
-import { ContractWithName } from "../../../types";
+import {AbiEventName, Address, Contract, DecodedEventWithTransaction} from "everscale-inpage-provider";
+import {extractStringAddress, isT} from "../utils";
+import {ContractWithName} from "../../../types";
 import {
   applyTotalFees,
   calculateTotalFees,
@@ -24,8 +24,8 @@ import {
   printer,
   PrinterConfig,
 } from "./utils";
-import { Tokens } from "./tokens";
-import { pipe } from "rxjs";
+import {Tokens} from "./tokens";
+import {pipe} from "rxjs";
 
 export type NameAndType<T extends string = string> = { type: TraceType; name: T; contract?: Addressable };
 type EventNames<Abi> = DecodedEventWithTransaction<Abi, AbiEventName<Abi>>["event"];
@@ -46,7 +46,7 @@ export class ViewTracingTree {
   constructor(
     viewTraceTree: ViewTraceTree,
     private readonly contractGetter: (codeHash: string, address: Address) => ContractWithName<any> | undefined,
-    private readonly endpoint: string,
+    private readonly accounts: AccountData[]
   ) {
     this.viewTraceTree = applyTotalFees(_.cloneDeep(viewTraceTree));
     this.balanceChangeInfo = pipe(getBalanceChangingInfo, getBalanceDiff)(this.viewTraceTree);
@@ -142,7 +142,7 @@ export class ViewTracingTree {
 
   beautyPrint = async (printerConfig?: PrinterConfig): Promise<void> => {
     const result = _(extractAllAddresses(this.viewTraceTree)).uniq().value();
-    const contracts = (await fetchAccounts(result, this.endpoint)).map(({ code_hash: codeHash, id }) =>
+    const contracts = this.accounts.map(({ codeHash, id }) =>
       this.contractGetter(codeHash, new Address(id)),
     );
 

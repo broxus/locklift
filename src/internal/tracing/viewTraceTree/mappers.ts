@@ -14,9 +14,9 @@ export const extractFeeAndSentValueFromMessage = (
   balanceChange: BigNumber;
 } => {
   const value = new BigNumber(traceTree.msg.value || 0);
-  const totalFees = new BigNumber(traceTree.msg.dst_transaction?.total_fees || 0)
-    .plus(traceTree.msg.dst_transaction?.action?.total_fwd_fees || 0)
-    .minus(traceTree.msg.dst_transaction?.action?.total_action_fees || 0);
+  const totalFees = new BigNumber(traceTree.msg.dstTransaction?.totalFees || 0)
+    .plus(traceTree.msg.dstTransaction?.action?.totalFwdFees || 0)
+    .minus(traceTree.msg.dstTransaction?.action?.totalActionFees || 0);
   const sentValue = traceTree.outTraces.reduce((acc, next) => acc.plus(next.msg.value || 0), new BigNumber(0));
 
   return {

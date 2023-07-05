@@ -1,6 +1,7 @@
-import { AllowErrorCodes, DecodedMsg, MsgTree, TraceType } from "../types";
+import {AllowErrorCodes, DecodedMsg, MessageTree, TraceContext, TraceType} from "../types";
 import { ContractWithName } from "../../../types";
 import { AbiEventName, AbiFunctionName } from "everscale-inpage-provider";
+import {MessageType} from "../../../../../nekoton-wasm/pkg";
 
 enum TargetType {
   DST = "DST",
@@ -8,21 +9,21 @@ enum TargetType {
   DEPLOY = "DEPLOY",
 }
 
-const getCodeAndAddress = (msg: MsgTree, targetType: TargetType): { codeHash: string | undefined; address: string } => {
+const getCodeAndAddress = (msg: MessageTree, targetType: TargetType, ctx: TraceContext): { codeHash: string | undefined; address: string } => {
   switch (targetType) {
     case TargetType.DST:
       return {
         address: msg.dst,
-        codeHash: msg.dst_account?.code_hash,
+        codeHash: ctx.accounts[msg.dst]?.codeHash,
       };
     case TargetType.SRC:
       return {
         address: msg.src,
-        codeHash: msg.src_account?.code_hash,
+        codeHash: ctx.accounts[msg.src]?.codeHash,
       };
     case TargetType.DEPLOY:
       return {
-        codeHash: msg.code_hash,
+        codeHash: msg.init.codeHash,
         address: msg.dst,
       };
   }
@@ -36,7 +37,7 @@ export const decoder = async <Abi>({
 }: {
   contract: ContractWithName<Abi>;
   msgBody: string;
-  msgType: 0 | 1 | 2;
+  msgType: MessageType;
   initialType: TraceType | null;
 }): Promise<{
   decoded: DecodedMsg;
@@ -47,9 +48,9 @@ export const decoder = async <Abi>({
     events: Array<{ name: AbiEventName<Abi> }>;
   };
   switch (msgType) {
-    case 0:
-    case 1: {
-      const isInternal = msgType === 0;
+    case "IntMsg":
+    case "ExtIn": {
+      const isInternal = msgType === "IntMsg";
       return {
         decoded: await contract.contract
           .decodeInputMessage({
@@ -61,7 +62,7 @@ export const decoder = async <Abi>({
         finalType: initialType,
       };
     }
-    case 2: {
+    case "ExtOut": {
       const outMsg = await contract.contract.decodeOutputMessage({
         body: msgBody,
         methods: parsedAbi.functions.map(el => el.name),
@@ -85,23 +86,25 @@ export const decoder = async <Abi>({
   }
 };
 
-export const contractContractInformation = ({
+export const contractInformation = ({
   msg,
   type,
+  ctx
 }: {
-  msg: MsgTree;
+  msg: MessageTree;
   type: TraceType;
+  ctx: TraceContext;
 }): { codeHash?: string; address: string } =>
   ({
-    [TraceType.DEPLOY]: getCodeAndAddress(msg, TargetType.DEPLOY),
-    [TraceType.FUNCTION_CALL]: getCodeAndAddress(msg, TargetType.DST),
-    [TraceType.EVENT]: getCodeAndAddress(msg, TargetType.SRC),
-    [TraceType.EVENT_OR_FUNCTION_RETURN]: getCodeAndAddress(msg, TargetType.SRC),
-    [TraceType.BOUNCE]: getCodeAndAddress(msg, TargetType.DST),
+    [TraceType.DEPLOY]: getCodeAndAddress(msg, TargetType.DEPLOY, ctx),
+    [TraceType.FUNCTION_CALL]: getCodeAndAddress(msg, TargetType.DST, ctx),
+    [TraceType.EVENT]: getCodeAndAddress(msg, TargetType.SRC, ctx),
+    [TraceType.EVENT_OR_FUNCTION_RETURN]: getCodeAndAddress(msg, TargetType.SRC, ctx),
+    [TraceType.BOUNCE]: getCodeAndAddress(msg, TargetType.DST, ctx),
 
     //TODO
-    [TraceType.FUNCTION_RETURN]: getCodeAndAddress(msg, TargetType.SRC),
-    [TraceType.TRANSFER]: getCodeAndAddress(msg, TargetType.DST),
+    [TraceType.FUNCTION_RETURN]: getCodeAndAddress(msg, TargetType.SRC, ctx),
+    [TraceType.TRANSFER]: getCodeAndAddress(msg, TargetType.DST, ctx),
   }[type]);
 
 export const isErrorExistsInAllowedArr = (

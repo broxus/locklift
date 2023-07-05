@@ -1,10 +1,13 @@
-import { ProviderRpcClient } from "everscale-inpage-provider";
-import { AllowedCodes, TraceParams } from "./types";
-import { Factory } from "../factory";
-import { TracingInternal } from "./tracingInternal";
-import { extractTransactionFromParams, Transactions } from "../../utils";
-import { TransactionParameter } from "../../types";
-import { ViewTracingTree } from "./viewTraceTree/viewTracingTree";
+import {ProviderRpcClient, TransactionWithAccount} from "everscale-inpage-provider";
+import {AllowedCodes, TraceParams} from "./types";
+import {Factory} from "../factory";
+import {TracingInternal} from "./tracingInternal";
+import {extractTransactionFromParams, Transactions} from "../../utils";
+import {TransactionParameter} from "../../types";
+import {ViewTracingTree} from "./viewTraceTree/viewTracingTree";
+import {Transaction, decodeRawTransaction} from "nekoton-wasm";
+import {buildMsgTree} from "./utils";
+import {TracingTransport} from "./transport";
 
 export class Tracing {
   constructor(
@@ -19,15 +22,13 @@ export class Tracing {
 
   public trace = async <T extends TransactionParameter>(
     transactionProm: Promise<T> | T,
-    config?: Omit<TraceParams, "inMsgId">,
-  ): Promise<T & { traceTree: ViewTracingTree | undefined }> => {
-    return this.features
-      .waitFinalized(transactionProm)
-      .then(transaction =>
-        this.tracingInternal
-          .trace({ inMsgId: extractTransactionFromParams(transaction).inMessage.hash, ...config })
-          .then(traceTree => ({ ...transaction, traceTree })),
-      );
+    config?: Omit<TraceParams<T>, "finalizedTx">,
+  ): Promise<T & {traceTree: ViewTracingTree | undefined }> => {
+    const finalizedTx = await this.features.waitFinalized(transactionProm);
+
+    return this.tracingInternal
+      .trace({finalizedTx, ...config})
+      .then(traceTree => ({...finalizedTx.extTransaction, traceTree: traceTree}));
   };
   public get allowedCodes(): AllowedCodes {
     return this.tracingInternal.allowedCodes;
@@ -47,13 +48,13 @@ export const createTracing = ({
   ever,
   factory,
   features,
-  endpoint,
+  tracingTransport
 }: {
   ever: ProviderRpcClient;
   factory: Factory<any>;
   features: Transactions;
-  endpoint?: string;
+  tracingTransport: TracingTransport
 }): Tracing => {
-  const internalTracing = new TracingInternal(ever, factory, endpoint || "", !!endpoint);
+  const internalTracing = new TracingInternal(ever, factory, tracingTransport);
   return new Tracing(ever, internalTracing, features);
 };

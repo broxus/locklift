@@ -1,10 +1,11 @@
 import fs from "fs";
 import BigNumber from "bignumber.js";
-import { ProviderRpcClient, Transaction } from "everscale-inpage-provider";
-import { getPublicKey, KeyPair } from "everscale-crypto";
+import {ProviderRpcClient, Transaction, TransactionWithAccount} from "everscale-inpage-provider";
+import {getPublicKey, KeyPair} from "everscale-crypto";
 
-import { Dimension } from "../constants";
-import { TransactionParameter } from "../types";
+import {Dimension} from "../constants";
+import {TransactionParameter} from "../types";
+import {WaitFinalizedOutput} from "../internal/tracing/types";
 
 export const loadJSONFromFile = (filePath: string): ReturnType<typeof JSON.parse> | undefined => {
   try {
@@ -83,13 +84,14 @@ export const extractTransactionFromParams = (transaction: TransactionParameter):
 export class Transactions {
   constructor(private readonly provider: ProviderRpcClient) {}
 
-  public waitFinalized = async <T extends TransactionParameter>(transactionProm: Promise<T> | T): Promise<T> => {
-    const transaction = await transactionProm;
+  public waitFinalized = async <T extends TransactionParameter>(transactionProm: Promise<T> | T): Promise<WaitFinalizedOutput<T>> => {
+    const extTransaction = await transactionProm;
     const subscription = new this.provider.Subscriber();
-    return subscription
-      .trace(extractTransactionFromParams(transaction))
-      .finished()
-      .then(subscription.unsubscribe.bind(subscription))
-      .then(() => transaction);
+
+    const transactions = await subscription
+      .trace(extractTransactionFromParams(extTransaction))
+      .fold([] as Array<TransactionWithAccount>, (acc, n) => [...acc, n])
+    await subscription.unsubscribe();
+    return {extTransaction, transactions};
   };
 }

@@ -1,14 +1,30 @@
-import { Address, Contract, ProviderRpcClient } from "everscale-inpage-provider";
-import { consoleAbi, ConsoleAbi } from "../../console.abi";
-import { CONSOLE_ADDRESS } from "./constants";
-import { extractStringAddress, fetchMsgData, getDefaultAllowedCodes, throwErrorInConsole } from "./utils";
-import { Trace } from "./trace/trace";
-import { Addressable, AllowedCodes, MsgTree, OptionalContracts, RevertedBranch, TraceParams } from "./types";
-import { Factory } from "../factory";
-import _, { difference } from "lodash";
-import { logger } from "../logger";
-import { ViewTracingTree } from "./viewTraceTree/viewTracingTree";
-import { retryWithDelay } from "../httpService";
+import {Address, Contract, ProviderRpcClient, TransactionWithAccount} from "everscale-inpage-provider";
+import {consoleAbi, ConsoleAbi} from "../../console.abi";
+import {CONSOLE_ADDRESS} from "./constants";
+import {
+  buildMsgTree,
+  extractAccountsFromMsgTree,
+  extractStringAddress,
+  getDefaultAllowedCodes,
+  throwErrorInConsole
+} from "./utils";
+import {Trace} from "./trace/trace";
+import {
+  AccountData,
+  Addressable,
+  AllowedCodes,
+  MessageTree,
+  OptionalContracts,
+  RevertedBranch,
+  TraceParams
+} from "./types";
+import {Factory} from "../factory";
+import _, {difference} from "lodash";
+import {logger} from "../logger";
+import {ViewTracingTree} from "./viewTraceTree/viewTracingTree";
+import {retryWithDelay} from "../httpService";
+import {extractTransactionFromParams} from "../../utils";
+import {TracingTransport} from "./transport";
 
 export class TracingInternal {
   private labelsMap = new Map<string, string>();
@@ -24,8 +40,7 @@ export class TracingInternal {
   constructor(
     private readonly ever: ProviderRpcClient,
     private readonly factory: Factory<any>,
-    private readonly endpoint: string,
-    private readonly enabled = false,
+    private readonly tracingTransport: TracingTransport,
   ) {
     this.consoleContract = new ever.Contract(consoleAbi, new Address(CONSOLE_ADDRESS));
   }
@@ -80,24 +95,27 @@ export class TracingInternal {
     }
   }
   // allowed_codes example - {compute: [100, 50, 12], action: [11, 12], "ton_addr": {compute: [60], action: [2]}}
-  async trace({ inMsgId, allowedCodes, raise = true }: TraceParams) {
-    if (this.enabled) {
-      const msgTree = await this.buildMsgTree(inMsgId, this.endpoint);
-      const allowedCodesExtended = _.mergeWith(_.cloneDeep(this._allowedCodes), allowedCodes, (objValue, srcValue) =>
-        Array.isArray(objValue) ? objValue.concat(srcValue) : undefined,
-      );
-      const traceTree = await this.buildTracingTree(msgTree, allowedCodesExtended);
+  async trace<T>({ finalizedTx, allowedCodes, raise = true }: TraceParams<T>): Promise<ViewTracingTree | undefined> {
+    // @ts-ignore
+    const external_tx = extractTransactionFromParams(finalizedTx) as TransactionWithAccount;
+    const msgTree = buildMsgTree([external_tx, ...finalizedTx.transactions]);
+    const accounts = extractAccountsFromMsgTree(msgTree);
+    const accountDataList = await this.tracingTransport.getAccountsData(accounts);
+    const accountDataMap = accountDataList.reduce((acc, accountData) => ({...acc, [accountData.id]: accountData}), {});
 
-      const reverted = this.findRevertedBranch(_.cloneDeep(traceTree));
-      if (reverted && raise) {
-        throwErrorInConsole(reverted);
-      }
-      return new ViewTracingTree(traceTree, this.factory.getContractByCodeHash, this.endpoint);
+    const allowedCodesExtended = _.mergeWith(_.cloneDeep(this._allowedCodes), allowedCodes, (objValue, srcValue) =>
+      Array.isArray(objValue) ? objValue.concat(srcValue) : undefined,
+    );
+    const traceTree = await this.buildTracingTree(msgTree, allowedCodesExtended, accountDataMap);
+
+    const reverted = this.findRevertedBranch(_.cloneDeep(traceTree));
+    if (reverted && raise) {
+      throwErrorInConsole(reverted);
     }
-    logger.printWarn("You need to provide tracing endPoint to enable trace");
+    return new ViewTracingTree(traceTree, this.factory.getContractByCodeHash, accountDataList);
   }
 
-  private async printConsoleMsg(msg: MsgTree) {
+  private async printConsoleMsg(msg: MessageTree) {
     const decoded = await this.ever.rawApi.decodeEvent({
       body: msg.body,
       abi: JSON.stringify(consoleAbi),
@@ -106,39 +124,12 @@ export class TracingInternal {
     logger.printInfo(decoded && "_log" in decoded.data && decoded.data._log);
   }
 
-  private async buildMsgTree(inMsgId: string, endpoint: string, onlyRoot = false) {
-    const msg = await retryWithDelay(
-      () =>
-        fetchMsgData(inMsgId, endpoint).then(res => {
-          if (!res) {
-            throw new Error(`Not found msg by ${inMsgId} id`);
-          }
-          return res;
-        }),
-      { delay: 1500, count: 5 },
-    );
-    if (onlyRoot) {
-      return msg;
-    }
-    if (msg.dst === CONSOLE_ADDRESS) {
-      await this.printConsoleMsg(msg);
-    }
-    msg.outMessages = [];
-    if (msg.dst_transaction && msg.dst_transaction.out_msgs.length > 0) {
-      msg.outMessages = await Promise.all(
-        msg.dst_transaction.out_msgs.map(async (msgId: string) => {
-          return await this.buildMsgTree(msgId, endpoint);
-        }),
-      );
-    }
-    return msg;
-  }
-
   private async buildTracingTree(
-    msgTree: MsgTree,
+    msgTree: MessageTree,
     allowedCodes: AllowedCodes = { compute: [], action: [], contracts: { any: { compute: [], action: [] } } },
+    accountData: { [key: string]: AccountData },
   ): Promise<Trace> {
-    const trace = new Trace(this, msgTree, null);
+    const trace = new Trace(this, msgTree, null, {accounts: accountData});
     await trace.buildTree(allowedCodes, this.factory.getContractByCodeHashOrDefault);
     return trace;
   }

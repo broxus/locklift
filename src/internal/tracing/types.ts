@@ -1,10 +1,11 @@
-import { Address, Contract, DecodedEvent, DecodedOutput } from "everscale-inpage-provider";
+import {Address, Contract, DecodedEvent, DecodedOutput, TransactionWithAccount} from "everscale-inpage-provider";
 import { AbiEventName, AbiFunctionName } from "everscale-inpage-provider";
 import { DecodedInput } from "everscale-inpage-provider";
 
 import { Trace } from "./trace/trace";
 import { Optional } from "../../types";
 import BigNumber from "bignumber.js";
+import {JsRawMessage, JsRawTransaction} from "../../../../nekoton-wasm/pkg";
 
 export enum TraceType {
   FUNCTION_CALL = "function_call",
@@ -16,45 +17,33 @@ export enum TraceType {
   TRANSFER = "transfer",
 }
 
-export type MsgTree = {
-  outMessages: Array<any>;
-  dst_transaction: any & {
-    total_fees: string;
-    action: {
-      total_fwd_fees: string;
-      total_action_fees: string;
-    };
-  };
-  dst: string;
-  msg_type: 0 | 1 | 2;
-  body: string;
-  bounce: boolean;
-  bounced: boolean;
-  code_hash: string;
-  src: string;
-  value: number;
-  id: string;
-  dst_account?: {
-    id: string;
-    code_hash: string;
-  };
-  src_account?: {
-    id: string;
-    code_hash: string;
-  };
-};
+export type TruncatedTransaction = Omit<JsRawTransaction, "description" | "inMessage" | "outMessages"> & JsRawTransaction["description"];
+
+export type MessageTree = JsRawMessage & {
+  dstTransaction: TruncatedTransaction;
+  outMessages: Array<MessageTree>;
+}
 
 export type AccountData = {
-  code_hash: string;
+  codeHash: string;
   id: string;
 };
 
 export type RevertedBranch<Abi = unknown> = { totalActions: number; traceLog: Trace<Abi>; actionIdx: number };
-export type TraceParams = {
-  inMsgId: string;
+export type WaitFinalizedOutput<T> = {
+  extTransaction: T;
+  transactions: Array<TransactionWithAccount>;
+}
+export type TraceParams<T> = {
+  finalizedTx: WaitFinalizedOutput<T>;
   allowedCodes?: AllowedCodes;
   raise?: boolean;
 };
+
+export type TraceContext = {
+  accounts: { [key: string]: AccountData }
+};
+
 export type AllowErrorCodes = number | null;
 export type OptionalContracts = Optional<AllowedCodes, "contracts">;
 type AllowedCode = {

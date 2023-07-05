@@ -20,6 +20,7 @@ import { initializeExtenders } from "./plugins/utils";
 import { getGiverKeyPair } from "./internal/giver/utils";
 import { getGiver } from "./internal/giver";
 import { logger } from "./internal/logger";
+import {TracingTransport} from "./internal/tracing/transport";
 
 export * from "everscale-inpage-provider";
 export type { Signer } from "everscale-standalone-client";
@@ -120,6 +121,7 @@ export class Locklift<FactorySource extends FactoryType> {
 
     const accountsStorage = new SimpleAccountsStorage();
     const clock = new Clock();
+    // console.log('AAAAAAAAAAAAAAAAAAAAAA')/////////
     const provider = new ProviderRpcClient({
       fallback: () =>
         EverscaleStandaloneClient.create({
@@ -129,6 +131,7 @@ export class Locklift<FactorySource extends FactoryType> {
           accountsStorage,
         }),
     });
+    // console.log(networkConfig?.connection);
     try {
       await provider.ensureInitialized();
     } catch (e: any) {
@@ -146,11 +149,23 @@ export class Locklift<FactorySource extends FactoryType> {
     const factory = await Factory.setup<T>(provider, () => locklift.giver, accountsStorage);
     locklift.factory = factory;
 
+    const tracingTransport = (() => {
+        // TODO: wtf
+        // @ts-ignore
+        switch (networkConfig?.connection.type) {
+          // @ts-ignore
+          case "graphql": return TracingTransport.fromGqlConnection(networkConfig.connection.data.endpoints[0], provider);
+          case "jrpc": return TracingTransport.fromJrpcConnection(provider);
+          case "proxy": return TracingTransport.fromProxyConnection(provider);
+        }
+      }
+    )()!;
+
     locklift.tracing = createTracing({
       ever: provider,
       features: transactions,
       factory,
-      endpoint: networkConfig?.tracing?.endpoint,
+      tracingTransport
     });
 
     if (networkConfig && network) {

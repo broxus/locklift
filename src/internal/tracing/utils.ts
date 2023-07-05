@@ -1,85 +1,56 @@
-import { AccountData, Addressable, AllowedCodes, MsgTree, RevertedBranch, TraceType } from "./types";
-import { logger } from "../logger";
-import { httpService } from "../httpService";
-import { Address } from "everscale-inpage-provider";
+import {Addressable, AllowedCodes, MessageTree, RevertedBranch, TraceType, TruncatedTransaction} from "./types";
+import {logger} from "../logger";
+import {Address, TransactionWithAccount} from "everscale-inpage-provider";
 import BigNumber from "bignumber.js";
+import {decodeRawTransaction, JsRawMessage} from "nekoton-wasm";
 
-export const fetchMsgData = async (msgId: string, endpoint: string): Promise<MsgTree> => {
-  const msgQuery = `{
-    messages(
-      timeout: 1000,
-      filter: {
-        id: {
-          eq: "${msgId}"
-        }
-      }
-    ) {
-      id
-      body
-      code_hash
-      src
-      msg_type
-      dst
-      dst_account {
-        id
-        code_hash
-      }
-      src_account{
-        id
-        code_hash
-      }
-      dst_transaction {
-        status
-        total_fees
-        aborted
-        out_msgs
-        storage {
-          storage_fees_collected
-        }
-        compute {
-          exit_code
-          compute_type
-          success
-          gas_fees
-        }
-        action {
-          result_code
-          success
-          total_action_fees
-          total_fwd_fees
-        }
-      }
-      status
-      value
-      bounced
-      bounce
-    }
-  }`;
-  const response = await httpService
-    .post<{ data: { messages: Array<MsgTree> } }>(endpoint, { query: msgQuery })
 
-    .then(res => res.data.data);
-  return response.messages[0];
-};
-export const fetchAccounts = async (accounts: Array<Address>, endpoint: string): Promise<Array<AccountData>> => {
-  const msgQuery = `{
-  accounts(
-    filter: {
-      id: {
-        in: ${JSON.stringify(accounts.map(account => account.toString()))}
-      }
-    }
-  ) {
-    code_hash
-    id
+const popKey= (obj: any, key: string): any => {
+  const value = obj[key];
+  delete obj[key];
+  return value;
+}
+
+// transactions are unordered
+// @ts-ignore
+export const buildMsgTree = (transactions: TransactionWithAccount[]): MessageTree => {
+  type _ShortMessageTree = JsRawMessage & {
+    dstTransaction: TruncatedTransaction;
+    outMessages: Array<JsRawMessage>;
   }
-}`;
-  const response = await httpService
-    .post<{ data: { accounts: Array<AccountData> } }>(endpoint, { query: msgQuery })
+  // restructure transaction inside out for more convenient access in later processing
+  let hashToMsg: {[msg_hash: string]: _ShortMessageTree} = {};
+  const msgs = transactions.map((tx): _ShortMessageTree => {
+    const extended_tx = decodeRawTransaction(tx.boc);
+    const inMsg: JsRawMessage = popKey(extended_tx, "inMessage");
+    const description = popKey(extended_tx, "description");
+    const outMsgs: JsRawMessage[] = popKey(extended_tx, "outMessages");
+    const msg: _ShortMessageTree = {...inMsg, dstTransaction: {...extended_tx, ...description}, outMessages: outMsgs};
+    hashToMsg[msg.hash] = msg;
+    return msg;
+  });
 
-    .then(res => res.data.data);
-  return response.accounts;
-};
+  // recursively build message tree
+  const buildTree = (msgHash: string): MessageTree => {
+    const msg = hashToMsg[msgHash];
+    const outMessages = msg.outMessages.map((outMsg) => buildTree(outMsg.hash));
+    return {...msg, outMessages};
+  }
+
+  return buildTree(msgs[0].hash);
+}
+
+export const extractAccountsFromMsgTree = (msgTree: MessageTree): Address[] => {
+  const extractAccounts = (msgTree: MessageTree): Address[] => {
+    const accounts: Address[] = [new Address(msgTree.dst)];
+    for (const outMsg of msgTree.outMessages) {
+      accounts.push(...extractAccounts(outMsg));
+    }
+    return accounts;
+  }
+  return [...new Set(extractAccounts(msgTree))];
+}
+
 export const convert = (number: number, decimals = 9, precision = 4) => {
   if (number === null) {
     return null;
@@ -120,7 +91,7 @@ export const throwErrorInConsole = <Abi>(revertedBranch: Array<RevertedBranch<Ab
     logger.printTracingLog(`\t#${actionIdx + 1} action out of ${totalActions}`);
     // green tags
     logger.printTracingLog(`Addr: \x1b[32m${traceLog.msg.dst}\x1b[0m`);
-    logger.printTracingLog(`MsgId: \x1b[32m${traceLog.msg.id}\x1b[0m`);
+    logger.printTracingLog(`MsgId: \x1b[32m${traceLog.msg.hash}\x1b[0m`);
     logger.printTracingLog("-----------------------------------------------------------------");
     if (traceLog.type === TraceType.BOUNCE) {
       logger.printTracingLog("-> Bounced msg");
@@ -135,19 +106,19 @@ export const throwErrorInConsole = <Abi>(revertedBranch: Array<RevertedBranch<Ab
     logger.printTracingLog(
       `\x1b[1m${name}.${method}\x1b[22m{value: ${convert(traceLog.msg.value)}, bounce: ${bounce}}${paramsStr}`,
     );
-    if (traceLog.msg.dst_transaction) {
-      if (traceLog.msg.dst_transaction.storage) {
-        logger.printTracingLog(`Storage fees: ${convert(traceLog.msg.dst_transaction.storage.storage_fees_collected)}`);
+    if (traceLog.msg.dstTransaction) {
+      if (traceLog.msg.dstTransaction.storage) {
+        logger.printTracingLog(`Storage fees: ${convert(traceLog.msg.dstTransaction.storage.storageFeesCollected)}`);
       }
-      if (traceLog.msg.dst_transaction.compute) {
-        logger.printTracingLog(`Compute fees: ${convert(Number(traceLog.msg.dst_transaction.compute.gas_fees))}`);
+      if (traceLog.msg.dstTransaction.compute) {
+        logger.printTracingLog(`Compute fees: ${convert(Number(traceLog.msg.dstTransaction.compute.gasFees))}`);
       }
-      if (traceLog.msg.dst_transaction.action) {
+      if (traceLog.msg.dstTransaction.action) {
         logger.printTracingLog(
-          `Action fees: ${convert(Number(traceLog.msg.dst_transaction.action.total_action_fees))}`,
+          `Action fees: ${convert(Number(traceLog.msg.dstTransaction.action.totalActionFees))}`,
         );
       }
-      logger.printTracingLog(`\x1b[1mTotal fees:\x1b[22m ${convert(Number(traceLog.msg.dst_transaction.total_fees))}`);
+      logger.printTracingLog(`\x1b[1mTotal fees:\x1b[22m ${convert(Number(traceLog.msg.dstTransaction.totalFees))}`);
     }
     if (traceLog.error && !traceLog.error.ignored) {
       // red tag
