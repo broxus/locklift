@@ -57,6 +57,7 @@ export const createTimeMovement = async (
     connectionConfig.connection.type === "graphql" &&
     connectionConfig.connection.data.endpoints[0];
 
+  // TODO: proxy
   if (!rpcUrl) {
     return new TimeMovement(new SeService(""), clock, false);
   }

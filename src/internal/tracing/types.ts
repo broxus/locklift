@@ -28,7 +28,7 @@ export enum TraceType {
 export type TruncatedTransaction = Omit<JsRawTransaction, "description" | "inMessage" | "outMessages"> & JsRawTransaction["description"];
 
 export type MessageTree = JsRawMessage & {
-  dstTransaction: TruncatedTransaction;
+  dstTransaction: TruncatedTransaction | undefined;
   outMessages: Array<MessageTree>;
 }
 
@@ -107,7 +107,7 @@ export type BalanceChangeInfoStorage = Record<string, BalanceChangingInfo>;
 export type ErrorStore = Record<string, Array<MsgError>>;
 export type MsgError = {
   phase: "compute" | "action";
-  code: number;
+  code: number | null;
   trace: ViewTrace;
 };
 export type Addressable = Contract<any> | Address | string;

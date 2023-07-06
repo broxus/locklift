@@ -13,18 +13,18 @@ const getCodeAndAddress = (msg: MessageTree, targetType: TargetType, ctx: TraceC
   switch (targetType) {
     case TargetType.DST:
       return {
-        address: msg.dst,
-        codeHash: ctx.accounts[msg.dst]?.codeHash,
+        address: msg.dst!,
+        codeHash: ctx.accounts[msg.dst!]?.codeHash,
       };
     case TargetType.SRC:
       return {
-        address: msg.src,
-        codeHash: ctx.accounts[msg.src]?.codeHash,
+        address: msg.src!,
+        codeHash: ctx.accounts[msg.src!]?.codeHash,
       };
     case TargetType.DEPLOY:
       return {
         codeHash: msg.init?.codeHash,
-        address: msg.dst,
+        address: msg.dst!,
       };
   }
 };

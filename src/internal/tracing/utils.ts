@@ -6,7 +6,7 @@ import BigNumber from "bignumber.js";
 
 export const extractAccountsFromMsgTree = (msgTree: MessageTree): Address[] => {
   const extractAccounts = (msgTree: MessageTree): Address[] => {
-    const accounts: Address[] = [new Address(msgTree.dst)];
+    const accounts: Address[] = msgTree.dst ? [new Address(msgTree.dst)] : [];
     for (const outMsg of msgTree.outMessages) {
       accounts.push(...extractAccounts(outMsg));
     }
@@ -71,26 +71,32 @@ export const throwErrorInConsole = <Abi>(revertedBranch: Array<RevertedBranch<Ab
       `\x1b[1m${name}.${method}\x1b[22m{value: ${convert(traceLog.msg.value)}, bounce: ${bounce}}${paramsStr}`,
     );
     if (traceLog.msg.dstTransaction) {
-      if (traceLog.msg.dstTransaction.storage) {
-        logger.printTracingLog(`Storage fees: ${convert(traceLog.msg.dstTransaction.storage.storageFeesCollected)}`);
+      const tx = traceLog.msg.dstTransaction;
+      if (tx.storage) {
+        logger.printTracingLog(`Storage fees: ${convert(tx.storage.storageFeesCollected)}`);
       }
-      if (traceLog.msg.dstTransaction.compute) {
-        logger.printTracingLog(`Compute fees: ${convert(Number(traceLog.msg.dstTransaction.compute.gasFees))}`);
+      if (tx.compute) {
+        const gasFees = tx.compute.status === 'vm' ? tx.compute.gasFees : 0;
+        logger.printTracingLog(`Compute fees: ${convert(Number(gasFees))}`);
       }
-      if (traceLog.msg.dstTransaction.action) {
+      if (tx.action) {
         logger.printTracingLog(
-          `Action fees: ${convert(Number(traceLog.msg.dstTransaction.action.totalActionFees))}`,
+          `Action fees: ${convert(Number(tx.action.totalActionFees))}`,
         );
       }
-      logger.printTracingLog(`\x1b[1mTotal fees:\x1b[22m ${convert(Number(traceLog.msg.dstTransaction.totalFees))}`);
+      logger.printTracingLog(`\x1b[1mTotal fees:\x1b[22m ${convert(Number(tx.totalFees))}`);
     }
     if (traceLog.error && !traceLog.error.ignored) {
+      let errorMsg;
+      // special case
+      if (traceLog.error.phase === 'compute' && traceLog.error.reason) {
+        errorMsg = `!!! Compute phase was skipped with reason: ${traceLog.error.reason} !!!`;
+      } else {
+        errorMsg = `!!! Reverted with ${traceLog.error.code} error code on ${traceLog.error.phase} phase !!!`;
+      }
       // red tag
-      logger.printError(
-        "\x1b[31m",
-        `!!! Reverted with ${traceLog.error.code} error code on ${traceLog.error.phase} phase !!!`,
-      );
-      throw new Error(`Reverted with ${traceLog.error.code} code on ${traceLog.error.phase} phase`);
+      logger.printError("\x1b[31m", errorMsg,);
+      throw new Error(errorMsg);
     }
   }
 };

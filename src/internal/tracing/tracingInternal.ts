@@ -19,7 +19,7 @@ import {logger} from "../logger";
 import {ViewTracingTree} from "./viewTraceTree/viewTracingTree";
 import {extractTransactionFromParams} from "../../utils";
 import {TracingTransport} from "./transport";
-import {decodeRawTransaction, JsRawMessage} from "../../../../nekoton-wasm/pkg";
+import {decodeRawTransaction, JsRawMessage} from "nekoton-wasm";
 
 export class TracingInternal {
   private labelsMap = new Map<string, string>();
@@ -100,7 +100,7 @@ export class TracingInternal {
   // input transactions are unordered
   private buildMsgTree = async (transactions: TransactionWithAccount[]): Promise<MessageTree> => {
     type _ShortMessageTree = JsRawMessage & {
-      dstTransaction: TruncatedTransaction;
+      dstTransaction: TruncatedTransaction | undefined;
       outMessages: Array<JsRawMessage>;
     }
     // restructure transaction inside out for more convenient access in later processing
@@ -112,17 +112,24 @@ export class TracingInternal {
       const outMsgs: JsRawMessage[] = this.popKey(extendedTx, "outMessages");
       const msg: _ShortMessageTree = {...inMsg, dstTransaction: {...extendedTx, ...description}, outMessages: outMsgs};
       hashToMsg[msg.hash] = msg;
+      // special move for extOut messages (events), because they dont have dstTransaction
+      msg.outMessages.map((outMsg) => {
+        if (outMsg.dst === undefined) {
+          hashToMsg[outMsg.hash] = {...outMsg, dstTransaction: undefined, outMessages: []};
+        }
+      });
       return msg;
     });
     // recursively build message tree
     const buildTree = async (msgHash: string): Promise<MessageTree> => {
       const msg = hashToMsg[msgHash];
-      if (msg.dst === CONSOLE_ADDRESS) {
+      if (msg.dst === CONSOLE_ADDRESS) { // TODO: remove undefined check
         await this.printConsoleMsg(msg as MessageTree);
       }
       const outMessages = await Promise.all(msg.outMessages.map(async (outMsg) => buildTree(outMsg.hash)));
       return {...msg, outMessages};
     }
+
     return await buildTree(msgs[0].hash);
   }
 
@@ -149,7 +156,7 @@ export class TracingInternal {
 
   private async printConsoleMsg(msg: MessageTree) {
     const decoded = await this.ever.rawApi.decodeEvent({
-      body: msg.body,
+      body: msg.body!,
       abi: JSON.stringify(consoleAbi),
       event: "Log",
     });

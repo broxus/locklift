@@ -8,7 +8,7 @@ import {TracingInternal} from "../tracingInternal";
 
 export class Trace<Abi = any> {
   outTraces: Array<Trace> = [];
-  error: null | { phase: "compute" | "action"; code: number; ignored?: boolean } = null;
+  error: null | { phase: "compute" | "action"; code: number | null; ignored?: boolean, reason: string | undefined } = null;
 
   type: TraceType | null = null;
   contract!: ContractWithName;
@@ -53,7 +53,7 @@ export class Trace<Abi = any> {
     }
 
     let skipComputeCheck = false;
-    if (tx && (tx.compute.success || tx.compute.status === "skipped") && !tx.aborted) {
+    if (tx && ((tx.compute.status === 'vm' && tx.compute.success) || tx.compute.status === "skipped") && !tx.aborted) {
       skipComputeCheck = true;
     }
     let skipActionCheck = false;
@@ -62,21 +62,26 @@ export class Trace<Abi = any> {
     }
 
     // error occured during compute phase
-    if (!skipComputeCheck && tx && tx.compute.exitCode !== 0) {
-      this.error = { phase: "compute", code: tx.compute.exitCode };
+    if (!skipComputeCheck && tx) {
+      if (tx.compute.status === "skipped") {
+        this.error = { phase: "compute", code: null, reason: tx.compute.reason };
+      } else {
+        this.error = { phase: "compute", code: tx.compute.exitCode, reason: undefined };
+      }
+      const errCode = this.error.code;
       // we didnt expect this error, save error
       if (
-        isErrorExistsInAllowedArr(allowedCodes.compute, tx.compute.exitCode) ||
-        isErrorExistsInAllowedArr(allowedCodes.contracts?.[this.msg.dst]?.compute, tx.compute.exitCode)
+        isErrorExistsInAllowedArr(allowedCodes.compute, this.error.code) ||
+        isErrorExistsInAllowedArr(allowedCodes.contracts?.[this.msg.dst!]?.compute, this.error.code)
       ) {
         this.error.ignored = true;
       }
     } else if (!skipActionCheck && tx && tx.action && tx.action.resultCode !== 0) {
-      this.error = { phase: "action", code: tx.action.resultCode };
+      this.error = { phase: "action", code: tx.action.resultCode, reason: undefined };
       // we didnt expect this error, save error
       if (
         isErrorExistsInAllowedArr(allowedCodes.action, tx.action.resultCode) ||
-        isErrorExistsInAllowedArr(allowedCodes.contracts?.[this.msg.dst]?.action, tx.action.resultCode)
+        isErrorExistsInAllowedArr(allowedCodes.contracts?.[this.msg.dst!]?.action, tx.action.resultCode)
       ) {
         this.error.ignored = true;
       }
@@ -129,7 +134,7 @@ export class Trace<Abi = any> {
     }
 
     return await decoder({
-      msgBody: this.msg.body,
+      msgBody: this.msg.body!,
       msgType: this.msg.msgType,
       contract,
       initialType: this.type,
