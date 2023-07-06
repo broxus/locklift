@@ -1,13 +1,7 @@
 import {Address, Contract, ProviderRpcClient, TransactionWithAccount} from "everscale-inpage-provider";
 import {consoleAbi, ConsoleAbi} from "../../console.abi";
 import {CONSOLE_ADDRESS} from "./constants";
-import {
-  buildMsgTree,
-  extractAccountsFromMsgTree,
-  extractStringAddress,
-  getDefaultAllowedCodes,
-  throwErrorInConsole
-} from "./utils";
+import {extractAccountsFromMsgTree, extractStringAddress, getDefaultAllowedCodes, throwErrorInConsole} from "./utils";
 import {Trace} from "./trace/trace";
 import {
   AccountData,
@@ -16,15 +10,16 @@ import {
   MessageTree,
   OptionalContracts,
   RevertedBranch,
-  TraceParams
+  TraceParams,
+  TruncatedTransaction
 } from "./types";
 import {Factory} from "../factory";
 import _, {difference} from "lodash";
 import {logger} from "../logger";
 import {ViewTracingTree} from "./viewTraceTree/viewTracingTree";
-import {retryWithDelay} from "../httpService";
 import {extractTransactionFromParams} from "../../utils";
 import {TracingTransport} from "./transport";
+import {decodeRawTransaction, JsRawMessage} from "../../../../nekoton-wasm/pkg";
 
 export class TracingInternal {
   private labelsMap = new Map<string, string>();
@@ -94,11 +89,48 @@ export class TracingInternal {
       this._allowedCodes.action = difference(this._allowedCodes.action || [], codesToRemove.action);
     }
   }
+
+
+  private popKey = (obj: any, key: string): any => {
+    const value = obj[key];
+    delete obj[key];
+    return value;
+  }
+
+  // input transactions are unordered
+  private buildMsgTree = async (transactions: TransactionWithAccount[]): Promise<MessageTree> => {
+    type _ShortMessageTree = JsRawMessage & {
+      dstTransaction: TruncatedTransaction;
+      outMessages: Array<JsRawMessage>;
+    }
+    // restructure transaction inside out for more convenient access in later processing
+    const hashToMsg: {[msg_hash: string]: _ShortMessageTree} = {};
+    const msgs = transactions.map((tx): _ShortMessageTree => {
+      const extendedTx = decodeRawTransaction(tx.boc);
+      const inMsg: JsRawMessage = this.popKey(extendedTx, "inMessage");
+      const description = this.popKey(extendedTx, "description");
+      const outMsgs: JsRawMessage[] = this.popKey(extendedTx, "outMessages");
+      const msg: _ShortMessageTree = {...inMsg, dstTransaction: {...extendedTx, ...description}, outMessages: outMsgs};
+      hashToMsg[msg.hash] = msg;
+      return msg;
+    });
+    // recursively build message tree
+    const buildTree = async (msgHash: string): Promise<MessageTree> => {
+      const msg = hashToMsg[msgHash];
+      if (msg.dst === CONSOLE_ADDRESS) {
+        await this.printConsoleMsg(msg as MessageTree);
+      }
+      const outMessages = await Promise.all(msg.outMessages.map(async (outMsg) => buildTree(outMsg.hash)));
+      return {...msg, outMessages};
+    }
+    return await buildTree(msgs[0].hash);
+  }
+
   // allowed_codes example - {compute: [100, 50, 12], action: [11, 12], "ton_addr": {compute: [60], action: [2]}}
   async trace<T>({ finalizedTx, allowedCodes, raise = true }: TraceParams<T>): Promise<ViewTracingTree | undefined> {
     // @ts-ignore
     const externalTx = extractTransactionFromParams(finalizedTx.extTransaction) as TransactionWithAccount;
-    const msgTree = buildMsgTree([externalTx, ...finalizedTx.transactions]);
+    const msgTree = await this.buildMsgTree([externalTx, ...finalizedTx.transactions]);
     const accounts = extractAccountsFromMsgTree(msgTree);
     const accountDataList = await this.tracingTransport.getAccountsData(accounts);
     const accountDataMap = accountDataList.reduce((acc, accountData) => ({...acc, [accountData.id]: accountData}), {});

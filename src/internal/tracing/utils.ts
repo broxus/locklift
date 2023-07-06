@@ -1,44 +1,8 @@
-import {Addressable, AllowedCodes, MessageTree, RevertedBranch, TraceType, TruncatedTransaction} from "./types";
+import {Addressable, AllowedCodes, MessageTree, RevertedBranch, TraceType} from "./types";
 import {logger} from "../logger";
-import {Address, TransactionWithAccount} from "everscale-inpage-provider";
+import {Address} from "everscale-inpage-provider";
 import BigNumber from "bignumber.js";
-import {decodeRawTransaction, JsRawMessage} from "nekoton-wasm";
 
-
-const popKey= (obj: any, key: string): any => {
-  const value = obj[key];
-  delete obj[key];
-  return value;
-}
-
-// transactions are unordered
-// @ts-ignore
-export const buildMsgTree = (transactions: TransactionWithAccount[]): MessageTree => {
-  type _ShortMessageTree = JsRawMessage & {
-    dstTransaction: TruncatedTransaction;
-    outMessages: Array<JsRawMessage>;
-  }
-  // restructure transaction inside out for more convenient access in later processing
-  const hashToMsg: {[msg_hash: string]: _ShortMessageTree} = {};
-  const msgs = transactions.map((tx): _ShortMessageTree => {
-    const extendedTx = decodeRawTransaction(tx.boc);
-    const inMsg: JsRawMessage = popKey(extendedTx, "inMessage");
-    const description = popKey(extendedTx, "description");
-    const outMsgs: JsRawMessage[] = popKey(extendedTx, "outMessages");
-    const msg: _ShortMessageTree = {...inMsg, dstTransaction: {...extendedTx, ...description}, outMessages: outMsgs};
-    hashToMsg[msg.hash] = msg;
-    return msg;
-  });
-
-  // recursively build message tree
-  const buildTree = (msgHash: string): MessageTree => {
-    const msg = hashToMsg[msgHash];
-    const outMessages = msg.outMessages.map((outMsg) => buildTree(outMsg.hash));
-    return {...msg, outMessages};
-  }
-
-  return buildTree(msgs[0].hash);
-}
 
 export const extractAccountsFromMsgTree = (msgTree: MessageTree): Address[] => {
   const extractAccounts = (msgTree: MessageTree): Address[] => {

@@ -28,7 +28,6 @@ export class TracingGqlConnection implements TracingTransportConnection {
     }`;
     const response = await httpService
       .post<{ data: { accounts: Array<{id: string, code_hash: string}> } }>(this.gqlEndpoint, { query: msgQuery })
-
       .then(res => res.data.data);
     return response.accounts.map(({ id, code_hash }) => ({ id, codeHash: code_hash }));
   }
