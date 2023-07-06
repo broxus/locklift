@@ -117,41 +117,58 @@ class ProviderProxy implements Provider {
 class Connector {
   private readonly provider: ProviderProxy = new ProviderProxy();
   private providerPromise?: Promise<Provider>;
+  private providerResolve?: (provider: Provider) => void;
 
   constructor(private readonly params: ConnectorParams) {}
 
   public asProviderFallback(): () => Promise<Provider> {
     return () => {
-      if (this.providerPromise == null) {
-        this.providerPromise = new Promise<void>(resolve => {
+      if (!this.providerPromise) {
+        this.providerPromise = new Promise<Provider>(resolve => {
+          this.providerResolve = resolve;
+
           const savedProviderKey = this.getCookie('savedProviderKey');
           if (savedProviderKey) {
             const savedProvider = this.getProviderByKey(savedProviderKey);
             if (savedProvider) {
               this.provider.inner = savedProvider;
-              resolve();
-
-              return;
+              this.providerResolve(savedProvider);
+              this.providerResolve = undefined;
             }
           }
+        });
+      }
+      return this.providerPromise;
+    };
+  }
 
-          const onSelect = async (provider: Provider) => {
-            this.provider.inner = provider;
-            resolve();
-            const providerKey = this.getKeyByProvider(provider);
-            if (providerKey) {
-              this.setCookie('savedProviderKey', providerKey, 7);
-            }
-          };
+  public initiateConnection() {
+    if (this.providerResolve) {
+      const savedProviderKey = this.getCookie('savedProviderKey');
+      if (savedProviderKey) {
+        const savedProvider = this.getProviderByKey(savedProviderKey);
+        if (savedProvider) {
+          this.provider.inner = savedProvider;
+          this.providerResolve(savedProvider);
+          this.providerResolve = undefined;
 
-          if (this.selectProvider(onSelect)) {
-            return;
-          }
+          return;
+        }
+      }
 
-          ensurePageLoaded.then(() => {
-            if (this.selectProvider(onSelect)) {
-              return;
-            }
+      const onSelect = async (provider: Provider) => {
+        this.provider.inner = provider;
+        this.providerResolve!(provider);
+        this.providerResolve = undefined;
+        const providerKey = this.getKeyByProvider(provider);
+        if (providerKey) {
+          this.setCookie('savedProviderKey', providerKey, 7);
+        }
+      };
+
+      if (!this.selectProvider(onSelect)) {
+        ensurePageLoaded.then(() => {
+          if (!this.selectProvider(onSelect)) {
             for (const { injected } of this.params.supportedWallets) {
               if (
                 typeof injected.flag !== 'undefined' &&
@@ -163,11 +180,10 @@ class Connector {
                 });
               }
             }
-          });
-        }).then(() => this.provider);
+          }
+        });
       }
-      return this.providerPromise;
-    };
+    }
   }
 
   getProviderByKey(key: string): Provider | undefined {
@@ -193,6 +209,7 @@ class Connector {
 
   selectProvider(onSelect: (provider: Provider) => void): boolean {
     const savedProviderKey = this.getCookie('savedProviderKey');
+
     if (savedProviderKey) {
       const savedProvider = this.getProviderByKey(savedProviderKey);
       if (savedProvider) {
@@ -284,6 +301,13 @@ class Connector {
     document.cookie = name + '=' + (value || '') + expires + '; path=/';
   }
 
+  deleteCookie(name: string) {
+    if (typeof document === 'undefined') {
+      return;
+    }
+    document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/';
+  }
+
   getCookie(name: string) {
     if (typeof document === 'undefined') {
       return null;
@@ -297,6 +321,14 @@ class Connector {
       if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
     }
     return null;
+  }
+
+  disconnectProvider() {
+    this.provider.inner = undefined;
+
+    this.providerPromise = undefined;
+
+    this.deleteCookie('savedProviderKey');
   }
 }
 
@@ -325,6 +357,12 @@ const provider = new ProviderRpcClient({
 });
 
 const connectToWallet = async () => {
+  connector.initiateConnection();
+  const provider = new ProviderRpcClient({
+    forceUseFallback: true,
+    fallback: connector.asProviderFallback(),
+  });
+
   await provider.requestPermissions({
     permissions: ['basic', 'accountInteraction'],
   });
@@ -336,6 +374,8 @@ const changeAccount = async () => {
 
 const disconnect = async () => {
   await provider.disconnect();
+
+  connector.disconnectProvider();
 };
 
 const hasProvider = ref(false);
