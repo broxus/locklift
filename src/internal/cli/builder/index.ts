@@ -27,6 +27,7 @@ export type BuilderConfig = {
   compilerPath: string;
   linkerLibPath: string;
   linkerPath: string;
+  compilerParams?: Array<string>;
   externalContracts: LockliftConfig["compiler"]["externalContracts"];
 };
 type Option = {
@@ -77,19 +78,20 @@ export class Builder {
                   nodeModules ? `--include-path ${nodeModules}` : ""
                 }`;
                 const includePath = `${additionalIncludesPath}`;
-                return promisify(exec)(`cd ${this.options.build} && \
-          ${this.config.compilerPath} ${!this.options.disableIncludePath ? includePath : ""} ${path}`);
+                const execCommand = `cd ${this.options.build} && \
+          ${this.config.compilerPath} ${!this.options.disableIncludePath ? includePath : ""} ${path} ${(
+                  this.config.compilerParams || []
+                ).join(" ")}`;
+                return promisify(exec)(execCommand);
               }
 
               if (semver.gte(this.compilerVersion, "0.68.0")) {
                 const additionalIncludesPath = `${nodeModules ? `--include-path ${nodeModules}` : ""}`;
                 const includePath = `${additionalIncludesPath} ${"--base-path"} . `;
-
-                return promisify(exec)(
-                  ` ${this.config.compilerPath} ${!this.options.disableIncludePath ? includePath : ""} -o ${
-                    this.options.build
-                  }  ${path}`,
-                );
+                const execCommand = ` ${this.config.compilerPath} ${
+                  !this.options.disableIncludePath ? includePath : ""
+                } -o ${this.options.build}  ${path} ${(this.config.compilerParams || []).join(" ")}`;
+                return promisify(exec)(execCommand);
               }
               throw new Error("Unsupported compiler version");
             }).pipe(

@@ -42,6 +42,7 @@ export const compilerConfigResolver = async ({
   const builderConfig: BuilderConfig = {
     includesPath: compiler.includesPath,
     externalContracts: compiler.externalContracts,
+    compilerParams: compiler.compilerParams,
   } as BuilderConfig;
   if ("path" in compiler) {
     builderConfig.compilerPath = compiler.path;
