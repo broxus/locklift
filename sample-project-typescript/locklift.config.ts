@@ -1,5 +1,10 @@
-import { LockliftConfig } from "locklift";
+import { lockliftChai, LockliftConfig } from "locklift";
 import { FactorySource } from "./build/factorySource";
+import * as dotenv from "dotenv";
+import chai from "chai";
+
+dotenv.config();
+chai.use(lockliftChai);
 
 declare global {
   const locklift: import("locklift").Locklift<FactorySource>;
