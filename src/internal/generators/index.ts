@@ -1,7 +1,7 @@
 import fs from "fs";
 import * as fsPath from "path";
 
-import { ExternalCotracts } from "../config";
+import { ExternalContracts } from "../config";
 
 export const typeGenerator = (pathToBuildFolder: string) => {
   const generatedCode = getAbiFiles(pathToBuildFolder)
@@ -69,8 +69,8 @@ const getAbiFiles = (buildPath: string): Array<string> => {
   return fs.readdirSync(buildPath).filter(el => el.endsWith(".abi.json"));
 };
 
-export const copyExternalFiles = (externalCotracts: ExternalCotracts, destinationFolder: string) => {
-  Object.entries(externalCotracts)
+export const copyExternalFiles = (externalContracts: ExternalContracts, destinationFolder: string) => {
+  Object.entries(externalContracts)
     .flatMap(([folderName, contracts]) => {
       const pathToFolder = fsPath.resolve(folderName);
       const files = fs.readdirSync(pathToFolder);

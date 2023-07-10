@@ -3,7 +3,7 @@ import path from "path";
 import commander from "commander";
 import {ProviderRpcClient} from "everscale-inpage-provider";
 import type {Ed25519KeyPair} from "everscale-standalone-client";
-import {ConnectionProperties, NETWORK_PRESETS} from "everscale-standalone-client/nodejs";
+import {ConnectionProperties, NETWORK_PRESETS, ConnectionFactory} from "everscale-standalone-client/nodejs";
 import {Giver} from "../factory";
 import Joi from "joi";
 import {MessageProperties} from "everscale-standalone-client/client";
@@ -17,7 +17,7 @@ export enum ConfigState {
 export interface LockliftConfig<T extends ConfigState = ConfigState.EXTERNAL> {
   compiler: {
     includesPath?: string;
-    externalContracts?: ExternalCotracts;
+    externalContracts?: ExternalContracts;
   } & ({ path: string } | { version: string });
 
   linker:
@@ -53,7 +53,7 @@ export interface NetworkValue<T extends ConfigState = ConfigState.EXTERNAL> {
   };
 }
 
-export type ExternalCotracts = Record<string, Array<string>>;
+export type ExternalContracts = Record<string, Array<string>>;
 export type GiverConfig = {
   address: string;
   giverFactory?: (ever: ProviderRpcClient, keyPair: Ed25519KeyPair, address: string) => Giver;
@@ -122,12 +122,21 @@ export const JoiConfig = Joi.object<LockliftConfig>({
               then: Joi.object({
                 endpoint: Joi.string(),
               }),
-              otherwise: Joi.object().custom((value, helpers) => {
-                if (value instanceof nt.ProxyConnection) {
-                  return value;
-                }
-                return helpers.error("Invalid proxy connection");
-              }),
+            otherwise: Joi.object({
+              connectionFactory: Joi.object().custom((value, helpers) => {
+                return value;
+                // if (value instanceof ConnectionFactory) {
+                //   return value;
+                // }
+                // return helpers.message({"custom": "Invalid proxy connection"});
+              })
+            })
+            // otherwise: Joi.object().custom((value, helpers) => {
+            //   if (value instanceof ConnectionFactory) {
+            //     return value;
+            //   }
+            //   return helpers.message({"custom": "Invalid proxy connection"});
+            // }),
             }),
           }),
         }),
@@ -158,8 +167,7 @@ export function loadConfig(configPath: string): LockliftConfig<ConfigState.INTER
 
   const validationResult = JoiConfig.validate(configFile.default);
   if (validationResult.error) {
-    console.log(validationResult.error.annotate());
-    throw new Error("");
+    throw new Error(validationResult.error.annotate());
   }
   const config = validationResult.value;
   for (const value of Object.values(config.networks)) {

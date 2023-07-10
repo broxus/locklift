@@ -121,7 +121,6 @@ export class Locklift<FactorySource extends FactoryType> {
 
     const accountsStorage = new SimpleAccountsStorage();
     const clock = new Clock();
-    // console.log('AAAAAAAAAAAAAAAAAAAAAA')/////////
     const provider = new ProviderRpcClient({
       fallback: () =>
         EverscaleStandaloneClient.create({
@@ -131,7 +130,6 @@ export class Locklift<FactorySource extends FactoryType> {
           accountsStorage,
         }),
     });
-    // console.log(networkConfig?.connection);
     try {
       await provider.ensureInitialized();
     } catch (e: any) {
