@@ -1,5 +1,5 @@
 {
-  "name": "docs-template",
+  "name": "locklift-docs",
   "private": true,
   "version": "0.0.0",
   "scripts": {
@@ -9,11 +9,10 @@
     "lint:fix": "eslint './**/*.{js,ts,jsx,tsx,vue}' --fix",
     "dev": "npx vitepress dev"
   },
-  "dependencies": {},
   "devDependencies": {
     "@algolia/client-search": "^4.17.2",
-    "@typescript-eslint/eslint-plugin": "^5.60.0",
     "@types/node": "^20.3.1",
+    "@typescript-eslint/eslint-plugin": "^5.60.0",
     "@vitejs/plugin-vue": "^4.2.3",
     "dotenv": "^16.0.3",
     "escodegen": "^2.0.0",
@@ -28,6 +27,7 @@
     "everscale-inpage-provider": "0.3.61",
     "everscale-standalone-client": "2.1.19",
     "flexsearch": "^0.7.31",
+    "locklift": "^2.5.7",
     "rollup": "^3.25.1",
     "sass": "^1.63.6",
     "search-insights": "^1.10.0",
@@ -38,5 +38,8 @@
     "vite-plugin-resolve-extension-vue": "^0.1.0",
     "vitepress": "1.0.0-beta.3",
     "vue": "^3.2.47"
+  },
+  "dependencies": {
+    "eth-ton-abi-converter": "^0.5.2"
   }
 }

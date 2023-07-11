@@ -33,7 +33,7 @@ export default defineComponent({
       });
 
       const providerState = await provider.getProviderState();
-      console.log(providerState);
+
       connected.value = !!providerState.permissions.accountInteraction;
     });
 
