@@ -256,4 +256,39 @@ expect(traceTree)
   .count(1);
 ```
 
-With these methods, Locklift offers a robust and flexible suite for contract testing.
+## Time Movement
+
+In the process of testing smart contracts, you may encounter situations where it is necessary to manipulate time. This is particularly relevant when testing functions that operate based on time-dependent logic, such as those implementing delays or time-locked actions. Locklift's `locklift.testing` module provides a set of utilities specifically designed for these scenarios, available only when operating with a development node.
+
+### Increasing Time
+
+The `locklift.testing.increaseTime` method allows you to advance the local node's time by a specified number of seconds.
+
+```typescript
+// Increase time by 10 seconds
+await locklift.testing.increaseTime(10);
+```
+
+This method increases both your local node and provider time. It's important to note that it's not possible to reverse the time. If you need to reset the offset, you will have to restart the local node.
+
+### Getting Current Time Offset
+
+The `locklift.testing.getTimeOffset` method returns the current time offset in seconds. This can be helpful for tracking the time adjustments you've made.
+
+```typescript
+// Get the current time offset in seconds
+const currentOffsetInSeconds = locklift.testing.getTimeOffset();
+```
+
+### Getting Current Time
+
+To retrieve the current time, you can use the `locklift.testing.getCurrentTime` method. This method returns the current time considering the offset you may have set using `locklift.testing.increaseTime`.
+
+```typescript
+// Get the current time
+const currentTime = locklift.testing.getCurrentTime();
+```
+
+After each run, Locklift synchronizes the provider with the local node. If you see a warning about the current offset, you can ignore it if this is the expected behavior. Otherwise, you should restart the local node.
+
+These utilities are essential for creating precise and accurate tests for your smart contracts, ensuring that they function correctly under different time conditions.
