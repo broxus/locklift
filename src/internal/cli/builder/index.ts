@@ -123,13 +123,14 @@ export class Builder {
             const lib = this.config.linkerLibPath ? ` --lib ${this.config.linkerLibPath} ` : "";
             const resolvedPathCode = resolve(this.options.build, `${contractFileName}.code`);
             const resolvedPathAbi = resolve(this.options.build, `${contractFileName}.abi.json`);
+            const resolvedPathMap = resolve(this.options.build, `${contractFileName}.map.json`);
             return defer(async () => {
               const command = `${
                 this.config.linkerPath
               } compile "${resolvedPathCode}" -a "${resolvedPathAbi}" -o ${resolve(
                 this.options.build,
                 `${contractFileName}.tvc`,
-              )} ${lib}`;
+              )} ${lib} --debug-map ${resolvedPathMap}`;
 
               return promisify(exec)(command);
             }).pipe(
