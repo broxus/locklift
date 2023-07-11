@@ -43,7 +43,7 @@ program
     };
     fs.writeFileSync(path.join(options.path, "./package.json"), JSON.stringify(packageJson, null, 2));
     const dependencies =
-      "npm i --save-dev typescript@4.7.4 prettier chai @types/chai @types/mocha @types/node everscale-standalone-client ts-mocha locklift";
+      "npm i --save-dev typescript@4.7.4 prettier chai @types/chai @types/mocha @types/node everscale-standalone-client ts-mocha locklift dotenv@16.0.3";
     logger.printInfo("Installing required dependencies...");
 
     if (options.path) {

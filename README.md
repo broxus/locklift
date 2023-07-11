@@ -97,6 +97,9 @@ const config: LockliftConfig = {
     // externalContracts: {
     //   "node_modules/broxus-ton-tokens-contracts/build": ['TokenRoot', 'TokenWallet']
     // }
+
+    // Additional comiler params can be added via this field
+    // compilerParams: ["--tvm-version ton"],
   },
   linker: {
     // Specify path to your stdlib

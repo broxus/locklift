@@ -18,6 +18,7 @@ export interface LockliftConfig<T extends ConfigState = ConfigState.EXTERNAL> {
   compiler: {
     includesPath?: string;
     externalContracts?: ExternalContracts;
+    compilerParams?: Array<string>;
   } & ({ path: string } | { version: string });
 
   linker:
@@ -63,11 +64,13 @@ export const JoiConfig = Joi.object<LockliftConfig>({
   compiler: Joi.alternatives([
     Joi.object({
       includesPath: Joi.string().optional(),
+      compilerParams: Joi.array().items(Joi.string()).optional(),
       externalContracts: Joi.object().pattern(Joi.string(), Joi.array().items(Joi.string())),
       path: Joi.string(),
     }),
     Joi.object({
       includesPath: Joi.string().optional(),
+      compilerParams: Joi.array().items(Joi.string()).optional(),
       externalContracts: Joi.object().pattern(Joi.string(), Joi.array().items(Joi.string())),
       version: Joi.string(),
     }),
