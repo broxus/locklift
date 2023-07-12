@@ -20,10 +20,7 @@ export const extractAccountsFromMsgTree = (msgTree: MessageTree): Address[] => {
   return [...new Set(extractAccounts(msgTree))];
 }
 
-export const convert = (number: number, decimals = 9, precision = 4) => {
-  if (number === null) {
-    return null;
-  }
+export const convert = <T>(number: number, decimals = 9, precision = 4): string => {
   return (number / 10 ** decimals).toPrecision(precision);
 };
 
@@ -66,8 +63,8 @@ const printErrorPositionPrediction = (trace: Trace, filename: string, errLine: n
 
   logger.printTracingLog(''.padStart(lastLineLen, ' '), chalk.blueBright.bold('|'));
   let linesToPrint: string[][] = [];
-  lines.map((line:string, i:number) => {
-    if (i < (errLine - offset - 1) || i >=  (errLine + offset)) return;
+  lines.map((line: string, i: number) => {
+    if (i < (errLine - offset - 1) || i >= (errLine + offset)) return;
     const lineNum = `${i + 1}`.padEnd(lastLineLen, ' ');
     if (i === errLine - 1) {
       linesToPrint.push([chalk.redBright.bold(`${lineNum} |`), chalk.redBright(line)]);
@@ -89,17 +86,29 @@ const printErrorPositionPrediction = (trace: Trace, filename: string, errLine: n
 export const throwTrace = (trace: Trace) => {
   // SKIPPED COMPUTE PHASE
   if (trace.error!.phase === 'compute' && trace.error!.reason) {
-    let extendedReason: string = trace.error!.reason;
-    if (extendedReason === 'NoState') {
-      extendedReason = "NoState. Looks like you tried to call a method of a contract that doesn't exist";
+    let errorDescription: string = trace.error!.reason;
+    if (errorDescription === 'NoState') {
+      errorDescription = "NoState. Looks like you tried to call method of contract that doesn't exist";
     }
-    const errorMsg = `!!! Compute phase was skipped with reason: ${extendedReason} !!!`;
+    const errorMsg = `!!! Compute phase was skipped with reason: ${errorDescription} !!!`;
     logger.printError(errorMsg);
     throw new Error(errorMsg);
   }
 
+  let errorDescription = '';
+  if (trace.error?.phase === 'action') {
+    switch (Number(trace.error.code)) {
+      case 33:
+        errorDescription = 'Looks like you tried to send too many (>255) actions in one transaction';
+        break;
+      case 37:
+        errorDescription = 'Looks like you tried to send more EVERs than you can';
+        break;
+    }
+  }
+
   // short common error description
-  const mainErrorMsg = `!!! Reverted with ${trace.error!.code} error code on ${trace.error!.phase} phase !!!`;
+  const mainErrorMsg = `!!! Reverted with ${trace.error!.code} error code on ${trace.error!.phase} phase. ${errorDescription} !!!`;
   logger.printError(mainErrorMsg);
 
   // no trace -> we cant detect line with error
@@ -124,19 +133,20 @@ export const throwTrace = (trace: Trace) => {
   }
   // ACTION PHASE ERROR
   if (tx.action?.success === false) {
-    // TODO: case with too many actions
     // catch all vm steps, where actions are produced
-    const actions_sent = vmTraces.filter(
+    const actionsSent = vmTraces.filter(
       (t) => (t.cmdStr === 'SENDRAWMSG' || t.cmdStr === 'RAWRESERVE' || t.cmdStr === 'SETCODE')
     );
+    let failedAction = tx.action.resultArg;
+    // too many actions, point to 256th action
+    if (Number(tx.action.resultCode) === 33) failedAction = 255;
 
-    const failed_action_step = actions_sent[tx.action.resultArg];
-    const errPosition: ErrorPosition | undefined = contract.map.map[failed_action_step.cmdCodeCellHash][failed_action_step.cmdCodeOffset];
+    const failedActionStep = actionsSent[failedAction];
+    const errPosition: ErrorPosition | undefined = contract.map.map[failedActionStep.cmdCodeCellHash][failedActionStep.cmdCodeOffset];
     if (errPosition === undefined) throw new Error(mainErrorMsg);
     errFilePath = normalizeFilePath(errPosition);
     errLineNum = errPosition.line;
   }
-  console.log(errFilePath!);
   const filename = path.basename(errFilePath!);
   if (filename.endsWith('.tsol') || filename.endsWith('.sol')) {
     printErrorPositionPrediction(trace, errFilePath!, errLineNum!, 4);
@@ -155,13 +165,13 @@ const getContractNameAndMethod = (trace: Trace) => {
   } else if (trace.type === TraceType.BOUNCE) {
     method = "onBounce";
   }
-  return { name, method };
+  return {name, method};
 }
 
 export const throwErrorInConsole = <Abi>(revertedBranch: Array<RevertedBranch<Abi>>) => {
-  for (const { totalActions, actionIdx, traceLog } of revertedBranch) {
+  for (const {totalActions, actionIdx, traceLog} of revertedBranch) {
     const bounce = traceLog.msg.bounce;
-    const { name, method } = getContractNameAndMethod(traceLog);
+    const {name, method} = getContractNameAndMethod(traceLog);
     let paramsStr = "()";
     if (traceLog.decodedMsg) {
       if (Object.values(traceLog.decodedMsg.params || {}).length === 0) {
@@ -208,7 +218,16 @@ export const throwErrorInConsole = <Abi>(revertedBranch: Array<RevertedBranch<Ab
           `Action fees: ${convert(Number(tx.action.totalActionFees))}`,
         );
       }
-      logger.printTracingLog(`\x1b[1mTotal fees:\x1b[22m ${convert(Number(tx.totalFees))}`);
+      logger.printTracingLog(chalk.bold(`Total fees:`), `${convert(Number(tx.totalFees))}`);
+      if (tx.compute.status === 'vm') {
+        const gasLimit = Number(tx.compute.gasLimit) === 0 ? 1000000 : Number(tx.compute.gasLimit);
+        const percentage = ((tx.compute.gasUsed / gasLimit) * 100).toPrecision(2);
+        logger.printTracingLog(
+          chalk.bold(`Gas used:`),
+          `${Number(tx.compute.gasUsed).toLocaleString()}/${gasLimit.toLocaleString()} (${percentage}%)`
+        );
+      }
+
     }
     if (traceLog.error && !traceLog.error.ignored) {
       throwTrace(traceLog);
@@ -228,7 +247,7 @@ export const extractStringAddress = (contract: Addressable) =>
   typeof contract === "string"
     ? contract
     : contract instanceof Address
-    ? contract.toString()
-    : contract.address.toString();
+      ? contract.toString()
+      : contract.address.toString();
 
 export const extractAddress = (contract: Addressable): Address => new Address(extractStringAddress(contract));
