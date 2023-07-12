@@ -89,7 +89,11 @@ const printErrorPositionPrediction = (trace: Trace, filename: string, errLine: n
 export const throwTrace = (trace: Trace) => {
   // SKIPPED COMPUTE PHASE
   if (trace.error!.phase === 'compute' && trace.error!.reason) {
-    const errorMsg = `!!! Compute phase was skipped with reason: ${trace.error!.reason} !!!`;
+    let extendedReason: string = trace.error!.reason;
+    if (extendedReason === 'NoState') {
+      extendedReason = "NoState. Looks like you tried to call a method of a contract that doesn't exist";
+    }
+    const errorMsg = `!!! Compute phase was skipped with reason: ${extendedReason} !!!`;
     logger.printError(errorMsg);
     throw new Error(errorMsg);
   }

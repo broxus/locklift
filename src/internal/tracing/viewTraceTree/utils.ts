@@ -10,7 +10,7 @@ import _ from "lodash";
 import { NameAndType } from "./viewTracingTree";
 
 export const mapType: Record<TraceType, string> = {
-  [TraceType.BOUNCE]: "BONCE",
+  [TraceType.BOUNCE]: "BOUNCE",
   [TraceType.DEPLOY]: "DEPLOY",
   [TraceType.EVENT]: "EVENT",
   [TraceType.EVENT_OR_FUNCTION_RETURN]: "EVENT_OR_RETURN",

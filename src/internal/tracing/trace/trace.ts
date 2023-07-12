@@ -9,7 +9,7 @@ import * as nt from "nekoton-wasm";
 
 export class Trace<Abi = any> {
   outTraces: Array<Trace> = [];
-  error: null | { phase: "compute" | "action"; code: number | null; ignored?: boolean, reason: string | undefined } = null;
+  error: null | { phase: "compute" | "action"; code: number | null; ignored?: boolean, reason: nt.TrComputeSkippedReason | undefined } = null;
   transactionTrace: nt.EngineTraceInfo[] | undefined = undefined;
 
   type: TraceType | null = null;
@@ -59,7 +59,7 @@ export class Trace<Abi = any> {
     }
 
     let skipComputeCheck = false;
-    if (tx && ((tx.compute.status === 'vm' && tx.compute.success) || tx.compute.status === "skipped")) {
+    if (tx && (tx.compute.status === 'vm' && tx.compute.success)) {
       skipComputeCheck = true;
     }
     let skipActionCheck = false;
@@ -82,7 +82,7 @@ export class Trace<Abi = any> {
       }
     } else if (!skipActionCheck && tx && tx.action && tx.action.resultCode !== 0) {
       this.error = { phase: "action", code: tx.action.resultCode, reason: undefined };
-      // we didnt expect this error, save error
+      // we didn't expect this error, save error
       if (
         isErrorExistsInAllowedArr(allowedCodes.action, tx.action.resultCode) ||
         isErrorExistsInAllowedArr(allowedCodes.contracts?.[this.msg.dst!]?.action, tx.action.resultCode)
