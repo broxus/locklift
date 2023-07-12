@@ -20,6 +20,7 @@ import {ViewTracingTree} from "./viewTraceTree/viewTracingTree";
 import {extractTransactionFromParams} from "../../utils";
 import {TracingTransport} from "./transport";
 import {decodeRawTransaction, JsRawMessage} from "nekoton-wasm";
+import {LockliftNetwork} from "@broxus/locklift-network";
 
 export class TracingInternal {
   private labelsMap = new Map<string, string>();
@@ -34,8 +35,9 @@ export class TracingInternal {
   };
   constructor(
     private readonly ever: ProviderRpcClient,
-    private readonly factory: Factory<any>,
+    readonly factory: Factory<any>,
     private readonly tracingTransport: TracingTransport,
+    readonly network: LockliftNetwork
   ) {
     this.consoleContract = new ever.Contract(consoleAbi, new Address(CONSOLE_ADDRESS));
   }
@@ -112,7 +114,7 @@ export class TracingInternal {
       const outMsgs: JsRawMessage[] = this.popKey(extendedTx, "outMessages");
       const msg: _ShortMessageTree = {...inMsg, dstTransaction: {...extendedTx, ...description}, outMessages: outMsgs};
       hashToMsg[msg.hash] = msg;
-      // special move for extOut messages (events), because they dont have dstTransaction
+      // special move for extOut messages (events), because they don't have dstTransaction
       msg.outMessages.map((outMsg) => {
         if (outMsg.dst === undefined) {
           hashToMsg[outMsg.hash] = {...outMsg, dstTransaction: undefined, outMessages: []};
@@ -169,7 +171,7 @@ export class TracingInternal {
     accountData: { [key: string]: AccountData },
   ): Promise<Trace> {
     const trace = new Trace(this, msgTree, null, {accounts: accountData});
-    await trace.buildTree(allowedCodes, this.factory.getContractByCodeHashOrDefault);
+    await trace.buildTree(allowedCodes);
     return trace;
   }
 

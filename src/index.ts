@@ -1,6 +1,6 @@
 import { ProviderRpcClient } from "everscale-inpage-provider";
 import {
-  Clock,
+  Clock, ConnectionProperties,
   EverscaleStandaloneClient,
   SimpleAccountsStorage,
   SimpleKeystore,
@@ -21,6 +21,7 @@ import { getGiverKeyPair } from "./internal/giver/utils";
 import { getGiver } from "./internal/giver";
 import { logger } from "./internal/logger";
 import {TracingTransport} from "./internal/tracing/transport";
+import {LockliftNetwork} from "@broxus/locklift-network";
 
 export * from "everscale-inpage-provider";
 export type { Signer } from "everscale-standalone-client";
@@ -40,6 +41,7 @@ export class Locklift<FactorySource extends FactoryType> {
   #context: LockliftContext | undefined;
   #testing: TimeMovement | undefined;
   #tracing: Tracing | undefined;
+  #network: LockliftNetwork | undefined;
 
   private constructor(
     public readonly provider: ProviderRpcClient,
@@ -85,6 +87,15 @@ export class Locklift<FactorySource extends FactoryType> {
     }
     return this.#factory;
   }
+  set network(network: LockliftNetwork) {
+    this.#network = network;
+  }
+  get network(): LockliftNetwork {
+    if (!this.#network) {
+      throw new Error("Network didn't provided");
+    }
+    return this.#network;
+  }
   set giver(giver: Giver) {
     this.#giver = giver;
   }
@@ -99,7 +110,7 @@ export class Locklift<FactorySource extends FactoryType> {
     config: LockliftConfig<ConfigState.INTERNAL>,
     network?: keyof LockliftConfig["networks"],
   ): Promise<Locklift<T>> {
-    const networkConfig = config.networks[network as string] as NetworkValue<ConfigState.INTERNAL> | undefined;
+    let networkConfig = config.networks[network as string] as NetworkValue<ConfigState.INTERNAL>;
 
     let keystore = new SimpleKeystore();
     if (networkConfig) {
@@ -117,6 +128,14 @@ export class Locklift<FactorySource extends FactoryType> {
       );
 
       keystore.addKeyPair("giver", giverKeys);
+    }
+
+    const proxy_network = new LockliftNetwork();
+    // TODO: fix ts-ignore
+    // @ts-ignore
+    if (networkConfig?.connection?.type === "proxy" && networkConfig?.connection?.data?.connectionFactory === undefined) {
+      // @ts-ignore
+      networkConfig.connection.data.connectionFactory = proxy_network.connectionFactory;
     }
 
     const accountsStorage = new SimpleAccountsStorage();
@@ -159,9 +178,11 @@ export class Locklift<FactorySource extends FactoryType> {
       }
     )()!;
 
+    locklift.network = proxy_network;
     locklift.tracing = createTracing({
       ever: provider,
       features: transactions,
+      network: proxy_network,
       factory,
       tracingTransport
     });

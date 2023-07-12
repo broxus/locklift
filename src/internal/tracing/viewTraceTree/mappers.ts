@@ -1,6 +1,6 @@
 import { ViewTraceTree } from "../types";
 import BigNumber from "bignumber.js";
-import { ContractWithName } from "../../../types";
+import { ContractWithArtifacts } from "../../../types";
 import _ from "lodash";
 import { Address } from "everscale-inpage-provider";
 import { isT } from "../utils";
@@ -28,7 +28,7 @@ export const extractFeeAndSentValueFromMessage = (
 };
 export const mapParams = (
   obj: Record<any, any> | Array<any> | undefined,
-  contracts: Array<ContractWithName | undefined>,
+  contracts: Array<ContractWithArtifacts | undefined>,
   isFullPrint?: boolean,
 ): Record<any, any> => {
   if (Array.isArray(obj)) {
@@ -36,7 +36,7 @@ export const mapParams = (
   }
   return _(obj).mapValues(mapRules(contracts, isFullPrint)).value();
 };
-const mapRules = (contracts: Array<ContractWithName | undefined>, isFullPrint?: boolean) => (value: any) => {
+const mapRules = (contracts: Array<ContractWithArtifacts | undefined>, isFullPrint?: boolean) => (value: any) => {
   if (value instanceof Address) {
     const contractName = contracts?.filter(isT).find(contract => contract.contract.address.equals(value))?.name;
     const contractAddress = isFullPrint

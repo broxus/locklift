@@ -2,18 +2,21 @@ import {CONSOLE_ADDRESS} from "../constants";
 import {AllowedCodes, DecodedMsg, MessageTree, TraceContext, TraceType} from "../types";
 import {Address} from "everscale-inpage-provider";
 
-import {ContractWithName} from "../../../types";
+import {ContractWithArtifacts} from "../../../types";
 import {contractInformation, decoder, isErrorExistsInAllowedArr} from "./utils";
 import {TracingInternal} from "../tracingInternal";
+import * as nt from "nekoton-wasm";
 
 export class Trace<Abi = any> {
   outTraces: Array<Trace> = [];
   error: null | { phase: "compute" | "action"; code: number | null; ignored?: boolean, reason: string | undefined } = null;
+  transactionTrace: nt.EngineTraceInfo[] | undefined = undefined;
 
   type: TraceType | null = null;
-  contract!: ContractWithName;
+  contract!: ContractWithArtifacts;
   decodedMsg: DecodedMsg | undefined = undefined;
   hasErrorInTree = false;
+
   constructor(
     private readonly tracing: TracingInternal,
     readonly msg: MessageTree,
@@ -22,19 +25,22 @@ export class Trace<Abi = any> {
   ) {}
 
   async buildTree(
-    allowedCodes: AllowedCodes = { compute: [], action: [], contracts: { any: { compute: [], action: [] } } },
-    contractGetter: (codeHash: string, address: Address) => ContractWithName<Abi> | undefined,
+    allowedCodes: AllowedCodes = { compute: [], action: [], contracts: { any: { compute: [], action: [] } } }
   ) {
     this.setMsgType();
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const { codeHash, address } = contractInformation({ msg: this.msg, type: this.type!, ctx: this.context});
-    const contract = contractGetter(codeHash || "", new Address(address));
+    const contract = this.tracing.factory.getContractByCodeHashOrDefault(codeHash || "", new Address(address));
 
     this.checkForErrors(allowedCodes);
+    if (this.error && !this.error.ignored) {
+      this.transactionTrace = this.tracing.network.getTxTrace(this.msg.dstTransaction!.hash);
+    }
+
     await this.decode(contract);
     for (const msg of this.msg.outMessages) {
       const trace = new Trace(this.tracing, msg, this, this.context);
-      await trace.buildTree(allowedCodes, contractGetter);
+      await trace.buildTree(allowedCodes);
       if (trace.hasErrorInTree) {
         this.hasErrorInTree = true;
       }
@@ -53,14 +59,13 @@ export class Trace<Abi = any> {
     }
 
     let skipComputeCheck = false;
-    if (tx && ((tx.compute.status === 'vm' && tx.compute.success) || tx.compute.status === "skipped") && !tx.aborted) {
+    if (tx && ((tx.compute.status === 'vm' && tx.compute.success) || tx.compute.status === "skipped")) {
       skipComputeCheck = true;
     }
     let skipActionCheck = false;
     if (tx && tx.action && tx.action.success) {
       skipActionCheck = true;
     }
-
     // error occured during compute phase
     if (!skipComputeCheck && tx) {
       if (tx.compute.status === "skipped") {
@@ -68,8 +73,7 @@ export class Trace<Abi = any> {
       } else {
         this.error = { phase: "compute", code: tx.compute.exitCode, reason: undefined };
       }
-      const errCode = this.error.code;
-      // we didnt expect this error, save error
+      // we didn't expect this error, save error
       if (
         isErrorExistsInAllowedArr(allowedCodes.compute, this.error.code) ||
         isErrorExistsInAllowedArr(allowedCodes.contracts?.[this.msg.dst!]?.compute, this.error.code)
@@ -91,7 +95,7 @@ export class Trace<Abi = any> {
     }
   }
 
-  async decodeMsg(contract: ContractWithName | null = null): Promise<
+  async decodeMsg(contract: ContractWithArtifacts | null = null): Promise<
     | {
         decoded: DecodedMsg;
         finalType: TraceType | null;
@@ -141,7 +145,7 @@ export class Trace<Abi = any> {
     });
   }
 
-  async decode(contract: ContractWithName<Abi> | undefined) {
+  async decode(contract: ContractWithArtifacts<Abi> | undefined) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     this.contract = contract!;
     const decoded = await this.decodeMsg(contract);

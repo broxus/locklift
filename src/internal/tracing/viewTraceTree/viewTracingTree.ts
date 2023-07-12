@@ -13,7 +13,7 @@ import _ from "lodash";
 
 import {AbiEventName, Address, Contract, DecodedEventWithTransaction} from "everscale-inpage-provider";
 import {extractStringAddress, isT} from "../utils";
-import {ContractWithName} from "../../../types";
+import {ContractWithArtifacts} from "../../../types";
 import {
   applyTotalFees,
   calculateTotalFees,
@@ -45,7 +45,7 @@ export class ViewTracingTree {
   msgErrorsStore: ErrorStore;
   constructor(
     viewTraceTree: ViewTraceTree,
-    private readonly contractGetter: (codeHash: string | undefined, address: Address) => ContractWithName<any> | undefined,
+    private readonly contractGetter: (codeHash: string | undefined, address: Address) => ContractWithArtifacts<any> | undefined,
     private readonly accounts: AccountData[]
   ) {
     this.viewTraceTree = applyTotalFees(_.cloneDeep(viewTraceTree));
@@ -162,7 +162,7 @@ export class ViewTracingTree {
   private _beautyPrint = (
     viewTrace: ViewTraceTreeWithTotalFee,
     offset: number,
-    contracts: Array<ContractWithName | undefined>,
+    contracts: Array<ContractWithArtifacts | undefined>,
     printerConfig?: PrinterConfig,
   ): string => {
     let traces = "";

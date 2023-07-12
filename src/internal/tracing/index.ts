@@ -6,12 +6,14 @@ import {Transactions} from "../../utils";
 import {TransactionParameter} from "../../types";
 import {ViewTracingTree} from "./viewTraceTree/viewTracingTree";
 import {TracingTransport} from "./transport";
+import {LockliftNetwork} from "@broxus/locklift-network";
 
 export class Tracing {
   constructor(
     private readonly ever: ProviderRpcClient,
     private readonly tracingInternal: TracingInternal,
     private readonly features: Transactions,
+    private readonly network: LockliftNetwork
   ) {
     this.setContractLabels = tracingInternal.setContractLabels;
   }
@@ -46,13 +48,15 @@ export const createTracing = ({
   ever,
   factory,
   features,
-  tracingTransport
+  tracingTransport,
+  network
 }: {
   ever: ProviderRpcClient;
   factory: Factory<any>;
   features: Transactions;
-  tracingTransport: TracingTransport
+  tracingTransport: TracingTransport,
+  network: LockliftNetwork
 }): Tracing => {
-  const internalTracing = new TracingInternal(ever, factory, tracingTransport);
-  return new Tracing(ever, internalTracing, features);
+  const internalTracing = new TracingInternal(ever, factory, tracingTransport, network);
+  return new Tracing(ever, internalTracing, features, network);
 };

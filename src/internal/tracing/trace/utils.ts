@@ -1,5 +1,5 @@
 import {AllowErrorCodes, DecodedMsg, MessageTree, TraceContext, TraceType} from "../types";
-import { ContractWithName } from "../../../types";
+import { ContractWithArtifacts } from "../../../types";
 import { AbiEventName, AbiFunctionName } from "everscale-inpage-provider";
 import {MessageType} from "nekoton-wasm";
 
@@ -35,7 +35,7 @@ export const decoder = async <Abi>({
   contract,
   initialType,
 }: {
-  contract: ContractWithName<Abi>;
+  contract: ContractWithArtifacts<Abi>;
   msgBody: string;
   msgType: MessageType;
   initialType: TraceType | null;

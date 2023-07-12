@@ -7,7 +7,7 @@ export class TimeMovement {
   constructor(
     private readonly seService: SeService | undefined,
     private readonly clock: Clock,
-    private readonly isEnabled: boolean,
+    readonly isEnabled: boolean,
   ) {}
 
   /*

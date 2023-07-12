@@ -2,7 +2,12 @@ import {Addressable, AllowedCodes, MessageTree, RevertedBranch, TraceType} from 
 import {logger} from "../logger";
 import {Address} from "everscale-inpage-provider";
 import BigNumber from "bignumber.js";
+import {Trace} from "./trace/trace";
+import path from "path";
+import * as process from "process";
+import chalk from "chalk";
 
+const fs = require('fs');
 
 export const extractAccountsFromMsgTree = (msgTree: MessageTree): Address[] => {
   const extractAccounts = (msgTree: MessageTree): Address[] => {
@@ -25,19 +30,134 @@ export const convert = (number: number, decimals = 9, precision = 4) => {
 export const convertForLogger = (amount: number) => new BigNumber(convert(amount, 9, 8) || 0);
 export const hexToValue = (amount: number) => new BigNumber(convert(amount, 9, 9) || 0);
 
+type ErrorPosition = {
+  filename: string,
+  line: number
+}
+
+
+const normalizeFilePath = (errorPosition: ErrorPosition) => {
+  let errFilePath = errorPosition.filename;
+  // contracts paths look like: "../contracts/ContractName.tsol"
+  if (errFilePath.startsWith('../contracts/')) {
+    errFilePath = path.resolve(process.cwd(), errFilePath.split('../')[1]);
+  }
+  // .code paths look like: "ContractName.code"
+  if (errFilePath.endsWith('.code')) {
+    errFilePath = path.resolve(process.cwd(), 'build', errFilePath);
+  }
+  return errFilePath;
+}
+
+
+const printErrorPositionPrediction = (trace: Trace, filename: string, errLine: number, offset: number) => {
+  const err_file = fs.readFileSync(filename, 'utf8');
+  let lines = err_file.split('\n');
+  const lastLineLen = `${errLine + offset}`.length;
+
+  const {name, method} = getContractNameAndMethod(trace);
+
+  logger.printTracingLog(
+    ''.padStart(lastLineLen - 1, ' '),
+    chalk.blueBright.bold('-->'),
+    chalk.bold(`${name}.${method} (${path.basename(filename)}:${errLine})`)
+  )
+
+
+  logger.printTracingLog(''.padStart(lastLineLen, ' '), chalk.blueBright.bold('|'));
+  let linesToPrint: string[][] = [];
+  lines.map((line:string, i:number) => {
+    if (i < (errLine - offset - 1) || i >=  (errLine + offset)) return;
+    const lineNum = `${i + 1}`.padEnd(lastLineLen, ' ');
+    if (i === errLine - 1) {
+      linesToPrint.push([chalk.redBright.bold(`${lineNum} |`), chalk.redBright(line)]);
+    } else {
+      linesToPrint.push([chalk.blueBright.bold(`${lineNum} |`), line]);
+    }
+  });
+
+  const firstNotEmpty = linesToPrint.findIndex((line) => line[1].trim() !== '');
+  const lastNotEmpty = linesToPrint.length - linesToPrint.reverse().findIndex((line) => line[1].trim() !== '');
+
+  linesToPrint.reverse().slice(firstNotEmpty, lastNotEmpty).map((line) => {
+    logger.printTracingLog(...line)
+  })
+
+  logger.printTracingLog(''.padStart(lastLineLen, ' '), chalk.blueBright.bold('|'));
+}
+
+export const throwTrace = (trace: Trace) => {
+  // SKIPPED COMPUTE PHASE
+  if (trace.error!.phase === 'compute' && trace.error!.reason) {
+    const errorMsg = `!!! Compute phase was skipped with reason: ${trace.error!.reason} !!!`;
+    logger.printError(errorMsg);
+    throw new Error(errorMsg);
+  }
+
+  // short common error description
+  const mainErrorMsg = `!!! Reverted with ${trace.error!.code} error code on ${trace.error!.phase} phase !!!`;
+  logger.printError(mainErrorMsg);
+
+  // no trace -> we cant detect line with error
+  if (trace.transactionTrace === undefined) throw new Error(mainErrorMsg);
+  const vmTraces = trace.transactionTrace;
+
+  // no debug-map -> we cant detect line with error
+  if (trace.contract.map === undefined) throw new Error(mainErrorMsg);
+  const contract = trace.contract;
+
+  const tx = trace.msg.dstTransaction!;
+  let errFilePath: string;
+  let errLineNum: number;
+  // COMPUTE PHASE ERROR
+  if (tx.compute.status === 'vm' && !tx.compute.success) {
+    // last vm step is the error position
+    const lastStep = vmTraces.pop()!;
+    const errPosition: ErrorPosition | undefined = contract.map.map[lastStep.cmdCodeCellHash][lastStep.cmdCodeOffset];
+    if (errPosition === undefined) throw new Error(mainErrorMsg);
+    errFilePath = normalizeFilePath(errPosition);
+    errLineNum = errPosition.line;
+  }
+  // ACTION PHASE ERROR
+  if (tx.action?.success === false) {
+    // TODO: case with too many actions
+    // catch all vm steps, where actions are produced
+    const actions_sent = vmTraces.filter(
+      (t) => (t.cmdStr === 'SENDRAWMSG' || t.cmdStr === 'RAWRESERVE' || t.cmdStr === 'SETCODE')
+    );
+
+    const failed_action_step = actions_sent[tx.action.resultArg];
+    const errPosition: ErrorPosition | undefined = contract.map.map[failed_action_step.cmdCodeCellHash][failed_action_step.cmdCodeOffset];
+    if (errPosition === undefined) throw new Error(mainErrorMsg);
+    errFilePath = normalizeFilePath(errPosition);
+    errLineNum = errPosition.line;
+  }
+  console.log(errFilePath!);
+  const filename = path.basename(errFilePath!);
+  if (filename.endsWith('.tsol') || filename.endsWith('.sol')) {
+    printErrorPositionPrediction(trace, errFilePath!, errLineNum!, 4);
+  }
+  throw new Error(mainErrorMsg);
+}
+
+const getContractNameAndMethod = (trace: Trace) => {
+  let name = "undefinedContract";
+  if (trace.contract) {
+    name = trace.contract.name;
+  }
+  let method = "undefinedMethod";
+  if (trace.decodedMsg?.method) {
+    method = trace.decodedMsg.method;
+  } else if (trace.type === TraceType.BOUNCE) {
+    method = "onBounce";
+  }
+  return { name, method };
+}
+
 export const throwErrorInConsole = <Abi>(revertedBranch: Array<RevertedBranch<Abi>>) => {
   for (const { totalActions, actionIdx, traceLog } of revertedBranch) {
     const bounce = traceLog.msg.bounce;
-    let name = "undefinedContract";
-    if (traceLog.contract) {
-      name = traceLog.contract.name;
-    }
-    let method = "undefinedMethod";
-    if (traceLog.decodedMsg?.method) {
-      method = traceLog.decodedMsg.method;
-    } else if (traceLog.type === TraceType.BOUNCE) {
-      method = "onBounce";
-    }
+    const { name, method } = getContractNameAndMethod(traceLog);
     let paramsStr = "()";
     if (traceLog.decodedMsg) {
       if (Object.values(traceLog.decodedMsg.params || {}).length === 0) {
@@ -68,7 +188,7 @@ export const throwErrorInConsole = <Abi>(revertedBranch: Array<RevertedBranch<Ab
     }
     // bold tag
     logger.printTracingLog(
-      `\x1b[1m${name}.${method}\x1b[22m{value: ${convert(traceLog.msg.value)}, bounce: ${bounce}}${paramsStr}`,
+      `\x1b[1m${name}.${method}\x1b[22m{value: ${convert(Number(traceLog.msg.value))}, bounce: ${bounce}}${paramsStr}`,
     );
     if (traceLog.msg.dstTransaction) {
       const tx = traceLog.msg.dstTransaction;
@@ -87,16 +207,7 @@ export const throwErrorInConsole = <Abi>(revertedBranch: Array<RevertedBranch<Ab
       logger.printTracingLog(`\x1b[1mTotal fees:\x1b[22m ${convert(Number(tx.totalFees))}`);
     }
     if (traceLog.error && !traceLog.error.ignored) {
-      let errorMsg;
-      // special case
-      if (traceLog.error.phase === 'compute' && traceLog.error.reason) {
-        errorMsg = `!!! Compute phase was skipped with reason: ${traceLog.error.reason} !!!`;
-      } else {
-        errorMsg = `!!! Reverted with ${traceLog.error.code} error code on ${traceLog.error.phase} phase !!!`;
-      }
-      // red tag
-      logger.printError("\x1b[31m", errorMsg,);
-      throw new Error(errorMsg);
+      throwTrace(traceLog);
     }
   }
 };

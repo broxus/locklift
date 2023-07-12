@@ -2,7 +2,7 @@ import { Address, Contract, GetExpectedAddressParams, ProviderRpcClient } from "
 import path from "path";
 import dirTree from "directory-tree";
 
-import { ConstructorParams, ContractWithName, DeployTransaction, Optional } from "../../types";
+import { ConstructorParams, ContractWithArtifacts, DeployTransaction, Optional } from "../../types";
 import * as utils from "../../utils";
 import { Giver } from "./giver";
 import { Deployer } from "./deployer";
@@ -19,6 +19,7 @@ export type ContractData<Abi> = {
   tvc: string;
   abi: Abi;
   codeHash: string;
+  map: ReturnType<typeof JSON.parse>;
 };
 
 type CacheType<T extends FactoryType, key extends keyof T> = Record<key, ContractData<key>>;
@@ -102,6 +103,7 @@ export class Factory<T extends FactoryType> {
     }
 
     const abi = utils.loadJSONFromFile(path.resolve(resolvedPath, (name as string) + ".abi.json"));
+    const map = utils.loadJSONFromFile(path.resolve(resolvedPath, (name as string) + ".map.json"));
 
     if (!abi) {
       throw new Error(`Not found ABI of Contract ${name as string}`);
@@ -119,6 +121,7 @@ export class Factory<T extends FactoryType> {
       code,
       abi,
       codeHash,
+      map
     };
   };
 
@@ -126,25 +129,26 @@ export class Factory<T extends FactoryType> {
     return this.factoryCache[name] as ContractData<T[key]>;
   };
 
-  public getAllArtifacts = (): Array<{ contractName: keyof T; artifacts: ContractData<T[keyof T]> }> => {
+  public getAllArtifacts = (): Array<{ contractName: string; artifacts: ContractData<T[keyof T]> }> => {
     return Object.entries(this.factoryCache).map(([contractName, artifacts]) => ({
       contractName,
       artifacts,
-    })) as unknown as Array<{ contractName: keyof T; artifacts: ContractData<T[keyof T]> }>;
+    })) as unknown as Array<{ contractName: string; artifacts: ContractData<T[keyof T]> }>;
   };
 
-  public getContractByCodeHash = (codeHash: string | undefined, address: Address): ContractWithName | undefined => {
+  public getContractByCodeHash = (codeHash: string | undefined, address: Address): ContractWithArtifacts | undefined => {
     const contractArtifacts = this.getAllArtifacts().find(({ artifacts }) => artifacts.codeHash === codeHash);
 
-    return (
-      contractArtifacts && {
+    if (contractArtifacts) {
+      return {
         contract: this.getDeployedContract(contractArtifacts.contractName, address),
-        name: contractArtifacts.contractName as string,
-      }
-    );
+        name: contractArtifacts.contractName,
+        ...contractArtifacts.artifacts
+      };
+    }
   };
 
-  public getContractByCodeHashOrDefault = (codeHash: string, address: Address): ContractWithName => {
+  public getContractByCodeHashOrDefault = (codeHash: string, address: Address): ContractWithArtifacts => {
     const existingContract = this.getContractByCodeHash(codeHash, address);
     if (existingContract) {
       return existingContract;
@@ -153,6 +157,11 @@ export class Factory<T extends FactoryType> {
     return {
       contract: new this.ever.Contract(emptyContractAbi, address),
       name: contractName,
+      code: '',
+      codeHash: '',
+      abi: {},
+      map: {},
+      tvc: ''
     };
   };
 

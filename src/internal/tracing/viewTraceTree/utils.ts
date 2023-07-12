@@ -1,7 +1,7 @@
 import { BalanceChangeInfoStorage, MsgError, TraceType, ViewTraceTree, ViewTraceTreeWithTotalFee } from "../types";
 import chalk from "chalk";
 
-import { ContractWithName } from "../../../types";
+import { ContractWithArtifacts } from "../../../types";
 import { convertForLogger, extractAddress } from "../utils";
 
 import { extractFeeAndSentValueFromMessage, mapParams } from "./mappers";
@@ -55,7 +55,7 @@ export type PrinterProps = Pick<
 >;
 export const printer = (
   { type, decodedMsg, contract, totalFees, sentValue, value, balanceChange, error }: PrinterProps,
-  { contracts }: { contracts: Array<ContractWithName | undefined> },
+  { contracts }: { contracts: Array<ContractWithArtifacts | undefined> },
   printerConfig: PrinterConfig = {} as PrinterConfig,
 ): string => {
   const valueParams = `{valueReceive: ${convertForLogger(value.toNumber())},valueSent: ${convertForLogger(
