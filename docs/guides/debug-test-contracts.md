@@ -145,7 +145,7 @@ After running the above, you will see this in your terminal:
 You called testFunc with input = 10
 ```
 
-:::warning Caution
+:::warning ⚠️ Caution
 
 It's important to note that `console.log` is just an event, so if your message drops on the computed phase (for instance, if `required` doesn't pass), you will not see the log message.
 
@@ -233,7 +233,9 @@ The `locklift.testing.increaseTime` method allows you to advance the local node'
 await locklift.testing.increaseTime(10);
 ```
 
+:::warning ⚠️ Caution
 This method increases both your local node and provider time. It's important to note that it's not possible to reverse the time. If you need to reset the offset, you will have to restart the local node.
+:::
 
 ### Getting Current Time Offset
 

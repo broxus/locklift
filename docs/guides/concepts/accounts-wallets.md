@@ -13,19 +13,19 @@ An account is characterized by its address, which is a deterministic value deriv
 
 ## Account Lifecycle
 
-### Account Creation
+### Creation
 
 Initially, an account does not exist in the blockchain. To create a record of it, we first calculate the address of the future contract (i.e., `hash(hash(code) + hash(initial data))`) and send the required amount of native coins to this address with a special flag `bounce = false`. This flag indicates that if the recipient account does not exist, or if an error occurred during message processing, the coins should remain at this address rather than being sent back with a special error message.
 
 After this process, we get an account in the blockchain with the status `Uninitialized`. This means that we have a record of the account in the blockchain, but no data and code.
 
-### Account Activation
+### Activation
 
 To transition an account to the `Active` status, we need to send a specially formulated message containing the data and code of this contract. Anyone can send such a message. Validators will verify that the contract address equals `hash(hash(code) + hash(data))`, and if everything matches, the account will be initialized. This message can also include a function to be called immediately after account activation, along with its arguments. By default, the constructor is called.
 
 Once the account becomes active, it can accept incoming internal and external messages. Every time an account receives a message, a transaction begins, during which the account can create up to 255 outgoing internal messages.
 
-### Account Utilization
+### Utilization
 
 To create a wallet in the network, we simply create a private/public key pair, take the code of our wallet, calculate the address from the code + public key, and send native coins to this address. Once there are coins, we can initialize the wallet and start using it.
 
@@ -35,9 +35,9 @@ Also, during a transaction, a contract can create an outgoing message with a spe
 
 ## Account Abstraction
 
-Account Abstraction (AA) is a fundamental concept in TVM blockchains. Unlike certain other blockchain (like a EVM) architectures, where AA is complex and requires changes to core protocol, TVM-based blockchains have a natively built-in, more user-friendly AA design. This approach is aimed at facilitating extended wallet functionality, enhancing security, and improving user experience.
+Account Abstraction (AA) is a fundamental concept in TVM blockchains. Unlike certain other blockchain (like a EVM) architectures, where AA is complex and requires changes to core protocol, TVM blockchains have a natively built-in, more user-friendly AA design. This approach is aimed at facilitating extended wallet functionality, enhancing security, and improving user experience.
 
-### Account Overview
+### Overview
 
 In this framework, whether it's a native coin or a TIP-3 token, value can only move as an outcome of smart contract code execution. There are no Externally Owned Accounts (EOA), just Accounts, which are "abstract".
 
@@ -59,4 +59,4 @@ On TVM, the `SETCODE` instruction allows an account to self-upgrade using any co
 
 The driving force behind AA is to give developers the power to implement the ownership model, based on the concept that "code is law".
 
-For TVM-based blockchains, formally verified implementations for singlesig/multisig are available, along with an upgradable version. This facilitates the creation of any logic and integration on top, keeping the address unchanged.
+For TVM blockchains, formally verified implementations for singlesig/multisig are available, along with an upgradable version. This facilitates the creation of any logic and integration on top, keeping the address unchanged.
