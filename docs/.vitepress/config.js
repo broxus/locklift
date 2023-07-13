@@ -74,6 +74,7 @@ module.exports = {
             text: 'Debugging & Testing Contracts',
             link: '/guides/debug-test-contracts.md',
           },
+          { text: 'Deploying Contracts', link: '/guides/deploying-contracts.md' },
         ],
       },
       // {
