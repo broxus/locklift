@@ -186,14 +186,6 @@ const response = await sample.methods.getDetails({}).call();
 This class is part of the Everscale Inpage Provider functionality. For a comprehensive overview of its features and potential, you can check out the [API reference here](https://docs.broxus.com/api-reference/contract.html). Additionally, to understand better how to interact with contracts, consult the dedicated guide available [here](https://docs.broxus.com/guides/3.2-working-with-contracts.html#contract-wrapper).
 :::
 
-I understand your feedback. Let's revise the structure and provide more details about wallets. Here's an updated version:
-
----
-
-Apologies for the confusion, let's revise the wallet section to correctly reflect the types of wallets available in the Locklift framework:
-
----
-
 ## Wallets and Accounts (`locklift.factory.accounts`)
 
 Locklift offers an extensive framework for managing wallets and accounts, which are crucial in TVM blockchains. This document covers the deployment of new wallets or accounts, retrieval of existing ones, and their interaction using Locklift.
@@ -396,3 +388,60 @@ const Account = accountsFactory.getAccount(
   signer.publicKey
 );
 ```
+
+## Giver (`locklift.giver`)
+
+The Giver module in Locklift is akin to a specialized smart contract designed with the specific role of distributing tokens. In the context of the local node (sandbox), a preset Giver exists, already equipped with native tokens for your convenience.
+
+Here's how you can define the Giver for different networks within your Locklift configuration:
+
+```typescript
+networks: {
+  local: {
+    // The default Giver for a local node is giverV2
+    giver: {
+      address: "0:ece57bcc6c530283becbbd8a3b24d3c5987cdddc3c8b7b33be6e4a6312490415",
+      key: "172af540e43a524763dd53b26a066d472a97c4de37d5498170564510608250c3",
+      // To use a custom giver, uncomment and modify the following line
+      // giverFactory: (ever, keyPair, address) => new SimpleGiver(ever, keyPair, address),
+    },
+  },
+  mainnet: {
+    // On the mainnet, the default SafeMultisig wallet serves as the Giver
+    giver: {
+      address: "0:ece57bcc6c530283becbbd8a3b24d3c5987cdddc3c8b7b33be6e4a6312490415",
+      // Instead of a key, a bip39 phrase can be used
+      phrase: "action inject penalty envelope rabbit element slim tornado dinner pizza off blood",
+      accountId: 0,
+    },
+  },
+},
+```
+
+One of the key functionalities offered by the `TestnetGiver` is a `sendTo` method, defined via a specified ABI:
+
+```typescript
+declare const testnetGiverAbi: {
+  readonly 'ABI version': 2;
+  readonly header: readonly ['pubkey', 'time', 'expire'];
+  readonly functions: readonly [
+    {
+      readonly name: 'sendGrams';
+      readonly inputs: readonly [
+        {
+          readonly name: 'dest';
+          readonly type: 'address';
+        },
+        {
+          readonly name: 'amount';
+          readonly type: 'uint64';
+        }
+      ];
+      readonly outputs: readonly [];
+    }
+  ];
+  readonly events: readonly [];
+};
+```
+
+The `sendGrams` function is central to the Giver module. It facilitates the token transfer process from the Giver to any specified address.
