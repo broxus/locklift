@@ -25,6 +25,7 @@ module.exports = {
     'src/pages/concepts/transaction-finalization.md': 'concepts/transaction-finalization.md',
     'src/pages/concepts/compute-action-phases.md': 'concepts/compute-action-phases.md',
     'src/pages/advanced/compilation-artifacts.md': 'advanced/compilation-artifacts.md',
+    'src/pages/advanced/building-plugins.md': 'advanced/building-plugins.md',
   },
   themeConfig: {
     search: {
@@ -102,6 +103,10 @@ module.exports = {
           {
             text: 'Compilation Artifacts',
             link: 'advanced/compilation-artifacts.md',
+          },
+          {
+            text: 'Building plugins',
+            link: 'advanced/building-plugins.md',
           },
         ],
       },
