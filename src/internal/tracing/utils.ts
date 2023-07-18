@@ -1,4 +1,4 @@
-import {Addressable, AllowedCodes, MessageTree, RevertedBranch, TraceType, TruncatedTransaction} from "./types";
+import { Addressable, AllowedCodes, MessageTree, RevertedBranch, TraceType, TruncatedTransaction } from "./types";
 import { logger } from "../logger";
 import { Address } from "everscale-inpage-provider";
 import BigNumber from "bignumber.js";
@@ -6,7 +6,7 @@ import { Trace } from "./trace/trace";
 import path from "path";
 import * as process from "process";
 import chalk from "chalk";
-import {EngineTraceInfo} from "nekoton-wasm";
+import { EngineTraceInfo } from "nekoton-wasm";
 
 const fs = require("fs");
 
@@ -113,9 +113,7 @@ export const throwTrace = (trace: Trace) => {
   }
 
   // short common error description
-  const mainErrorMsg = `!!! Reverted with ${trace.error?.code} error code on ${
-    trace.error?.phase
-  } phase. ${errorDescription} !!!`;
+  const mainErrorMsg = `!!! Reverted with ${trace.error?.code} error code on ${trace.error?.phase} phase. ${errorDescription} !!!`;
   logger.printError(mainErrorMsg);
 
   // no trace -> we cant detect line with error

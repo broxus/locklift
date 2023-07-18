@@ -71,10 +71,10 @@ export const createTimeMovement = async (
       const rpcUrl = connectionConfig.connection.data.endpoints[0];
       const rpcOrigin = new URL(rpcUrl).origin;
       const seService = new SeService(rpcOrigin);
-      const {currentOffsetInSeconds, isEnabled} = await seService
+      const { currentOffsetInSeconds, isEnabled } = await seService
         .getCurrentOffsetTime()
-        .then(currentOffsetInSeconds => ({currentOffsetInSeconds, isEnabled: true}))
-        .catch(() => ({isEnabled: false, currentOffsetInSeconds: 0}));
+        .then(currentOffsetInSeconds => ({ currentOffsetInSeconds, isEnabled: true }))
+        .catch(() => ({ isEnabled: false, currentOffsetInSeconds: 0 }));
       if (currentOffsetInSeconds > 0) {
         logger.printWarn(
           `Current SE time delta is ${currentOffsetInSeconds} seconds. Provider will sync with this offset`,
