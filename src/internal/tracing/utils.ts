@@ -47,7 +47,7 @@ const normalizeFilePath = (errorPosition: ErrorPosition) => {
 }
 
 
-const printErrorPositionPrediction = (trace: Trace, filename: string, errLine: number, offset: number) => {
+const printErrorPositionSnippet = (trace: Trace, filename: string, errLine: number, offset: number) => {
   const err_file = fs.readFileSync(filename, 'utf8');
   let lines = err_file.split('\n');
   const lastLineLen = `${errLine + offset}`.length;
@@ -84,6 +84,12 @@ const printErrorPositionPrediction = (trace: Trace, filename: string, errLine: n
 }
 
 export const throwTrace = (trace: Trace) => {
+
+  // const _trace = trace.transactionTrace!.map((trace) => JSON.stringify(trace)).join('\n');
+  // fs.writeFileSync('log.json', _trace);
+
+
+  logger.printTracingLog(chalk.redBright('-----------------------------------------------------------------'))
   // SKIPPED COMPUTE PHASE
   if (trace.error!.phase === 'compute' && trace.error!.reason) {
     let errorDescription: string = trace.error!.reason;
@@ -149,7 +155,7 @@ export const throwTrace = (trace: Trace) => {
   }
   const filename = path.basename(errFilePath!);
   if (filename.endsWith('.tsol') || filename.endsWith('.sol')) {
-    printErrorPositionPrediction(trace, errFilePath!, errLineNum!, 4);
+    printErrorPositionSnippet(trace, errFilePath!, errLineNum!, 2);
   }
   throw new Error(mainErrorMsg);
 }

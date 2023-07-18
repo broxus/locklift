@@ -37,10 +37,12 @@ export type AccountData = {
   id: string;
 };
 
+export type TransactionWithAccountAndBoc = TransactionWithAccount & { boc: string };
+
 export type RevertedBranch<Abi = unknown> = { totalActions: number; traceLog: Trace<Abi>; actionIdx: number };
 export type WaitFinalizedOutput<T> = {
   extTransaction: T;
-  transactions: Array<TransactionWithAccount>;
+  transactions: Array<TransactionWithAccountAndBoc>;
 }
 export type TraceParams<T> = {
   finalizedTx: WaitFinalizedOutput<T>;

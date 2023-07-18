@@ -1,11 +1,11 @@
 import fs from "fs";
 import BigNumber from "bignumber.js";
-import {ProviderRpcClient, Transaction, TransactionWithAccount} from "everscale-inpage-provider";
+import {ProviderRpcClient, Transaction} from "everscale-inpage-provider";
 import {getPublicKey, KeyPair} from "everscale-crypto";
 
 import {Dimension} from "../constants";
 import {TransactionParameter} from "../types";
-import {WaitFinalizedOutput} from "../internal/tracing/types";
+import {TransactionWithAccountAndBoc, WaitFinalizedOutput} from "../internal/tracing/types";
 
 export const loadJSONFromFile = (filePath: string): ReturnType<typeof JSON.parse> | undefined => {
   try {
@@ -90,7 +90,7 @@ export class Transactions {
 
     const transactions = await subscription
       .trace(extractTransactionFromParams(extTransaction))
-      .fold([] as Array<TransactionWithAccount>, (acc, n) => [...acc, n])
+      .fold([] as Array<TransactionWithAccountAndBoc>, (acc, n: any) => [...acc, n])
     await subscription.unsubscribe();
     return {extTransaction, transactions};
   };

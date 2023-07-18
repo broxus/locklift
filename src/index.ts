@@ -147,7 +147,10 @@ export class Locklift<FactorySource extends FactoryType> {
           keystore,
           clock,
           accountsStorage,
-        }),
+        }).then((client) => {
+          client.setPollingInterval(5);
+          return client;
+        })
     });
     try {
       await provider.ensureInitialized();

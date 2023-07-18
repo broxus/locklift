@@ -10,7 +10,7 @@ import {
   MessageTree,
   OptionalContracts,
   RevertedBranch,
-  TraceParams,
+  TraceParams, TransactionWithAccountAndBoc,
   TruncatedTransaction
 } from "./types";
 import {Factory} from "../factory";
@@ -100,7 +100,7 @@ export class TracingInternal {
   }
 
   // input transactions are unordered
-  private buildMsgTree = async (transactions: TransactionWithAccount[]): Promise<MessageTree> => {
+  private buildMsgTree = async (transactions: TransactionWithAccountAndBoc[]): Promise<MessageTree> => {
     type _ShortMessageTree = JsRawMessage & {
       dstTransaction: TruncatedTransaction | undefined;
       outMessages: Array<JsRawMessage>;
@@ -138,7 +138,7 @@ export class TracingInternal {
   // allowed_codes example - {compute: [100, 50, 12], action: [11, 12], "ton_addr": {compute: [60], action: [2]}}
   async trace<T>({ finalizedTx, allowedCodes, raise = true }: TraceParams<T>): Promise<ViewTracingTree | undefined> {
     // @ts-ignore
-    const externalTx = extractTransactionFromParams(finalizedTx.extTransaction) as TransactionWithAccount;
+    const externalTx = extractTransactionFromParams(finalizedTx.extTransaction) as TransactionWithAccountAndBoc;
     const msgTree = await this.buildMsgTree([externalTx, ...finalizedTx.transactions]);
     const accounts = extractAccountsFromMsgTree(msgTree);
     const accountDataList = await this.tracingTransport.getAccountsData(accounts);
