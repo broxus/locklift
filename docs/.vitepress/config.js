@@ -26,6 +26,7 @@ module.exports = {
     'src/pages/concepts/compute-action-phases.md': 'concepts/compute-action-phases.md',
     'src/pages/advanced/compilation-artifacts.md': 'advanced/compilation-artifacts.md',
     'src/pages/advanced/building-plugins.md': 'advanced/building-plugins.md',
+    'src/pages/plugins.md': 'plugins.md',
   },
   themeConfig: {
     search: {
@@ -109,6 +110,21 @@ module.exports = {
             link: 'advanced/building-plugins.md',
           },
         ],
+      },
+      {
+        text: 'Plugins',
+        //collapsable: false,
+        link: 'plugins.md',
+        // items: [
+        //   {
+        //     text: 'Official Plugins',
+        //     link: 'plugins/official-plugins.md',
+        //   },
+        //   {
+        //     text: 'Community Plugins',
+        //     link: 'plugins/community-plugins.md',
+        //   },
+        // ],
       },
       // {
       //   text: 'API Reference',
