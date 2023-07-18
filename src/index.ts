@@ -1,6 +1,6 @@
 import { ProviderRpcClient } from "everscale-inpage-provider";
 import {
-  Clock, ConnectionProperties,
+  Clock,
   EverscaleStandaloneClient,
   SimpleAccountsStorage,
   SimpleKeystore,
@@ -20,8 +20,8 @@ import { initializeExtenders } from "./plugins/utils";
 import { getGiverKeyPair } from "./internal/giver/utils";
 import { getGiver } from "./internal/giver";
 import { logger } from "./internal/logger";
-import {TracingTransport} from "./internal/tracing/transport";
-import {LockliftNetwork} from "@broxus/locklift-network";
+import { TracingTransport } from "./internal/tracing/transport";
+import { LockliftNetwork } from "@broxus/locklift-network";
 
 export * from "everscale-inpage-provider";
 export type { Signer } from "everscale-standalone-client";
@@ -46,22 +46,25 @@ export class Locklift<FactorySource extends FactoryType> {
   private constructor(
     public readonly provider: ProviderRpcClient,
     public readonly keystore: SimpleKeystore,
-
     private readonly clock: Clock,
     public readonly transactions: Transactions,
   ) {}
+
   set tracing(tracing: Tracing) {
     this.#tracing = tracing;
   }
+
   get tracing(): Tracing {
     if (!this.#tracing) {
       throw new Error("Testing module not provided");
     }
     return this.#tracing;
   }
+
   set testing(testing: TimeMovement) {
     this.#testing = testing;
   }
+
   get testing(): TimeMovement {
     if (!this.#testing) {
       throw new Error("Testing module not provided");
@@ -72,33 +75,40 @@ export class Locklift<FactorySource extends FactoryType> {
   set context(context: LockliftContext) {
     this.#context = context;
   }
+
   get context(): LockliftContext {
     if (!this.#context) {
       throw new Error("Context not provided, need to provide the network name");
     }
     return this.#context;
   }
+
   set factory(factory: Factory<FactorySource>) {
     this.#factory = factory;
   }
+
   get factory(): Factory<FactorySource> {
     if (!this.#factory) {
       throw new Error("Factory didn't provided");
     }
     return this.#factory;
   }
+
   set network(network: LockliftNetwork) {
     this.#network = network;
   }
+
   get network(): LockliftNetwork {
     if (!this.#network) {
       throw new Error("Network didn't provided");
     }
     return this.#network;
   }
+
   set giver(giver: Giver) {
     this.#giver = giver;
   }
+
   get giver(): Giver {
     if (!this.#giver) {
       throw new Error("Giver not initialized, need to provide the network name");
@@ -132,8 +142,12 @@ export class Locklift<FactorySource extends FactoryType> {
 
     const proxy_network = new LockliftNetwork();
     // TODO: fix ts-ignore
-    // @ts-ignore
-    if (networkConfig?.connection?.type === "proxy" && networkConfig?.connection?.data?.connectionFactory === undefined) {
+    if (
+      // @ts-ignore
+      networkConfig?.connection?.type === "proxy" &&
+      // @ts-ignore
+      networkConfig?.connection?.data?.connectionFactory === undefined
+    ) {
       // @ts-ignore
       networkConfig.connection.data.connectionFactory = proxy_network.connectionFactory;
     }
@@ -147,10 +161,10 @@ export class Locklift<FactorySource extends FactoryType> {
           keystore,
           clock,
           accountsStorage,
-        }).then((client) => {
+        }).then(client => {
           client.setPollingInterval(5);
           return client;
-        })
+        }),
     });
     try {
       await provider.ensureInitialized();
@@ -170,16 +184,17 @@ export class Locklift<FactorySource extends FactoryType> {
     locklift.factory = factory;
 
     const tracingTransport = (() => {
-        // TODO: wtf
-        // @ts-ignore
-        switch (networkConfig?.connection.type) {
+      // @ts-ignore
+      switch (networkConfig?.connection.type) {
+        case "graphql":
           // @ts-ignore
-          case "graphql": return TracingTransport.fromGqlConnection(networkConfig.connection.data.endpoints[0], provider);
-          case "jrpc": return TracingTransport.fromJrpcConnection(provider);
-          case "proxy": return TracingTransport.fromProxyConnection(provider);
-        }
+          return TracingTransport.fromGqlConnection(networkConfig.connection.data.endpoints[0], provider);
+        case "jrpc":
+          return TracingTransport.fromJrpcConnection(provider);
+        case "proxy":
+          return TracingTransport.fromProxyConnection(provider);
       }
-    )()!;
+    })()!;
 
     locklift.network = proxy_network;
     locklift.tracing = createTracing({
@@ -187,7 +202,7 @@ export class Locklift<FactorySource extends FactoryType> {
       features: transactions,
       network: proxy_network,
       factory,
-      tracingTransport
+      tracingTransport,
     });
 
     if (networkConfig && network) {
