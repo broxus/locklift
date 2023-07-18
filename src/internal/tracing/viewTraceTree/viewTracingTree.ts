@@ -11,9 +11,9 @@ import {
 } from "../types";
 import _ from "lodash";
 
-import {AbiEventName, Address, Contract, DecodedEventWithTransaction} from "everscale-inpage-provider";
-import {extractStringAddress, isT} from "../utils";
-import {ContractWithArtifacts} from "../../../types";
+import { AbiEventName, Address, Contract, DecodedEventWithTransaction } from "everscale-inpage-provider";
+import { extractStringAddress, isT } from "../utils";
+import { ContractWithArtifacts } from "../../../types";
 import {
   applyTotalFees,
   calculateTotalFees,
@@ -24,8 +24,8 @@ import {
   printer,
   PrinterConfig,
 } from "./utils";
-import {Tokens} from "./tokens";
-import {pipe} from "rxjs";
+import { Tokens } from "./tokens";
+import { pipe } from "rxjs";
 
 export type NameAndType<T extends string = string> = { type: TraceType; name: T; contract?: Addressable };
 type EventNames<Abi> = DecodedEventWithTransaction<Abi, AbiEventName<Abi>>["event"];
@@ -38,15 +38,20 @@ type EventParams<Abi, N extends string> = Extract<
   DecodedEventWithTransaction<Abi, AbiEventName<Abi>>,
   { event: N }
 >["data"];
+
 export class ViewTracingTree {
   readonly viewTraceTree: ViewTraceTreeWithTotalFee;
   readonly tokens: Tokens;
   balanceChangeInfo: BalanceChangeInfoStorage;
   msgErrorsStore: ErrorStore;
+
   constructor(
     viewTraceTree: ViewTraceTree,
-    private readonly contractGetter: (codeHash: string | undefined, address: Address) => ContractWithArtifacts<any> | undefined,
-    private readonly accounts: AccountData[]
+    private readonly contractGetter: (
+      codeHash: string | undefined,
+      address: Address,
+    ) => ContractWithArtifacts<any> | undefined,
+    private readonly accounts: AccountData[],
   ) {
     this.viewTraceTree = applyTotalFees(_.cloneDeep(viewTraceTree));
     this.balanceChangeInfo = pipe(getBalanceChangingInfo, getBalanceDiff)(this.viewTraceTree);
@@ -54,6 +59,7 @@ export class ViewTracingTree {
     this.msgErrorsStore = getErrorsInfo(this.viewTraceTree);
     this.tokens = new Tokens(this.viewTraceTree);
   }
+
   getErrorsByContract = <T extends Contract<any> | Address | string>(contract: T): Array<MsgError> => {
     return this.msgErrorsStore[extractStringAddress(contract)];
   };
@@ -76,7 +82,9 @@ export class ViewTracingTree {
   findCallsForContract = <C extends Contract<any>, N extends keyof C["methods"] & string>({
     contract,
     name,
-  }: { contract: C } & { name: N }) => {
+  }: { contract: C } & {
+    name: N;
+  }) => {
     return this.findForContract({ contract, name })
       .map(el => el?.params)
       .filter(isT);
@@ -141,10 +149,7 @@ export class ViewTracingTree {
   totalGasUsed = () => calculateTotalFees(this.viewTraceTree).toNumber();
 
   beautyPrint = async (printerConfig?: PrinterConfig): Promise<void> => {
-    const result = _(extractAllAddresses(this.viewTraceTree)).uniq().value();
-    const contracts = this.accounts.map(({ codeHash, id }) =>
-      this.contractGetter(codeHash, new Address(id)),
-    );
+    const contracts = this.accounts.map(({ codeHash, id }) => this.contractGetter(codeHash, new Address(id)));
 
     console.log(
       printer(
@@ -182,6 +187,7 @@ export class ViewTracingTree {
   };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const extractAllAddresses = (viewTrace: ViewTraceTree): Array<Address> => {
   const addresses: Array<Address> = extractAddressFromObject(viewTrace.decodedMsg || {});
   return viewTrace.outTraces.reduce((acc, next) => {

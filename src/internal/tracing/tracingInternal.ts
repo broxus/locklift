@@ -1,8 +1,8 @@
-import {Address, Contract, ProviderRpcClient, TransactionWithAccount} from "everscale-inpage-provider";
-import {consoleAbi, ConsoleAbi} from "../../console.abi";
-import {CONSOLE_ADDRESS} from "./constants";
-import {extractAccountsFromMsgTree, extractStringAddress, getDefaultAllowedCodes, throwErrorInConsole} from "./utils";
-import {Trace} from "./trace/trace";
+import { Address, Contract, ProviderRpcClient } from "everscale-inpage-provider";
+import { consoleAbi, ConsoleAbi } from "../../console.abi";
+import { CONSOLE_ADDRESS } from "./constants";
+import { extractAccountsFromMsgTree, extractStringAddress, getDefaultAllowedCodes, throwErrorInConsole } from "./utils";
+import { Trace } from "./trace/trace";
 import {
   AccountData,
   Addressable,
@@ -10,17 +10,18 @@ import {
   MessageTree,
   OptionalContracts,
   RevertedBranch,
-  TraceParams, TransactionWithAccountAndBoc,
-  TruncatedTransaction
+  TraceParams,
+  TransactionWithAccountAndBoc,
+  TruncatedTransaction,
 } from "./types";
-import {Factory} from "../factory";
-import _, {difference} from "lodash";
-import {logger} from "../logger";
-import {ViewTracingTree} from "./viewTraceTree/viewTracingTree";
-import {extractTransactionFromParams} from "../../utils";
-import {TracingTransport} from "./transport";
-import {decodeRawTransaction, JsRawMessage} from "nekoton-wasm";
-import {LockliftNetwork} from "@broxus/locklift-network";
+import { Factory } from "../factory";
+import _, { difference } from "lodash";
+import { logger } from "../logger";
+import { ViewTracingTree } from "./viewTraceTree/viewTracingTree";
+import { extractTransactionFromParams } from "../../utils";
+import { TracingTransport } from "./transport";
+import { decodeRawTransaction, JsRawMessage } from "nekoton-wasm";
+import { LockliftNetwork } from "@broxus/locklift-network";
 
 export class TracingInternal {
   private labelsMap = new Map<string, string>();
@@ -33,14 +34,16 @@ export class TracingInternal {
   public setContractLabels = (contracts: Array<{ address: Addressable; label: string }>) => {
     contracts.forEach(({ address, label }) => this.labelsMap.set(extractStringAddress(address), label));
   };
+
   constructor(
     private readonly ever: ProviderRpcClient,
     readonly factory: Factory<any>,
     private readonly tracingTransport: TracingTransport,
-    readonly network: LockliftNetwork
+    readonly network: LockliftNetwork,
   ) {
     this.consoleContract = new ever.Contract(consoleAbi, new Address(CONSOLE_ADDRESS));
   }
+
   get allowedCodes(): AllowedCodes {
     return this._allowedCodes;
   }
@@ -92,32 +95,35 @@ export class TracingInternal {
     }
   }
 
-
   private popKey = (obj: any, key: string): any => {
     const value = obj[key];
     delete obj[key];
     return value;
-  }
+  };
 
   // input transactions are unordered
   private buildMsgTree = async (transactions: TransactionWithAccountAndBoc[]): Promise<MessageTree> => {
     type _ShortMessageTree = JsRawMessage & {
       dstTransaction: TruncatedTransaction | undefined;
       outMessages: Array<JsRawMessage>;
-    }
+    };
     // restructure transaction inside out for more convenient access in later processing
-    const hashToMsg: {[msg_hash: string]: _ShortMessageTree} = {};
+    const hashToMsg: { [msg_hash: string]: _ShortMessageTree } = {};
     const msgs = transactions.map((tx): _ShortMessageTree => {
       const extendedTx = decodeRawTransaction(tx.boc);
       const inMsg: JsRawMessage = this.popKey(extendedTx, "inMessage");
       const description = this.popKey(extendedTx, "description");
       const outMsgs: JsRawMessage[] = this.popKey(extendedTx, "outMessages");
-      const msg: _ShortMessageTree = {...inMsg, dstTransaction: {...extendedTx, ...description}, outMessages: outMsgs};
+      const msg: _ShortMessageTree = {
+        ...inMsg,
+        dstTransaction: { ...extendedTx, ...description },
+        outMessages: outMsgs,
+      };
       hashToMsg[msg.hash] = msg;
       // special move for extOut messages (events), because they don't have dstTransaction
-      msg.outMessages.map((outMsg) => {
+      msg.outMessages.map(outMsg => {
         if (outMsg.dst === undefined) {
-          hashToMsg[outMsg.hash] = {...outMsg, dstTransaction: undefined, outMessages: []};
+          hashToMsg[outMsg.hash] = { ...outMsg, dstTransaction: undefined, outMessages: [] };
         }
       });
       return msg;
@@ -125,15 +131,16 @@ export class TracingInternal {
     // recursively build message tree
     const buildTree = async (msgHash: string): Promise<MessageTree> => {
       const msg = hashToMsg[msgHash];
-      if (msg.dst === CONSOLE_ADDRESS) { // TODO: remove undefined check
+      if (msg.dst === CONSOLE_ADDRESS) {
+        // TODO: remove undefined check
         await this.printConsoleMsg(msg as MessageTree);
       }
-      const outMessages = await Promise.all(msg.outMessages.map(async (outMsg) => buildTree(outMsg.hash)));
-      return {...msg, outMessages};
-    }
+      const outMessages = await Promise.all(msg.outMessages.map(async outMsg => buildTree(outMsg.hash)));
+      return { ...msg, outMessages };
+    };
 
     return await buildTree(msgs[0].hash);
-  }
+  };
 
   // allowed_codes example - {compute: [100, 50, 12], action: [11, 12], "ton_addr": {compute: [60], action: [2]}}
   async trace<T>({ finalizedTx, allowedCodes, raise = true }: TraceParams<T>): Promise<ViewTracingTree | undefined> {
@@ -142,7 +149,10 @@ export class TracingInternal {
     const msgTree = await this.buildMsgTree([externalTx, ...finalizedTx.transactions]);
     const accounts = extractAccountsFromMsgTree(msgTree);
     const accountDataList = await this.tracingTransport.getAccountsData(accounts);
-    const accountDataMap = accountDataList.reduce((acc, accountData) => ({...acc, [accountData.id]: accountData}), {});
+    const accountDataMap = accountDataList.reduce(
+      (acc, accountData) => ({ ...acc, [accountData.id]: accountData }),
+      {},
+    );
 
     const allowedCodesExtended = _.mergeWith(_.cloneDeep(this._allowedCodes), allowedCodes, (objValue, srcValue) =>
       Array.isArray(objValue) ? objValue.concat(srcValue) : undefined,
@@ -158,6 +168,7 @@ export class TracingInternal {
 
   private async printConsoleMsg(msg: MessageTree) {
     const decoded = await this.ever.rawApi.decodeEvent({
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       body: msg.body!,
       abi: JSON.stringify(consoleAbi),
       event: "Log",
@@ -170,7 +181,7 @@ export class TracingInternal {
     allowedCodes: AllowedCodes = { compute: [], action: [], contracts: { any: { compute: [], action: [] } } },
     accountData: { [key: string]: AccountData },
   ): Promise<Trace> {
-    const trace = new Trace(this, msgTree, null, {accounts: accountData});
+    const trace = new Trace(this, msgTree, null, { accounts: accountData });
     await trace.buildTree(allowedCodes);
     return trace;
   }

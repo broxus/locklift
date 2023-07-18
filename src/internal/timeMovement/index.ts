@@ -67,19 +67,22 @@ export const createTimeMovement = async (
   switch (connectionConfig.connection.type) {
     case "proxy":
       return new TimeMovement(undefined, clock, true);
-    case "graphql":
+    case "graphql": {
       const rpcUrl = connectionConfig.connection.data.endpoints[0];
       const rpcOrigin = new URL(rpcUrl).origin;
       const seService = new SeService(rpcOrigin);
-      const { currentOffsetInSeconds, isEnabled } = await seService
+      const {currentOffsetInSeconds, isEnabled} = await seService
         .getCurrentOffsetTime()
-        .then(currentOffsetInSeconds => ({ currentOffsetInSeconds, isEnabled: true }))
-        .catch(() => ({ isEnabled: false, currentOffsetInSeconds: 0 }));
+        .then(currentOffsetInSeconds => ({currentOffsetInSeconds, isEnabled: true}))
+        .catch(() => ({isEnabled: false, currentOffsetInSeconds: 0}));
       if (currentOffsetInSeconds > 0) {
-        logger.printWarn(`Current SE time delta is ${currentOffsetInSeconds} seconds. Provider will sync with this offset`);
+        logger.printWarn(
+          `Current SE time delta is ${currentOffsetInSeconds} seconds. Provider will sync with this offset`,
+        );
       }
       clock.offset = toMs(currentOffsetInSeconds);
       return new TimeMovement(seService, clock, isEnabled);
+    }
     default:
       return new TimeMovement(undefined, clock, false);
   }

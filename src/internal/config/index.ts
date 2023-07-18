@@ -1,12 +1,12 @@
 import fs from "fs";
 import path from "path";
 import commander from "commander";
-import {ProviderRpcClient} from "everscale-inpage-provider";
-import type {Ed25519KeyPair} from "everscale-standalone-client";
-import {ConnectionProperties, NETWORK_PRESETS, ConnectionFactory} from "everscale-standalone-client/nodejs";
-import {Giver} from "../factory";
+import { ProviderRpcClient } from "everscale-inpage-provider";
+import type { Ed25519KeyPair } from "everscale-standalone-client";
+import { ConnectionProperties, NETWORK_PRESETS, ConnectionFactory } from "everscale-standalone-client/nodejs";
+import { Giver } from "../factory";
 import Joi from "joi";
-import {MessageProperties} from "everscale-standalone-client/client";
+import { MessageProperties } from "everscale-standalone-client/client";
 import * as nt from "nekoton-wasm";
 
 export enum ConfigState {
@@ -125,21 +125,21 @@ export const JoiConfig = Joi.object<LockliftConfig>({
               then: Joi.object({
                 endpoint: Joi.string(),
               }),
-            otherwise: Joi.object({
-              connectionFactory: Joi.object().custom((value, helpers) => {
-                return value;
-                // if (value instanceof ConnectionFactory) {
-                //   return value;
-                // }
-                // return helpers.message({"custom": "Invalid proxy connection"});
-              })
-            })
-            // otherwise: Joi.object().custom((value, helpers) => {
-            //   if (value instanceof ConnectionFactory) {
-            //     return value;
-            //   }
-            //   return helpers.message({"custom": "Invalid proxy connection"});
-            // }),
+              otherwise: Joi.object({
+                connectionFactory: Joi.object().custom((value, helpers) => {
+                  return value;
+                  // if (value instanceof ConnectionFactory) {
+                  //   return value;
+                  // }
+                  // return helpers.message({"custom": "Invalid proxy connection"});
+                }),
+              }),
+              // otherwise: Joi.object().custom((value, helpers) => {
+              //   if (value instanceof ConnectionFactory) {
+              //     return value;
+              //   }
+              //   return helpers.message({"custom": "Invalid proxy connection"});
+              // }),
             }),
           }),
         }),

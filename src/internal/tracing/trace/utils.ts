@@ -1,7 +1,7 @@
-import {AllowErrorCodes, DecodedMsg, MessageTree, TraceContext, TraceType} from "../types";
+import { AllowErrorCodes, DecodedMsg, MessageTree, TraceContext, TraceType } from "../types";
 import { ContractWithArtifacts } from "../../../types";
 import { AbiEventName, AbiFunctionName } from "everscale-inpage-provider";
-import {MessageType} from "nekoton-wasm";
+import { MessageType } from "nekoton-wasm";
 
 enum TargetType {
   DST = "DST",
@@ -9,22 +9,26 @@ enum TargetType {
   DEPLOY = "DEPLOY",
 }
 
-const getCodeAndAddress = (msg: MessageTree, targetType: TargetType, ctx: TraceContext): { codeHash: string | undefined; address: string } => {
+const getCodeAndAddress = (
+  msg: MessageTree,
+  targetType: TargetType,
+  ctx: TraceContext,
+): { codeHash: string | undefined; address: string } => {
   switch (targetType) {
     case TargetType.DST:
       return {
-        address: msg.dst!,
-        codeHash: ctx.accounts[msg.dst!]?.codeHash,
+        address: msg.dst as string,
+        codeHash: ctx.accounts[msg.dst as string]?.codeHash,
       };
     case TargetType.SRC:
       return {
-        address: msg.src!,
-        codeHash: ctx.accounts[msg.src!]?.codeHash,
+        address: msg.src as string,
+        codeHash: ctx.accounts[msg.src as string]?.codeHash,
       };
     case TargetType.DEPLOY:
       return {
         codeHash: msg.init?.codeHash,
-        address: msg.dst!,
+        address: msg.dst as string,
       };
   }
 };
@@ -89,7 +93,7 @@ export const decoder = async <Abi>({
 export const contractInformation = ({
   msg,
   type,
-  ctx
+  ctx,
 }: {
   msg: MessageTree;
   type: TraceType;

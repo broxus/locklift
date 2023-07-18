@@ -120,7 +120,7 @@ export class Locklift<FactorySource extends FactoryType> {
     config: LockliftConfig<ConfigState.INTERNAL>,
     network?: keyof LockliftConfig["networks"],
   ): Promise<Locklift<T>> {
-    let networkConfig = config.networks[network as string] as NetworkValue<ConfigState.INTERNAL>;
+    const networkConfig = config.networks[network as string] as NetworkValue<ConfigState.INTERNAL>;
 
     let keystore = new SimpleKeystore();
     if (networkConfig) {
@@ -140,7 +140,7 @@ export class Locklift<FactorySource extends FactoryType> {
       keystore.addKeyPair("giver", giverKeys);
     }
 
-    const proxy_network = new LockliftNetwork();
+    const proxyNetwork = new LockliftNetwork();
     // TODO: fix ts-ignore
     if (
       // @ts-ignore
@@ -149,7 +149,7 @@ export class Locklift<FactorySource extends FactoryType> {
       networkConfig?.connection?.data?.connectionFactory === undefined
     ) {
       // @ts-ignore
-      networkConfig.connection.data.connectionFactory = proxy_network.connectionFactory;
+      networkConfig.connection.data.connectionFactory = proxyNetwork.connectionFactory;
     }
 
     const accountsStorage = new SimpleAccountsStorage();
@@ -194,13 +194,13 @@ export class Locklift<FactorySource extends FactoryType> {
         case "proxy":
           return TracingTransport.fromProxyConnection(provider);
       }
-    })()!;
+    })() as TracingTransport;
 
-    locklift.network = proxy_network;
+    locklift.network = proxyNetwork;
     locklift.tracing = createTracing({
       ever: provider,
       features: transactions,
-      network: proxy_network,
+      network: proxyNetwork,
       factory,
       tracingTransport,
     });

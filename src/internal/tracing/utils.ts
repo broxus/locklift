@@ -1,13 +1,14 @@
-import {Addressable, AllowedCodes, MessageTree, RevertedBranch, TraceType} from "./types";
-import {logger} from "../logger";
-import {Address} from "everscale-inpage-provider";
+import {Addressable, AllowedCodes, MessageTree, RevertedBranch, TraceType, TruncatedTransaction} from "./types";
+import { logger } from "../logger";
+import { Address } from "everscale-inpage-provider";
 import BigNumber from "bignumber.js";
-import {Trace} from "./trace/trace";
+import { Trace } from "./trace/trace";
 import path from "path";
 import * as process from "process";
 import chalk from "chalk";
+import {EngineTraceInfo} from "nekoton-wasm";
 
-const fs = require('fs');
+const fs = require("fs");
 
 export const extractAccountsFromMsgTree = (msgTree: MessageTree): Address[] => {
   const extractAccounts = (msgTree: MessageTree): Address[] => {
@@ -16,11 +17,11 @@ export const extractAccountsFromMsgTree = (msgTree: MessageTree): Address[] => {
       accounts.push(...extractAccounts(outMsg));
     }
     return accounts;
-  }
+  };
   return [...new Set(extractAccounts(msgTree))];
-}
+};
 
-export const convert = <T>(number: number, decimals = 9, precision = 4): string => {
+export const convert = (number: number, decimals = 9, precision = 4): string => {
   return (number / 10 ** decimals).toPrecision(precision);
 };
 
@@ -28,44 +29,41 @@ export const convertForLogger = (amount: number) => new BigNumber(convert(amount
 export const hexToValue = (amount: number) => new BigNumber(convert(amount, 9, 9) || 0);
 
 type ErrorPosition = {
-  filename: string,
-  line: number
-}
-
+  filename: string;
+  line: number;
+};
 
 const normalizeFilePath = (errorPosition: ErrorPosition) => {
   let errFilePath = errorPosition.filename;
   // contracts paths look like: "../contracts/ContractName.tsol"
-  if (errFilePath.startsWith('../contracts/')) {
-    errFilePath = path.resolve(process.cwd(), errFilePath.split('../')[1]);
+  if (errFilePath.startsWith("../contracts/")) {
+    errFilePath = path.resolve(process.cwd(), errFilePath.split("../")[1]);
   }
   // .code paths look like: "ContractName.code"
-  if (errFilePath.endsWith('.code')) {
-    errFilePath = path.resolve(process.cwd(), 'build', errFilePath);
+  if (errFilePath.endsWith(".code")) {
+    errFilePath = path.resolve(process.cwd(), "build", errFilePath);
   }
   return errFilePath;
-}
-
+};
 
 const printErrorPositionSnippet = (trace: Trace, filename: string, errLine: number, offset: number) => {
-  const err_file = fs.readFileSync(filename, 'utf8');
-  let lines = err_file.split('\n');
+  const errFile = fs.readFileSync(filename, "utf8");
+  const lines = errFile.split("\n");
   const lastLineLen = `${errLine + offset}`.length;
 
-  const {name, method} = getContractNameAndMethod(trace);
+  const { name, method } = getContractNameAndMethod(trace);
 
   logger.printTracingLog(
-    ''.padStart(lastLineLen - 1, ' '),
-    chalk.blueBright.bold('-->'),
-    chalk.bold(`${name}.${method} (${path.basename(filename)}:${errLine})`)
-  )
+    "".padStart(lastLineLen - 1, " "),
+    chalk.blueBright.bold("-->"),
+    chalk.bold(`${name}.${method} (${path.basename(filename)}:${errLine})`),
+  );
 
-
-  logger.printTracingLog(''.padStart(lastLineLen, ' '), chalk.blueBright.bold('|'));
-  let linesToPrint: string[][] = [];
+  logger.printTracingLog("".padStart(lastLineLen, " "), chalk.blueBright.bold("|"));
+  const linesToPrint: string[][] = [];
   lines.map((line: string, i: number) => {
-    if (i < (errLine - offset - 1) || i >= (errLine + offset)) return;
-    const lineNum = `${i + 1}`.padEnd(lastLineLen, ' ');
+    if (i < errLine - offset - 1 || i >= errLine + offset) return;
+    const lineNum = `${i + 1}`.padEnd(lastLineLen, " ");
     if (i === errLine - 1) {
       linesToPrint.push([chalk.redBright.bold(`${lineNum} |`), chalk.redBright(line)]);
     } else {
@@ -73,27 +71,28 @@ const printErrorPositionSnippet = (trace: Trace, filename: string, errLine: numb
     }
   });
 
-  const firstNotEmpty = linesToPrint.findIndex((line) => line[1].trim() !== '');
-  const lastNotEmpty = linesToPrint.length - linesToPrint.reverse().findIndex((line) => line[1].trim() !== '');
+  const firstNotEmpty = linesToPrint.findIndex(line => line[1].trim() !== "");
+  const lastNotEmpty = linesToPrint.length - linesToPrint.reverse().findIndex(line => line[1].trim() !== "");
 
-  linesToPrint.reverse().slice(firstNotEmpty, lastNotEmpty).map((line) => {
-    logger.printTracingLog(...line)
-  })
+  linesToPrint
+    .reverse()
+    .slice(firstNotEmpty, lastNotEmpty)
+    .map(line => {
+      logger.printTracingLog(...line);
+    });
 
-  logger.printTracingLog(''.padStart(lastLineLen, ' '), chalk.blueBright.bold('|'));
-}
+  logger.printTracingLog("".padStart(lastLineLen, " "), chalk.blueBright.bold("|"));
+};
 
 export const throwTrace = (trace: Trace) => {
-
   // const _trace = trace.transactionTrace!.map((trace) => JSON.stringify(trace)).join('\n');
   // fs.writeFileSync('log.json', _trace);
 
-
-  logger.printTracingLog(chalk.redBright('-----------------------------------------------------------------'))
+  logger.printTracingLog(chalk.redBright("-----------------------------------------------------------------"));
   // SKIPPED COMPUTE PHASE
-  if (trace.error!.phase === 'compute' && trace.error!.reason) {
-    let errorDescription: string = trace.error!.reason;
-    if (errorDescription === 'NoState') {
+  if (trace.error?.phase === "compute" && trace.error?.reason) {
+    let errorDescription: string = trace.error?.reason;
+    if (errorDescription === "NoState") {
       errorDescription = "NoState. Looks like you tried to call method of contract that doesn't exist";
     }
     const errorMsg = `!!! Compute phase was skipped with reason: ${errorDescription} !!!`;
@@ -101,20 +100,22 @@ export const throwTrace = (trace: Trace) => {
     throw new Error(errorMsg);
   }
 
-  let errorDescription = '';
-  if (trace.error?.phase === 'action') {
+  let errorDescription = "";
+  if (trace.error?.phase === "action") {
     switch (Number(trace.error.code)) {
       case 33:
-        errorDescription = 'Looks like you tried to send too many (>255) actions in one transaction';
+        errorDescription = "Looks like you tried to send too many (>255) actions in one transaction";
         break;
       case 37:
-        errorDescription = 'Looks like you tried to send more EVERs than you can';
+        errorDescription = "Looks like you tried to send more EVERs than you can";
         break;
     }
   }
 
   // short common error description
-  const mainErrorMsg = `!!! Reverted with ${trace.error!.code} error code on ${trace.error!.phase} phase. ${errorDescription} !!!`;
+  const mainErrorMsg = `!!! Reverted with ${trace.error?.code} error code on ${
+    trace.error?.phase
+  } phase. ${errorDescription} !!!`;
   logger.printError(mainErrorMsg);
 
   // no trace -> we cant detect line with error
@@ -125,40 +126,38 @@ export const throwTrace = (trace: Trace) => {
   if (trace.contract.map === undefined) throw new Error(mainErrorMsg);
   const contract = trace.contract;
 
-  const tx = trace.msg.dstTransaction!;
-  let errFilePath: string;
-  let errLineNum: number;
+  const tx = trace.msg.dstTransaction as TruncatedTransaction;
+  let errPosition: ErrorPosition | undefined;
   // COMPUTE PHASE ERROR
-  if (tx.compute.status === 'vm' && !tx.compute.success) {
+  if (tx.compute.status === "vm" && !tx.compute.success) {
     // last vm step is the error position
-    const lastStep = vmTraces.pop()!;
-    const errPosition: ErrorPosition | undefined = contract.map.map[lastStep.cmdCodeCellHash][lastStep.cmdCodeOffset];
+    const lastStep = vmTraces.pop() as EngineTraceInfo;
+    errPosition = contract.map.map[lastStep.cmdCodeCellHash][lastStep.cmdCodeOffset];
     if (errPosition === undefined) throw new Error(mainErrorMsg);
-    errFilePath = normalizeFilePath(errPosition);
-    errLineNum = errPosition.line;
   }
   // ACTION PHASE ERROR
   if (tx.action?.success === false) {
     // catch all vm steps, where actions are produced
     const actionsSent = vmTraces.filter(
-      (t) => (t.cmdStr === 'SENDRAWMSG' || t.cmdStr === 'RAWRESERVE' || t.cmdStr === 'SETCODE')
+      t => t.cmdStr === "SENDRAWMSG" || t.cmdStr === "RAWRESERVE" || t.cmdStr === "SETCODE",
     );
     let failedAction = tx.action.resultArg;
     // too many actions, point to 256th action
     if (Number(tx.action.resultCode) === 33) failedAction = 255;
 
     const failedActionStep = actionsSent[failedAction];
-    const errPosition: ErrorPosition | undefined = contract.map.map[failedActionStep.cmdCodeCellHash][failedActionStep.cmdCodeOffset];
+    errPosition = contract.map.map[failedActionStep.cmdCodeCellHash][failedActionStep.cmdCodeOffset];
     if (errPosition === undefined) throw new Error(mainErrorMsg);
-    errFilePath = normalizeFilePath(errPosition);
-    errLineNum = errPosition.line;
   }
-  const filename = path.basename(errFilePath!);
-  if (filename.endsWith('.tsol') || filename.endsWith('.sol')) {
-    printErrorPositionSnippet(trace, errFilePath!, errLineNum!, 2);
+
+  const errFilePath = normalizeFilePath(errPosition as ErrorPosition);
+  const errLineNum = (errPosition as ErrorPosition).line;
+  const filename = path.basename(errFilePath);
+  if (filename.endsWith(".tsol") || filename.endsWith(".sol")) {
+    printErrorPositionSnippet(trace, errFilePath, errLineNum, 2);
   }
   throw new Error(mainErrorMsg);
-}
+};
 
 const getContractNameAndMethod = (trace: Trace) => {
   let name = "undefinedContract";
@@ -171,13 +170,13 @@ const getContractNameAndMethod = (trace: Trace) => {
   } else if (trace.type === TraceType.BOUNCE) {
     method = "onBounce";
   }
-  return {name, method};
-}
+  return { name, method };
+};
 
 export const throwErrorInConsole = <Abi>(revertedBranch: Array<RevertedBranch<Abi>>) => {
-  for (const {totalActions, actionIdx, traceLog} of revertedBranch) {
+  for (const { totalActions, actionIdx, traceLog } of revertedBranch) {
     const bounce = traceLog.msg.bounce;
-    const {name, method} = getContractNameAndMethod(traceLog);
+    const { name, method } = getContractNameAndMethod(traceLog);
     let paramsStr = "()";
     if (traceLog.decodedMsg) {
       if (Object.values(traceLog.decodedMsg.params || {}).length === 0) {
@@ -216,24 +215,21 @@ export const throwErrorInConsole = <Abi>(revertedBranch: Array<RevertedBranch<Ab
         logger.printTracingLog(`Storage fees: ${convert(tx.storage.storageFeesCollected)}`);
       }
       if (tx.compute) {
-        const gasFees = tx.compute.status === 'vm' ? tx.compute.gasFees : 0;
+        const gasFees = tx.compute.status === "vm" ? tx.compute.gasFees : 0;
         logger.printTracingLog(`Compute fees: ${convert(Number(gasFees))}`);
       }
       if (tx.action) {
-        logger.printTracingLog(
-          `Action fees: ${convert(Number(tx.action.totalActionFees))}`,
-        );
+        logger.printTracingLog(`Action fees: ${convert(Number(tx.action.totalActionFees))}`);
       }
-      logger.printTracingLog(chalk.bold(`Total fees:`), `${convert(Number(tx.totalFees))}`);
-      if (tx.compute.status === 'vm') {
+      logger.printTracingLog(chalk.bold("Total fees:"), `${convert(Number(tx.totalFees))}`);
+      if (tx.compute.status === "vm") {
         const gasLimit = Number(tx.compute.gasLimit) === 0 ? 1000000 : Number(tx.compute.gasLimit);
         const percentage = ((tx.compute.gasUsed / gasLimit) * 100).toPrecision(2);
         logger.printTracingLog(
-          chalk.bold(`Gas used:`),
-          `${Number(tx.compute.gasUsed).toLocaleString()}/${gasLimit.toLocaleString()} (${percentage}%)`
+          chalk.bold("Gas used:"),
+          `${Number(tx.compute.gasUsed).toLocaleString()}/${gasLimit.toLocaleString()} (${percentage}%)`,
         );
       }
-
     }
     if (traceLog.error && !traceLog.error.ignored) {
       throwTrace(traceLog);
@@ -253,7 +249,7 @@ export const extractStringAddress = (contract: Addressable) =>
   typeof contract === "string"
     ? contract
     : contract instanceof Address
-      ? contract.toString()
-      : contract.address.toString();
+    ? contract.toString()
+    : contract.address.toString();
 
 export const extractAddress = (contract: Addressable): Address => new Address(extractStringAddress(contract));

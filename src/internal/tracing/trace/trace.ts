@@ -1,15 +1,20 @@
-import {CONSOLE_ADDRESS} from "../constants";
-import {AllowedCodes, DecodedMsg, MessageTree, TraceContext, TraceType} from "../types";
-import {Address} from "everscale-inpage-provider";
+import { CONSOLE_ADDRESS } from "../constants";
+import { AllowedCodes, DecodedMsg, MessageTree, TraceContext, TraceType } from "../types";
+import { Address } from "everscale-inpage-provider";
 
-import {ContractWithArtifacts} from "../../../types";
-import {contractInformation, decoder, isErrorExistsInAllowedArr} from "./utils";
-import {TracingInternal} from "../tracingInternal";
+import { ContractWithArtifacts } from "../../../types";
+import { contractInformation, decoder, isErrorExistsInAllowedArr } from "./utils";
+import { TracingInternal } from "../tracingInternal";
 import * as nt from "nekoton-wasm";
 
 export class Trace<Abi = any> {
   outTraces: Array<Trace> = [];
-  error: null | { phase: "compute" | "action"; code: number | null; ignored?: boolean, reason: nt.TrComputeSkippedReason | undefined } = null;
+  error: null | {
+    phase: "compute" | "action";
+    code: number | null;
+    ignored?: boolean;
+    reason: nt.TrComputeSkippedReason | undefined;
+  } = null;
   transactionTrace: nt.EngineTraceInfo[] | undefined = undefined;
 
   type: TraceType | null = null;
@@ -21,20 +26,20 @@ export class Trace<Abi = any> {
     private readonly tracing: TracingInternal,
     readonly msg: MessageTree,
     private readonly srcTrace: Trace | null,
-    private readonly context: TraceContext
+    private readonly context: TraceContext,
   ) {}
 
   async buildTree(
-    allowedCodes: AllowedCodes = { compute: [], action: [], contracts: { any: { compute: [], action: [] } } }
+    allowedCodes: AllowedCodes = { compute: [], action: [], contracts: { any: { compute: [], action: [] } } },
   ) {
     this.setMsgType();
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const { codeHash, address } = contractInformation({ msg: this.msg, type: this.type!, ctx: this.context});
+    const { codeHash, address } = contractInformation({ msg: this.msg, type: this.type!, ctx: this.context });
     const contract = this.tracing.factory.getContractByCodeHashOrDefault(codeHash || "", new Address(address));
 
     this.checkForErrors(allowedCodes);
-    if (this.error && !this.error.ignored) {
-      this.transactionTrace = this.tracing.network.getTxTrace(this.msg.dstTransaction!.hash);
+    if (this.error && !this.error.ignored && this.msg.dstTransaction) {
+      this.transactionTrace = this.tracing.network.getTxTrace(this.msg.dstTransaction.hash);
     }
 
     await this.decode(contract);
@@ -59,7 +64,7 @@ export class Trace<Abi = any> {
     }
 
     let skipComputeCheck = false;
-    if (tx && (tx.compute.status === 'vm' && tx.compute.success)) {
+    if (tx && tx.compute.status === "vm" && tx.compute.success) {
       skipComputeCheck = true;
     }
     let skipActionCheck = false;
@@ -76,7 +81,7 @@ export class Trace<Abi = any> {
       // we didn't expect this error, save error
       if (
         isErrorExistsInAllowedArr(allowedCodes.compute, this.error.code) ||
-        isErrorExistsInAllowedArr(allowedCodes.contracts?.[this.msg.dst!]?.compute, this.error.code)
+        isErrorExistsInAllowedArr(allowedCodes.contracts?.[this.msg.dst as string]?.compute, this.error.code)
       ) {
         this.error.ignored = true;
       }
@@ -85,7 +90,7 @@ export class Trace<Abi = any> {
       // we didn't expect this error, save error
       if (
         isErrorExistsInAllowedArr(allowedCodes.action, tx.action.resultCode) ||
-        isErrorExistsInAllowedArr(allowedCodes.contracts?.[this.msg.dst!]?.action, tx.action.resultCode)
+        isErrorExistsInAllowedArr(allowedCodes.contracts?.[this.msg.dst as string]?.action, tx.action.resultCode)
       ) {
         this.error.ignored = true;
       }
@@ -138,7 +143,7 @@ export class Trace<Abi = any> {
     }
 
     return await decoder({
-      msgBody: this.msg.body!,
+      msgBody: this.msg.body as string,
       msgType: this.msg.msgType,
       contract,
       initialType: this.type,

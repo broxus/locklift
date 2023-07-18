@@ -1,6 +1,6 @@
 import { Address, Contract, Transaction } from "everscale-inpage-provider";
 import { Account } from "everscale-standalone-client/nodejs";
-import {ContractData} from "../internal/factory";
+import { ContractData } from "../internal/factory";
 
 export type ValueOf<T> = T[keyof T];
 export type ConstructorParams<Abi> = Parameters<constructorParams<Abi, Contract<Abi>["methods"]>>[0];

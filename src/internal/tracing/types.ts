@@ -7,13 +7,13 @@ import {
   DecodedInput,
   DecodedOutput,
   ProviderRpcClient,
-  TransactionWithAccount
+  TransactionWithAccount,
 } from "everscale-inpage-provider";
 
-import {Trace} from "./trace/trace";
-import {Optional} from "../../types";
+import { Trace } from "./trace/trace";
+import { Optional } from "../../types";
 import BigNumber from "bignumber.js";
-import {JsRawMessage, JsRawTransaction} from "nekoton-wasm";
+import { JsRawMessage, JsRawTransaction } from "nekoton-wasm";
 
 export enum TraceType {
   FUNCTION_CALL = "function_call",
@@ -25,12 +25,13 @@ export enum TraceType {
   TRANSFER = "transfer",
 }
 
-export type TruncatedTransaction = Omit<JsRawTransaction, "description" | "inMessage" | "outMessages"> & JsRawTransaction["description"];
+export type TruncatedTransaction = Omit<JsRawTransaction, "description" | "inMessage" | "outMessages"> &
+  JsRawTransaction["description"];
 
 export type MessageTree = JsRawMessage & {
   dstTransaction: TruncatedTransaction | undefined;
   outMessages: Array<MessageTree>;
-}
+};
 
 export type AccountData = {
   codeHash: string | undefined;
@@ -43,7 +44,7 @@ export type RevertedBranch<Abi = unknown> = { totalActions: number; traceLog: Tr
 export type WaitFinalizedOutput<T> = {
   extTransaction: T;
   transactions: Array<TransactionWithAccountAndBoc>;
-}
+};
 export type TraceParams<T> = {
   finalizedTx: WaitFinalizedOutput<T>;
   allowedCodes?: AllowedCodes;
@@ -51,7 +52,7 @@ export type TraceParams<T> = {
 };
 
 export type TraceContext = {
-  accounts: { [key: string]: AccountData }
+  accounts: { [key: string]: AccountData };
 };
 
 export type AllowErrorCodes = number | null;

@@ -121,7 +121,7 @@ export class Factory<T extends FactoryType> {
       code,
       abi,
       codeHash,
-      map
+      map,
     };
   };
 
@@ -136,14 +136,17 @@ export class Factory<T extends FactoryType> {
     })) as unknown as Array<{ contractName: string; artifacts: ContractData<T[keyof T]> }>;
   };
 
-  public getContractByCodeHash = (codeHash: string | undefined, address: Address): ContractWithArtifacts | undefined => {
+  public getContractByCodeHash = (
+    codeHash: string | undefined,
+    address: Address,
+  ): ContractWithArtifacts | undefined => {
     const contractArtifacts = this.getAllArtifacts().find(({ artifacts }) => artifacts.codeHash === codeHash);
 
     if (contractArtifacts) {
       return {
         contract: this.getDeployedContract(contractArtifacts.contractName, address),
         name: contractArtifacts.contractName,
-        ...contractArtifacts.artifacts
+        ...contractArtifacts.artifacts,
       };
     }
   };
@@ -157,11 +160,11 @@ export class Factory<T extends FactoryType> {
     return {
       contract: new this.ever.Contract(emptyContractAbi, address),
       name: contractName,
-      code: '',
-      codeHash: '',
+      code: "",
+      codeHash: "",
       abi: {},
       map: {},
-      tvc: ''
+      tvc: "",
     };
   };
 
