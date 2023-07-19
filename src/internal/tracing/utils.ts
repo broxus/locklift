@@ -7,6 +7,7 @@ import path from "path";
 import * as process from "process";
 import chalk from "chalk";
 import { EngineTraceInfo } from "nekoton-wasm";
+import { ActionCodeHints, ComputeCodesHints } from "./constants";
 
 const fs = require("fs");
 
@@ -102,19 +103,17 @@ export const throwTrace = (trace: Trace) => {
 
   let errorDescription = "";
   if (trace.error?.phase === "action") {
-    switch (Number(trace.error.code)) {
-      case 33:
-        errorDescription = "Looks like you tried to send too many (>255) actions in one transaction";
-        break;
-      case 37:
-        errorDescription = "Looks like you tried to send more EVERs than you can";
-        break;
-    }
+    errorDescription = ActionCodeHints[Number(trace.error.code)];
+  }
+  if (trace.error?.phase === "compute") {
+    errorDescription = ComputeCodesHints[Number(trace.error.code)];
   }
 
   // short common error description
-  const mainErrorMsg = `!!! Reverted with ${trace.error?.code} error code on ${trace.error?.phase} phase. ${errorDescription} !!!`;
+  const mainErrorMsg = `!!! Reverted with ${trace.error?.code} error code on ${trace.error?.phase} phase !!!`;
   logger.printError(mainErrorMsg);
+  logger.printError(errorDescription);
+  logger.printTracingLog(chalk.redBright("-----------------------------------------------------------------"));
 
   // no trace -> we cant detect line with error
   if (trace.transactionTrace === undefined) throw new Error(mainErrorMsg);

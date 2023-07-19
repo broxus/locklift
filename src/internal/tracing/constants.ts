@@ -1,1 +1,42 @@
 export const CONSOLE_ADDRESS = ":7fffffffffffffffffffffffffffffffffffffffffffffffff123456789abcde";
+
+export const ComputeCodesHints: { [id: number]: string } = {
+  [2]: "Stack underflow: not enough arguments in the stack for a primitive",
+  [3]: "Stack overflow: more values have been stored on a stack than allowed by this version of TVM",
+  [4]: "Integer overflow: integer does not fit into expected range (by default −2^256 ≤ x < 2^256), or a division by zero has occurred",
+  [-5]: "Integer overflow: integer does not fit into expected range (by default −2^256 ≤ x < 2^256), or a division by zero has occurred",
+  [5]: "Range check error: integer out of expected range",
+  [6]: "Invalid opcode: instruction or its immediate arguments cannot be decoded",
+  [7]: "Type check error: an argument to a primitive is of incorrect value type",
+  [8]: "Cell overflow: error in one of the serialization primitives",
+  [9]: "Cell underflow: error in one of the deserialization primitives",
+  [10]: "Dictionary error: error while deserializing a dictionary object",
+  [13]: "Out of gas: gas limit is reached, too many computations in one transaction",
+  [-14]: "Out of gas: gas limit is reached, too many computations in one transaction",
+  [40]: "External inbound message has an invalid signature",
+  [50]: "Array index or index of <mapping>.at() is out of range",
+  [51]: "Contract's constructor has already been called (duplicate deploy)",
+  [52]: "Replay protection exception",
+  [53]: "<address>.unpack() error: <address> value is not 256-bit, or address is not a valid serialization of MsgAddressInt",
+  [54]: "<array>.pop call for an empty array",
+  [57]: "External inbound message is expired",
+  [58]: "External inbound message has no signature but has public key",
+  [60]: "Inbound message has wrong function id. In the contract there are no functions with such function id and there is no fallback function that could handle the message",
+  [61]: "Deploying StateInit has no public key in data field",
+  [63]: "<optional(Type)>.get() error: optional value is empty",
+  [64]: "tvm.buildExtMSg() called with wrong parameters",
+  [65]: "Call of the unassigned variable of function type",
+  [66]: "Convert an integer to a string with width less than number length",
+  [67]: "gasToValue/valueToGas error: wid is not equal to 0 or -1.",
+  [69]: "Zero to the power of zero calculation (0**0 in solidity style or 0^0).",
+  [70]: "<string> method substr was called with substr longer than the whole string.",
+  [71]: "Function marked by externalMsg was called by internal message",
+  [72]: "Function marked by internalMsg was called by external message",
+  [73]: "The value can't be converted to enum type",
+  [76]: "Public function was called before constructor",
+};
+
+export const ActionCodeHints: { [id: number]: string } = {
+  [33]: "Too many actions: sending too many (>255) actions in one transaction",
+  [37]: "Low balance: sending more value than contract owns",
+};
