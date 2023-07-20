@@ -1,4 +1,4 @@
-export const CONSOLE_ADDRESS = ":7fffffffffffffffffffffffffffffffffffffffffffffffff123456789abcde";
+export const CONSOLE_ADDRESS = "7fffffffffffffffffffffffffffffffffffffffffffffffff123456789abcde";
 
 export const ComputeCodesHints: { [id: number]: string } = {
   [2]: "Stack underflow: not enough arguments in the stack for a primitive",

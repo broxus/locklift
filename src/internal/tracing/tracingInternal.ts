@@ -122,7 +122,8 @@ export class TracingInternal {
       hashToMsg[msg.hash] = msg;
       // special move for extOut messages (events), because they don't have dstTransaction
       msg.outMessages.map(outMsg => {
-        if (outMsg.dst === undefined) {
+        if (outMsg.msgType === "ExtOut") {
+          // console.log(outMsg);
           hashToMsg[outMsg.hash] = { ...outMsg, dstTransaction: undefined, outMessages: [] };
         }
       });
@@ -132,7 +133,6 @@ export class TracingInternal {
     const buildTree = async (msgHash: string): Promise<MessageTree> => {
       const msg = hashToMsg[msgHash];
       if (msg.dst === CONSOLE_ADDRESS) {
-        // TODO: remove undefined check
         await this.printConsoleMsg(msg as MessageTree);
       }
       const outMessages = await Promise.all(msg.outMessages.map(async outMsg => buildTree(outMsg.hash)));
