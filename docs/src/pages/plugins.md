@@ -1,3 +1,7 @@
+---
+outline: deep
+---
+
 <script>
 import { ref } from 'vue';
 
@@ -9,7 +13,7 @@ export default {
         name: 'locklift-verifier',
         npmPackage: '@broxus/locklift-verifier',
         author: 'Broxus',
-        authorUrl:  'https://github.com/broxus',
+        authorUrl:  'https://twitter.com/Broxus',
         description: 'Automatically verifies smart contracts within the Locklift',
         tags: ["Verification"],
       },
@@ -44,23 +48,22 @@ export default {
 
 # Plugins
 
-Refer to the [Building Plugins](./../advanced/building-plugins.md) guide to learn how to create your own, and submit a [pull request](https://github.com/broxus/locklift/docs/src/pages/plugins.md#L26) to have it listed here.
+Plugins in Locklift are modules that extend the framework's functionality. They can add new commands, modify existing ones, or provide additional runtime features. This customization allows you to enhance the Locklift environment to suit your specific needs.
+
+Refer to the [Building Plugins](./advanced//building-plugins.md) guide to learn how to create your own, and submit a [pull request](https://github.com/broxus/locklift/docs/src/pages/plugins.md#L26) to have it listed here.
 
 Enhance Locklift's functionality with the plugins below.
 
-<br>
 <br>
 
 ### Official Plugins
 
 <br>
-<br>
 
-<PluginCardList :plugins="officialPlugins" />
+<EntityCardList :entities="officialPlugins" />
 
 ### Community Plugins
 
 <br>
-<br>
 
-<PluginCardList :plugins="communityPlugins" />
+<EntityCardList :entities="communityPlugins" />
