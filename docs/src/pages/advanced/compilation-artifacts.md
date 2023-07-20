@@ -102,7 +102,7 @@ The `factorySource.ts` file can be thought of as a map, connecting contract name
 
 ## Retrieving Artifacts
 
-The `locklift.factory.getContractArtifacts` method is utilized to retrieve these artifacts based on the .tsol or .sol file name, or the name from `config.extarnalContracts[pathToLib]`.
+The `locklift.factory.getContractArtifacts` method is utilized to retrieve these artifacts based on the .tsol or .sol file name.
 
 This will look something like this:
 

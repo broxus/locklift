@@ -24,7 +24,7 @@ Each transaction within the TVM-compatible blockchain contains or indirectly ref
 
 - The account to which the transaction belongs.
 - The logical time of the transaction.
-- One or zero inbound messages processed by the transaction.
+- An inbound message processed by the transaction. Each transaction is always initiated by this message.
 - The number of generated outbound messages.
 - The outbound messages themselves.
 - The initial and final state of the account, including its balance.
@@ -45,15 +45,5 @@ There are different types of transactions allowed in the blockchain, each servin
 The processing of an inbound message is split into two phases: the computing phase and the action phase. During the computing phase, the virtual machine is invoked and the necessary computations are performed, but no actions outside the virtual machine are taken. The actions themselves are postponed until the action phase, during which the user smart contract is not invoked at all.
 
 :::tip
-O gain a deeper understanding of the Compute and Action phases, please refer to our detailed guide [here](./compute-action-phases.md).
+To gain a deeper understanding of the Compute and Action phases, please refer to our detailed guide [here](./compute-action-phases.md).
 :::
-
-## Additional Transaction Considerations
-
-In the context of TVM-compatible blockchains, there are several additional considerations related to transactions:
-
-- **Bouncing Inbound Messages to Non-Existent Accounts:** If an inbound message with its bounce flag set is sent to a previously non-existent account, and the transaction is aborted, then the account is not created even as an uninitialized account, since it would have zero balance and no code and data anyways.
-
-- **Split Transactions:** Split transactions consist of two transactions. If an account needs to be split into two accounts, first a split prepare transaction, similar to a tock transaction, is issued for the account. It must be the last transaction for the account in a shardchain block. The output of the processing stage of a split prepare transaction consists not only of the new state of the account, but also of the new state of the new account, represented by a constructor message to the new account. Then, a split install transaction is added for the new account, with a reference to the corresponding split prepare transaction. The split install transaction must be the only transaction for a previously non-existent account in the block. It effectively sets the state of the new account as defined by the split prepare transaction.
-
-- **Merge Transactions:** Merge transactions also consist of two transactions each. If an account needs to be merged into another account, first a merge prepare transaction is issued for the account to be merged, which converts all of its persistent state and balance into a special constructor message to the account it is merging with. Then, a merge install transaction for the account it is merging with, referring to the corresponding merge prepare transaction, processes that constructor message. The merge install transaction is similar to a tick transaction in that it must be the first transaction for the account in a block, but it is located in a shardchain block, not in the masterchain, and it has a special inbound message.

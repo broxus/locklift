@@ -7,8 +7,6 @@ outline: deep
 
 After you've written and compiled your smart contracts, the next crucial step is to test them to ensure they behave as intended. This process involves creating test cases that cover different scenarios and edge cases that your contract might encounter. This guide will introduce you to the recommended approach for testing contracts using Locklift.
 
-Locklift is a Node.js-based framework for developing, testing, deploying, and maintaining smart contracts on TVM-compatible blockchains. It provides a set of tools and utilities that simplify the process of interacting with the blockchain, managing keys, deploying contracts, and testing them.
-
 ## Inital Setup
 
 Before you can write and run tests, you need to set up your testing environment. This guide assumes you've already set up a Locklift project. If you haven't done so, please refer to the [Setting Up A Project](./setting-up-a-project.md) section in the documentation.
@@ -21,7 +19,7 @@ When you initialize a new Locklift project, a simple test is automatically gener
 
 Writing tests involves defining test cases that verify the behavior of your contract. Each test case should focus on a specific function or feature of your contract.
 
-In Locklift, tests are written using [Mocha](https://mochajs.org/), a JavaScript test framework, and [Chai](https://www.chaijs.com/), a BDD/TDD assertion library. Mocha provides functions to define test suites (`describe`) and test cases (`it`), while Chai provides functions to assert the behavior of your contract (`expect`).
+In Locklift, tests are written using [Mocha](https://mochajs.org/), a JavaScript test framework, and [Chai](https://www.chaijs.com/), a BDD/TDD assertion library.
 
 A simple test in Locklift might look like the following:
 
@@ -112,6 +110,90 @@ describe('Test Sample contract', async function () {
 ```
 
 In this test, we first load the contract factory and verify that the `code`, `ABI`, and `tvc` are available. Then, we deploy the contract and assert that it has a balance. Finally, we interact with the contract by calling its methods and asserting that the state is updated correctly. This simple example demonstrates the basic structure of a test in Locklift. In practice, your tests will likely be more complex and cover a wider range of scenarios. However, the principles remain the same: load your contract, deploy it, interact with it, and assert that it behaves as expected.
+
+## Running Tests
+
+To run Mocha tests for your project contracts, use the npm run test command. This command is already included in your package.json file as a part of the Locklift project template. It is configured to test the project in a local environment.
+
+```json
+"scripts": {
+  "test": "npx locklift test --network local"
+}
+```
+
+Then, run your tests:
+
+```bash
+npm run test
+```
+
+You'll see output similar to this:
+
+```
+  Test Sample contract
+    Contracts
+      ✓ Load contract factory
+      ✓ Deploy contract (1491ms)
+      ✓ Interact with contract (1110ms)
+
+
+  3 passing (3s)
+```
+
+If you prefer to run the tests using Locklift directly, you can also do so:
+
+```bash
+npx locklift test --network local
+```
+
+### Sandbox
+
+When running tests in a local environment, make sure to first start the local node (sandbox).
+
+```bash
+everdev se start
+```
+
+or
+
+```bash
+docker run -d --name local-node -e USER_AGREEMENT=yes -p80:80 tonlabs/local-node
+```
+
+For more details on how to do this, refer to the [Everdev](https://github.com/tonlabs/everdev).
+
+### Test Configuration
+
+Locklift provides several options to customize the testing process:
+
+```bash
+npx locklift test -h
+```
+
+This command gives you the list of options:
+
+```
+Usage: locklift test [options]
+
+Run mocha tests
+
+Options:
+  --disable-build              Disable automatic contracts build (default: false)
+  -t, --test <test>            Path to Mocha test folder (default: "test")
+  -c, --contracts <contracts>  Path to the contracts folder (default: "contracts")
+  -b, --build <build>          Path to the build folder (default: "build")
+  --disable-include-path       Disables including node_modules. Use this with old compiler versions (default: false)
+  -n, --network <network>      Network to use, choose from configuration
+  --config <config>            Path to the config file (default: locklift.config.ts)
+  --tests [tests...]           Set of tests to run, separated by comma
+  -h, --help                   display help for command
+```
+
+These options can be used to configure various aspects of the testing process, such as the path to the test or contracts folders, the network to use, and the specific set of tests to run. You can customize these options according to your project's needs.
+
+```bash
+npx locklift test --network venom_testnet --test src/venom-test --contracts src/contracts
+```
 
 ## Debugging
 
@@ -376,7 +458,7 @@ locklift.tracing.removeAllowedCodesForAddress(SOME_ADDRESS, {
 });
 ```
 
-### Tracing Features (Experimental)
+### Tracing Features
 
 For using these features, first, you need to wrap the transaction by tracing, and make sure that tracing is enabled. Otherwise, the `traceTree` will be undefined.
 

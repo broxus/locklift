@@ -335,60 +335,6 @@ await myContract.methods.mint({}).send({
 });
 ```
 
-## Deprecated AccountFactory (`locklift.factory.getAccountsFactory`)
-
-As of version 2.2.0, the use of `locklift.factory.getAccountsFactory` is deprecated. It's recommended to use `locklift.factory.accounts` instead.
-
-This module previously provided a generic account factory. You could provide your own implementation of the account if needed, with one constraint - the custom contract should include a specific method.
-
-```typescript
-accountAbiBase = {
-  functions: [
-    {
-      name: 'sendTransaction',
-      inputs: [
-        { name: 'dest', type: 'address' },
-        { name: 'value', type: 'uint128' },
-        { name: 'bounce', type: 'bool' },
-        { name: 'flags', type: 'uint8' },
-        { name: 'payload', type: 'cell' },
-      ],
-      outputs: [],
-    },
-  ],
-};
-```
-
-```typescript
-let accountsFactory = locklift.factory.getAccountsFactory(
-  'Wallet' // name of contract used as a wallet
-);
-```
-
-Now you can use it for deploying contract or getting deployed ones.
-
-### Deploy
-
-```typescript
-const {contract: MyAccount, tx} = accountsFactory.deployNewAccount({
-  publicKey: signer.publicKey,
-  initParams: {
-    _randomNonce: getRandomNonce(),
-  },
-  constructorParams: {...},
-  value: locklift.utils.toNano(100000)
-});
-```
-
-### Get Account by Address
-
-```typescript
-const Account = accountsFactory.getAccount(
-  new Address('MyAddress'),
-  signer.publicKey
-);
-```
-
 ## Giver (`locklift.giver`)
 
 The Giver module in Locklift is akin to a specialized smart contract designed with the specific role of distributing tokens. In the context of the local node (sandbox), a preset Giver exists, already equipped with native tokens for your convenience.

@@ -17,12 +17,12 @@ Executing in an isolated environment, this phase ensures the integrity and secur
 
 ## Action Phase
 
-The Action Phase is the stage where the output messages created during the Compute Phase are dispatched. Actions that may occur during this phase include token transfers, calls to other smart contracts, state changes of the contract, or any other actions specified in the output messages.
+The Action Phase is the stage where the output messages created during the Compute Phase are dispatched. Actions that may occur during this phase include calling other smart contracts and any other actions specified in the output messages. These calls can lead to various outcomes such as token transfers and state changes of the receiving contract.
 
 The Action Phase enables the smart contract's interaction with other contracts within the blockchain network. However, the actual state changes only occur if the Action Phase is successfully completed.
 
 :::warning Сaution
-There's a maximum limit of 255 output messages that can be dispatched during the Action Phase. This limit includes internal outbound messages and event messages. Exceeding this limit will cause the transaction to be aborted.
+There's a maximum limit of 255 actions that can be dispatched during the Action Phase. This limit includes internal outbound messages and event messages. Exceeding this limit will cause the transaction to be aborted.
 :::
 
 ## Additional Transaction Phases
