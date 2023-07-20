@@ -27,6 +27,7 @@ module.exports = {
     'src/pages/advanced/compilation-artifacts.md': 'advanced/compilation-artifacts.md',
     'src/pages/advanced/building-plugins.md': 'advanced/building-plugins.md',
     'src/pages/plugins.md': 'plugins.md',
+    'src/pages/projects.md': 'projects.md',
   },
   themeConfig: {
     search: {
@@ -113,31 +114,12 @@ module.exports = {
       },
       {
         text: 'Plugins',
-        //collapsable: false,
         link: 'plugins.md',
-        // items: [
-        //   {
-        //     text: 'Official Plugins',
-        //     link: 'plugins/official-plugins.md',
-        //   },
-        //   {
-        //     text: 'Community Plugins',
-        //     link: 'plugins/community-plugins.md',
-        //   },
-        // ],
       },
-      // {
-      //   text: 'API Reference',
-      //   collapsable: false,
-
-      //   items: [
-      //     {
-      //       text: 'Sample Page',
-      //       collapsable: false,
-      //       link: '/api-reference/sample-page.md',
-      //     },
-      //   ],
-      // },
+      {
+        text: 'Projects',
+        link: 'projects.md',
+      },
     ],
 
     socialLinks: [{ icon: 'github', link: GITHUB_URL }],

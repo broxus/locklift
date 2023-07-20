@@ -9,8 +9,8 @@ import BDKOutlineItem from './components/shared/outline/BDKOutlineItem.vue';
 import BDKAccordionComponent from './components/shared/BDKAccordion.vue';
 import BDKDisconnectIcon from './components/shared/BDKDisconnectIcon.vue';
 
-import PluginCard from './../../src/components/plugins/PluginCard.vue';
-import PluginCardList from './../../src/components/plugins/PluginCardList.vue';
+import EntityCard from './../../src/components/EntityCard.vue';
+import EntityCardList from './../../src/components/EntityCardList.vue';
 
 export default {
   ...DefaultTheme,
@@ -23,7 +23,7 @@ export default {
     app.component('BDKDisconnectIcon', BDKDisconnectIcon);
     app.component('BDKAccordion', BDKAccordionComponent);
 
-    app.component('PluginCard', PluginCard);
-    app.component('PluginCardList', PluginCardList);
+    app.component('EntityCard', EntityCard);
+    app.component('EntityCardList', EntityCardList);
   },
 };
