@@ -9,6 +9,8 @@ In the context of TVM-compatible blockchains, the "Compute and Action Phases" ar
 
 Understanding these phases is crucial for effective smart contract development and efficient interaction with the TVM blockchain.
 
+<BDKImgContainer imageSrc="./../src/diagrams/compute-and-action-phases.png" />
+
 ## Compute Phase
 
 The Compute Phase is the first stage where the TVM executes the smart contract code invoked by a message. During this phase, all computations and state updates of the contract that do not interact with other contracts occur. The Compute Phase is deterministic, its outcome solely dependent on the input data and the current state of the smart contract.
