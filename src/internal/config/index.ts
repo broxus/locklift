@@ -45,10 +45,10 @@ export interface NetworkValue<T extends ConfigState = ConfigState.EXTERNAL> {
   giver: GiverConfig;
   keys: T extends ConfigState.EXTERNAL ? KeysConfig : Required<KeysConfig>;
   connection: ConnectionProperties;
-  providerConfig?: {
-    message?: MessageProperties;
-    initInput?: nt.InitInput | Promise<nt.InitInput>;
-  };
+  // providerConfig?: {
+  //   message?: MessageProperties;
+  //   initInput?: nt.InitInput | Promise<nt.InitInput>;
+  // };
   tracing?: {
     endpoint: string;
   };

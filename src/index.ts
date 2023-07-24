@@ -141,6 +141,7 @@ export class Locklift<FactorySource extends FactoryType> {
     }
 
     const proxyNetwork = new LockliftNetwork();
+    await proxyNetwork.initialize();
     // TODO: fix ts-ignore
     if (
       // @ts-ignore
