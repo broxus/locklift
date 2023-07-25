@@ -1,6 +1,7 @@
 import { Address, ProviderRpcClient } from "everscale-inpage-provider";
 import { httpService } from "../../httpService";
 import { AccountData, TracingTransportConnection } from "../types";
+import _ from "lodash";
 
 export class TracingGqlConnection implements TracingTransportConnection {
   constructor(readonly provider: ProviderRpcClient, readonly gqlEndpoint: string) {}
@@ -9,7 +10,7 @@ export class TracingGqlConnection implements TracingTransportConnection {
     return (await this.getAccountsData([account]))[0];
   }
 
-  async getAccountsData(accounts: Address[]): Promise<AccountData[]> {
+  private async _getAccountsData(accounts: Address[]): Promise<AccountData[]> {
     const msgQuery = `{
       accounts(
         filter: {
@@ -27,5 +28,11 @@ export class TracingGqlConnection implements TracingTransportConnection {
       .then(res => res.data.data);
     // eslint-disable-next-line camelcase
     return response.accounts.map(({ id, code_hash }) => ({ id, codeHash: code_hash }));
+  }
+
+  async getAccountsData(accounts: Address[]): Promise<AccountData[]> {
+    const chunked = _.chunk(accounts, 100);
+    const result = await Promise.all(chunked.map(chunk => this._getAccountsData(chunk)));
+    return _.flatten(result);
   }
 }
