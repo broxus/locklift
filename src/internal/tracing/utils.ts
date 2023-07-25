@@ -7,13 +7,13 @@ import path from "path";
 import * as process from "process";
 import chalk from "chalk";
 import { EngineTraceInfo } from "nekoton-wasm";
-import {ActionCodeHints, ComputeCodesHints, CONSOLE_ADDRESS} from "./constants";
+import { ActionCodeHints, ComputeCodesHints, CONSOLE_ADDRESS } from "./constants";
 
 const fs = require("fs");
 
 export const extractAccountsFromMsgTree = (msgTree: MessageTree): Address[] => {
   const extractAccounts = (msgTree: MessageTree): Address[] => {
-    const accounts: Address[] = (msgTree.dst && msgTree.dst !== CONSOLE_ADDRESS) ? [new Address(msgTree.dst)] : [];
+    const accounts: Address[] = msgTree.dst && msgTree.dst !== CONSOLE_ADDRESS ? [new Address(msgTree.dst)] : [];
     for (const outMsg of msgTree.outMessages) {
       accounts.push(...extractAccounts(outMsg));
     }
