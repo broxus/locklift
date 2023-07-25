@@ -3,7 +3,7 @@ import path from "path";
 import commander from "commander";
 import { ProviderRpcClient } from "everscale-inpage-provider";
 import type { Ed25519KeyPair } from "everscale-standalone-client";
-import { ConnectionProperties, NETWORK_PRESETS, ConnectionFactory } from "everscale-standalone-client/nodejs";
+import { ConnectionProperties, NETWORK_PRESETS } from "everscale-standalone-client/nodejs";
 import { Giver } from "../factory";
 import Joi from "joi";
 import { MessageProperties } from "everscale-standalone-client/client";
@@ -45,12 +45,9 @@ export interface NetworkValue<T extends ConfigState = ConfigState.EXTERNAL> {
   giver: GiverConfig;
   keys: T extends ConfigState.EXTERNAL ? KeysConfig : Required<KeysConfig>;
   connection: ConnectionProperties;
-  // providerConfig?: {
-  //   message?: MessageProperties;
-  //   initInput?: nt.InitInput | Promise<nt.InitInput>;
-  // };
-  tracing?: {
-    endpoint: string;
+  providerConfig?: {
+    message?: MessageProperties;
+    initInput?: nt.InitInput | Promise<nt.InitInput>;
   };
 }
 
