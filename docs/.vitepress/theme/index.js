@@ -14,6 +14,7 @@ import EntityCard from './../../src/components/EntityCard.vue';
 import EntityCardList from './../../src/components/EntityCardList.vue';
 import DeployAccount from './../../src/components/demos/DeployAccount.vue';
 import ComputeActionPhases from './../../src/components/demos/ComputeActionPhases.vue';
+import TransactionFinalization from './../../src/components/demos/TransactionFinalization.vue';
 
 export default {
   ...DefaultTheme,
@@ -32,5 +33,6 @@ export default {
 
     app.component('DeployAccount', DeployAccount);
     app.component('ComputeActionPhases', ComputeActionPhases);
+    app.component('TransactionFinalization', TransactionFinalization);
   },
 };

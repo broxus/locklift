@@ -1,14 +1,136 @@
+---
+outline: deep
+---
+
 # Concept of Transaction Finalization
 
 In the world of blockchain technology, the concept of transaction finalization is pivotal. It refers to the process of confirming and validating transactions within the network, ensuring their immutability and integration into the blockchain. This document aims to delve deeper into the specifics of transaction finalization in the context of TVM-compatible blockchains, which operate based on a pure actor model.
 
 ## Actor Model & Async Transactions
 
-<BDKImgContainer imageSrc="./../src/diagrams/transaction-finalization.png" />
-
 TVM-compatible blockchains operate based on a pure actor model, an asynchronous and concurrent computational model. In this system, each contract acts as an independent actor, processing its own messages. Hence, the execution of a smart contract or transaction is not a single, atomic operation. Instead, it's a sequence of actions that can happen asynchronously.
 
 For instance, let's imagine `Contract A` calling `Contract B`. In many other blockchain models, if `Contract B` runs out of gas during execution, the entire transaction would be rolled back, including the state changes in `Contract A` that occurred prior to the call. However, in the actor model of TVM blockchains, if `Contract B` encounters an error, the changes `Contract A` made before calling `Contract B` would persist. The execution failure of `Contract B` only rolls back changes related to `Contract B`'s execution. This characteristic ensures a higher degree of reliability and security in transaction processing.
+
+### Demonstration
+
+<br>
+<BDKImgContainer imageSrc="./../transaction-finalization.png" />
+
+<br>
+<TransactionFinalization />
+
+To demonstrate this concept, consider the TypeScript example below. It interacts with two smart contracts, `Contract A` and `Contract B`. `Contract A` calls a function on `Contract B`, which runs out of gas and fails. The state changes in `Contract B` are rolled back, but the state changes in `Contract A` persist.
+
+```typescript
+import {
+  Address,
+  ProviderRpcClient,
+} from 'everscale-inpage-provider';
+import { testContract, toNano } from './../../helpers';
+
+const provider = new ProviderRpcClient();
+
+async function fetchStates() {
+  const ContractA = new provider.Contract(
+    testContract.ABI,
+    new Address(testContract.address)
+  );
+  const ContractB = new provider.Contract(
+    testContract.ABI,
+    new Address(testContract.dublicateAddress)
+  );
+
+  const { _state: prevState_A } = await ContractA.methods
+    .getDetails()
+    .call();
+  const { _state: prevState_B } = await ContractB.methods
+    .getDetails()
+    .call();
+
+  console.log(`prevState_A: ${prevState_A}`);
+  console.log(`prevState_B: ${prevState_B}`);
+}
+
+async function executeTransaction() {
+  try {
+    await provider.ensureInitialized();
+    const { accountInteraction } = await provider.requestPermissions({
+      permissions: ['basic', 'accountInteraction'],
+    });
+
+    const ContractA = new provider.Contract(
+      testContract.ABI,
+      new Address(testContract.address)
+    );
+
+    const senderAddress = accountInteraction?.address!;
+
+    await fetchStates();
+
+    const { _state: prevState_A } = await ContractA.methods
+      .getDetails()
+      .call();
+
+    const payload = {
+      abi: JSON.stringify(testContract.ABI),
+      method: 'setOtherState',
+      params: {
+        other: new Address(testContract.dublicateAddress),
+        _state: Number(prevState_A) + 1,
+        count: 256,
+      },
+    };
+    const { transaction: tx } = await provider.sendMessage({
+      sender: senderAddress,
+      recipient: new Address(testContract.address),
+      amount: toNano(0.3),
+      bounce: true,
+      payload: payload,
+    });
+
+    console.log(`Transaction: ${JSON.stringify(tx, null, 2)}`);
+
+    const subscriber = new provider.Subscriber();
+    const traceStream = subscriber.trace(tx);
+
+    traceStream.on(async data => {
+      if (data.aborted) {
+        await fetchStates();
+        traceStream.stopProducer();
+      }
+    });
+  } catch (err: any) {
+    console.log(`Error: ${err.message || 'Unknown Error'}`);
+  }
+}
+
+executeTransaction();
+```
+
+In this example, `Contract A` calls the `setOtherState()` function, which changes the state of `Contract A` and calls the `increaseState()` function on `Contract B`. The `increaseState()` function is designed to fail due to insufficient gas. When this function fails, the state changes in `Contract B` are rolled back, but the state changes in `Contract A` persist, demonstrating the asynchronous nature of transactions in TVM-compatible blockchains.
+
+Here are the functions from the smart contract:
+
+```solidity
+function setOtherState (ISample other, uint _state, uint count) public cashBack {
+    state = _state;
+    other.increaseState{
+        value: 0.2 ever,
+        flag: 2,
+        bounce: false
+    }(count);
+}
+
+function increaseState(uint count) public  {
+    tvm.rawReserve(address(this).balance - msg.value, 2);
+    for (uint i = 0; i < count; i++) {
+        state++;
+        emit StateChange(state);
+    }
+    msg.sender.transfer({ value: 0, flag: 129 });
+}
+```
 
 ## Transaction Flows
 

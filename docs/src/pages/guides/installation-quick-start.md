@@ -1,5 +1,4 @@
 ---
-title: Installation & Quick Start
 outline: deep
 ---
 
@@ -37,6 +36,10 @@ npx locklift init -f
 # or specify a new one
 npx locklift init --path amazing-locklift-project
 ```
+
+:::tip
+If you run `npx locklift init -f` after `npm init`, it will overwrite the existing files, including `package.json`. This process might not be ideal as it's still a bit raw. If you want to avoid this, you can run `npx locklift init` without the prior installation of Locklift. `npx` will automatically fetch Locklift and create a sample project. This is a handy workaround that doesn't contradict the steps mentioned above.
+:::
 
 ### Building the Contract
 
@@ -86,13 +89,29 @@ Let's build the contract using the command below:
 npx locklift build
 ```
 
-This command will use the specified TON Solidity compiler and TVM linker to build all contracts in the `contracts/` directory. The built files will be placed in `compiled/`.
+This command will use the specified TON Solidity compiler and TVM linker to build all contracts in the `contracts/` directory. The built files will be placed in `build/`.
 
 ```
 [INFO]  Found 1 sources
 [INFO]  factorySource generated
 [INFO]  Built
 ```
+
+### Sandbox
+
+Before running tests in a local environment, make sure to first start the local node (sandbox).
+
+```bash
+everdev se start
+```
+
+or
+
+```bash
+docker run -d --name local-node -e USER_AGREEMENT=yes -p80:80 tonlabs/local-node
+```
+
+For more details on how to do this, refer to the [Everdev](https://github.com/tonlabs/everdev).
 
 ### Testing the Contract
 
@@ -192,7 +211,7 @@ This sample test file comprises three major stages:
 
 1. **Loading the contract factory**: This phase validates the existence of the contract code, ABI (Application Binary Interface), and the tvc (TVM binary code).
 
-2. **Deploying the contract**: Here, the contract is deployed with an initial state and funded with 2 nanotokens. The test then asserts that the balance of the contract's address is more than 0, ensuring successful deployment.
+2. **Deploying the contract**: Here, the contract is deployed with an initial state and funded with 2 coins converted to nanocoins. The test then asserts that the balance of the contract's address is more than 0, ensuring successful deployment.
 
 3. **Interacting with the contract**: In this phase, the state of the contract is altered, and the test verifies if the state change was successful.
 
@@ -208,6 +227,37 @@ npx locklift run --network local --script scripts/1-deploy-sample.ts
 
 This command will run the specified script with an already configured `locklift` module. In the example above, we are deploying the `Sample.tsol` contract.
 
+```typescript
+async function main() {
+  const signer = (await locklift.keystore.getSigner('0'))!;
+  const { contract: sample, tx } =
+    await locklift.factory.deployContract({
+      contract: 'Sample',
+      publicKey: signer.publicKey,
+      initParams: {
+        _nonce: locklift.utils.getRandomNonce(),
+      },
+      constructorParams: {
+        _state: 0,
+      },
+      value: locklift.utils.toNano(3),
+    });
+
+  console.log(`Sample deployed at: ${sample.address.toString()}`);
+}
+
+main()
+  .then(() => process.exit(0))
+  .catch(e => {
+    console.log(e);
+    process.exit(1);
+  });
+```
+
 ```
 Sample deployed at: 0:a56a1882231c9d901a1576ec2187575b01d1e33dd71108525b205784a41ae6d0
 ```
+
+:::tip
+In essence, the deployment process is divided into two parts - funding from the giver, and then the actual deployment of the code. We will delve deeper into this process further in the [Deploying Contracts](./deploying-contracts.md).
+:::

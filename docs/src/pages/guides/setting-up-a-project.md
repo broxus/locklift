@@ -1,5 +1,4 @@
 ---
-title: Setting Up A Project
 outline: deep
 ---
 

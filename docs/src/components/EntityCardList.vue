@@ -1,6 +1,6 @@
 <template>
   <div class="card-list">
-    <EntityCard v-for="entity in entities" :entity="entity" :key="entity.name" />
+    <EntityCard v-for="entity in entities" :key="entity.name" :entity="entity" />
   </div>
 </template>
 

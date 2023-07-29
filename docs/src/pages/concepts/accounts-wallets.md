@@ -1,5 +1,4 @@
 ---
-title: Accounts & Wallets
 outline: deep
 ---
 
@@ -23,7 +22,7 @@ After this process, we get an account in the blockchain with the status `Uniniti
 
 To transition an account to the `Active` status, we need to send a specially formulated message containing the data and code of this contract. Anyone can send such a message. Validators will verify that the contract address equals `hash(hash(code) + hash(data))`, and if everything matches, the account will be initialized. This message can also include a function to be called immediately after account activation, along with its arguments. By default, the constructor is called.
 
-Once the account becomes active, it can accept incoming internal and external messages. Every time an account receives a message, a transaction begins, during which the account can create up to 255 outgoing internal messages.
+Once the account becomes active, it can accept incoming internal and external messages. Every time an account receives a message, a transaction begins, during which the account can create up to 255 actions such as Internal Messages, External Messages, rawReserve, setCode.
 
 ### Utilization
 
@@ -32,6 +31,10 @@ To create a wallet in the network, we simply create a private/public key pair, t
 When an account receives a message, the Transaction Executor is launched. Before the contract code execution begins, a storage fee is deducted from the account for all the time that has passed since the previous transaction. The storage fee depends linearly on the size of the contract's data and code. If the contract's balance becomes negative after deducting the storage fee, the transaction does not occur, and the account transitions to the `Frozen` state. In this state, the contract's data and code are deleted, leaving only the state hash. The contract will remain in the Frozen state until the debt for its storage reaches the deletion threshold. This is a network parameter, currently -0.1. After that, the contract will be permanently deleted without the possibility of recovery.
 
 Also, during a transaction, a contract can create an outgoing message with a special flag, indicating that all remaining money should be sent with this message, after which the account should be deleted.
+
+:::warning Сaution
+Please note that the storage fee, which depends linearly on the size of the contract's data and code, is not a one-time payment. This fee is essentially a rental cost for the storage space used by the contract. The fee is charged for the size of the code multiplied by the time elapsed since the last payment.
+::::
 
 ## Account Abstraction
 
@@ -45,7 +48,7 @@ An account is deployed with some initial state (code + data), and the TVM includ
 
 ### Interaction
 
-Users communicate with accounts by sending External Messages, using key pairs or session keys for authorization. With no EOAs, these External Messages do not carry any value. On receipt of an External Message, the TVM provides a small portion of "credit gas" to perform specific logic before accepting the message. Each Account can be seen as its own EntryPoint.
+Users communicate with accounts by sending External Messages, using key pairs. With no EOAs, these External Messages do not carry any value. On receipt of an External Message, the TVM provides a small portion of "credit gas" to perform specific logic before accepting the message. Each Account can be seen as its own EntryPoint.
 
 ### Account Address
 

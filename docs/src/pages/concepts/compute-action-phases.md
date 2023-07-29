@@ -1,5 +1,4 @@
 ---
-title: Compute & Action Phases
 outline: deep
 ---
 
@@ -9,13 +8,11 @@ In the context of TVM-compatible blockchains, the "Compute and Action Phases" ar
 
 Understanding these phases is crucial for effective smart contract development and efficient interaction with the TVM blockchain.
 
-<BDKImgContainer imageSrc="./../src/diagrams/compute-and-action-phases.png" />
-
 ## Compute Phase
 
 The Compute Phase is the first stage where the TVM executes the smart contract code invoked by a message. During this phase, all computations and state updates of the contract that do not interact with other contracts occur. The Compute Phase is deterministic, its outcome solely dependent on the input data and the current state of the smart contract.
 
-Executing in an isolated environment, this phase ensures the integrity and security of the computations. If an exception occurs during the Compute Phase (e.g., due to out-of-gas errors), the entire transaction is aborted, and the Action Phase does not commence. At the end of this phase, the TVM prepares a set of "output messages" to be dispatched in the Action Phase.
+Executing in an isolated environment, this phase ensures the integrity and security of the computations. If an exception occurs during the Compute Phase (e.g., due to out-of-gas errors), the entire transaction is aborted, and the Action Phase does not commence. At the end of this phase, the TVM prepares a set of "output actions" for dispatch during the Action Phase.
 
 ## Action Phase
 
@@ -24,8 +21,114 @@ The Action Phase is the stage where the output messages created during the Compu
 The Action Phase enables the smart contract's interaction with other contracts within the blockchain network. However, the actual state changes only occur if the Action Phase is successfully completed.
 
 :::warning Сaution
-There's a maximum limit of 255 actions that can be dispatched during the Action Phase. This limit includes internal outbound messages and event messages. Exceeding this limit will cause the transaction to be aborted.
+There's a maximum limit of 255 actions that can be dispatched during the Action Phase. This limit includes internal outbound messages, event messages, rawReserve, setCode. Exceeding this limit will cause the transaction to be aborted.
 :::
+
+## Demonstration
+
+<br>
+<BDKImgContainer imageSrc="./../compute-and-action-phases.png" />
+
+<br>
+<ComputeActionPhases />
+
+To enhance our understanding of the Compute and Action Phases, let's consider three different scenarios.
+
+**Scenario 1:** A successful execution of a smart contract with a function `increaseState` that emits an event 253 times, performs a raw reserve operation at the beginning, and sends back the "change" to the caller at the end of the function. This process results in exactly 255 actions, the maximum limit for the Action Phase.
+
+**Scenario 2:** A failed execution due to a gas shortage. We simulate this by clicking the "Call with Gas Failure" button.
+
+**Scenario 3:** A failed execution due to exceeding the maximum limit of 255 actions during the Action Phase. We simulate this by clicking the "Failure with 256 actions" button.
+
+Here is the function in the smart contract:
+
+```solidity
+function increaseState(uint count) public  {
+    tvm.rawReserve(address(this).balance - msg.value, 2);
+
+    for (uint i = 0; i < count; i++) {
+        state++;
+        emit StateChange(state);
+    }
+
+    msg.sender.transfer({ value: 0, flag: 129 });
+}
+```
+
+In the TypeScript code, we subscribe to the `StateChange` event and call the `increaseState` function. Here's how we do it:
+
+```typescript
+const contractEvents = exampleContract.events(subscriber);
+
+const eventCallback = (event: any) => {
+  console.log(JSON.stringify(event, null, 2));
+  contractEvents.stopProducer();
+};
+
+contractEvents.on(eventCallback);
+
+const payload = {
+  abi: JSON.stringify(testContract.ABI),
+  method: 'increaseState',
+  params: {
+    count: 253,
+  },
+};
+
+await provider.sendMessage({
+  sender: senderAddress,
+  recipient: new Address(testContract.address),
+  amount: toNano(1),
+  bounce: true,
+  payload: payload,
+});
+```
+
+When we click the "Call Contract" button for the first scenario, we get a response similar to the following:
+
+```json
+{
+  "event": "StateChange",
+  "data": {
+    "_state": "759"
+  },
+  "transaction": {
+    ...
+    "outMessages": [
+      ...
+    ]
+  }
+}
+```
+
+However, if we simulate a gas failure by clicking the "Call with Gas Failure" button for the second scenario, we get a different response:
+
+```json
+{
+  "id": {
+    ...
+  },
+  "aborted": true,
+  "exitCode": -14,
+  ...
+}
+```
+
+Now, let's consider the third scenario where we exceed the maximum limit of 255 actions. When we click the "Failure with 256 actions" button, the transaction is aborted with an resultCode 33, indicating that the maximum number of actions in the Action Phase was exceeded:
+
+```json
+{
+  "id": {
+    ...
+  },
+  "aborted": true,
+  "exitCode": 0,
+  "resultCode": 33,
+  ...
+}
+```
+
+In this case, no events are emitted, and the transaction is not completed.
 
 ## Additional Transaction Phases
 
