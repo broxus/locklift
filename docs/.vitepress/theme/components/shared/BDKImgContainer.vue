@@ -1,23 +1,36 @@
 <template>
   <div class="image-container">
-    <img :src="imageSrc" />
+    <img :src="src" :alt="altText" :style="{ maxWidth: maxWidth, padding: padding }" />
   </div>
 </template>
 
 <script lang="ts">
 export default {
   props: {
-    imageSrc: {
+    src: {
       type: String,
       required: true,
+    },
+    altText: {
+      type: String,
+      default: 'Image not available',
+    },
+    width: {
+      type: [Number, String],
+      default: 'auto',
+    },
+    height: {
+      type: [Number, String],
+      default: 'auto',
+    },
+    maxWidth: {
+      type: String,
+      default: '100%',
+    },
+    padding: {
+      type: String,
+      default: '0 0 0 0',
     },
   },
 };
 </script>
-
-<style scoped>
-.image-container img {
-  max-width: 75%;
-  height: auto;
-}
-</style>

@@ -14,10 +14,8 @@ For instance, let's imagine `Contract A` calling `Contract B`. In many other blo
 
 ### Demonstration
 
-<br>
-<BDKImgContainer imageSrc="./../transaction-finalization.png" />
+<BDKImgContainer src="./../transaction-finalization.png" padding="20px 0 20px 0"/>
 
-<br>
 <TransactionFinalization />
 
 To demonstrate this concept, consider the TypeScript example below. It interacts with two smart contracts, `Contract A` and `Contract B`. `Contract A` calls a function on `Contract B`, which runs out of gas and fails. The state changes in `Contract B` are rolled back, but the state changes in `Contract A` persist.

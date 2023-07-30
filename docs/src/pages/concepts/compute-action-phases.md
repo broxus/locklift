@@ -26,8 +26,7 @@ There's a maximum limit of 255 actions that can be dispatched during the Action 
 
 ## Demonstration
 
-<br>
-<BDKImgContainer imageSrc="./../compute-and-action-phases.png" />
+<BDKImgContainer src="./../compute-and-action-phases.png" altText="Compute and action phases diagram" padding="20px 0 20px 0"/>
 
 <br>
 <ComputeActionPhases />
