@@ -2,8 +2,9 @@
 
 Locklift, inspired by [Truffle](https://trufflesuite.com) and [Hardhat](https://hardhat.org), is a Node JS framework designed to facilitate the building, testing, running, and maintaining of smart contracts for TVM (Threaded Virtual Machine) blockchains like Everscale, Venom, Gosh and TON.
 
-![locklift logo](https://user-images.githubusercontent.com/15921290/183642554-6372baf5-bac5-4477-888b-870a6993f666.png)
+<BDKImgContainer src="./../../locklift-logo.png" altText="Locklift logo" maxWidth="100%"/>
 
+<template>
 <p align="center">
     <p align="center">Development environment for TVM-compatible blockchains.</p>
     <p align="center">
@@ -21,6 +22,7 @@ Locklift, inspired by [Truffle](https://trufflesuite.com) and [Hardhat](https://
     <img src="https://raw.githubusercontent.com/venom-blockchain/developer-program/main/vf-dev-program.png" alt="Logo" width="366.8" height="146.4">
   </a>
 </p>
+</template>
 
 With Locklift, developers can benefit from:
 
