@@ -15,8 +15,6 @@ import { defineComponent, ref, onMounted } from 'vue';
 import DisconnectIcon from './shared/BDKDisconnectIcon.vue';
 
 import { useProvider } from './../../../src/providers/useProvider';
-// import * as Toast from 'vue-toastification/dist/index.mjs';
-// const { useToast } = Toast;
 
 export default defineComponent({
   name: 'WalletControl',
@@ -25,9 +23,6 @@ export default defineComponent({
   },
 
   setup() {
-    ///const toast = useToast();
-
-    //this.$toast.success("I'm a toast!");
     const { provider, connectToWallet, changeAccount, disconnect } = useProvider();
 
     const connected = ref(false);
@@ -50,7 +45,6 @@ export default defineComponent({
     };
 
     const disconnectWallet = async () => {
-      //toast.success("I'm a toast!");
       await disconnect();
       connected.value = false;
     };

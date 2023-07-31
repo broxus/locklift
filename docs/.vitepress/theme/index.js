@@ -1,4 +1,8 @@
 import './main.scss';
+import 'vue-toastification/dist/index.css';
+
+import Toast from 'vue-toastification';
+import SimpleToast from './components/BDKSimpleToast.vue';
 // Theme components
 import DefaultTheme from 'vitepress/theme';
 
@@ -21,6 +25,23 @@ export default {
   Layout: BDKLayout,
   enhanceApp({ app }) {
     DefaultTheme.enhanceApp({ app });
+    app.use(Toast, {
+      position: 'top-right',
+      timeout: 5000,
+      closeOnClick: false,
+      pauseOnFocusLoss: true,
+      pauseOnHover: true,
+      draggable: true,
+      draggablePercent: 0.7,
+
+      showCloseButtonOnHover: false,
+      hideProgressBar: false,
+      closeButton: 'button',
+      icon: true,
+      rtl: false,
+    });
+
+    app.component('SimpleToast', SimpleToast);
     app.component('BDKPage', BDKPage);
     app.component('BDKOutline', BDKOutlineComponent);
     app.component('BDKOutlineItem', BDKOutlineItem);

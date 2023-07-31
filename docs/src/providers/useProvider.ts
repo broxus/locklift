@@ -13,6 +13,8 @@ import {
   RawProviderEventData,
 } from 'everscale-inpage-provider';
 
+import { tryCatchToast } from './../helpers';
+
 import ProviderSelector from './../../.vitepress/theme/components/ProviderSelector.vue';
 
 type ConnectorWallet = {
@@ -363,13 +365,17 @@ const connectToWallet = async () => {
     fallback: connector.asProviderFallback(),
   });
 
-  await provider.requestPermissions({
-    permissions: ['basic', 'accountInteraction'],
-  });
+  tryCatchToast(async () => {
+    await provider.requestPermissions({
+      permissions: ['basic', 'accountInteraction'],
+    });
+  })();
 };
 
 const changeAccount = async () => {
-  await provider.changeAccount();
+  tryCatchToast(async () => {
+    await provider.changeAccount();
+  })();
 };
 
 const disconnect = async () => {
@@ -389,7 +395,9 @@ provider.hasProvider().then(async hasTonProvider => {
   }
   hasProvider.value = true;
 
-  await provider.ensureInitialized();
+  tryCatchToast(async () => {
+    await provider.ensureInitialized();
+  })();
 
   (await provider.subscribe('permissionsChanged')).on('data', event => {
     selectedAccount.value = event.permissions.accountInteraction;
@@ -402,7 +410,9 @@ provider.hasProvider().then(async hasTonProvider => {
   const currentProviderState = await provider.getProviderState();
   selectedNetwork.value = currentProviderState.networkId.toString();
   if (currentProviderState.permissions.accountInteraction != null) {
-    await connectToWallet();
+    tryCatchToast(async () => {
+      await connectToWallet();
+    })();
   }
 });
 

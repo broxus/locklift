@@ -10,7 +10,8 @@
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
 import { Address, ProviderRpcClient } from 'everscale-inpage-provider';
-import { testContract, toNano } from './../../helpers';
+import { testContract, toNano, txResultToast } from './../../helpers';
+import { toast } from '../../helpers/toast';
 
 enum TypeAction {
   Success = 0,
@@ -49,7 +50,7 @@ export default defineComponent({
       };
 
       contractEvents.on(eventCallback);
-      console.log('type', type);
+
       if (type === TypeAction.Success) {
         const payload = {
           abi: JSON.stringify(testContract.ABI),
@@ -58,15 +59,17 @@ export default defineComponent({
             count: 253,
           },
         };
-        await provider.sendMessage({
+
+        await provider.sendMessageDelayed({
           sender: senderAddress,
           recipient: new Address(testContract.address),
           amount: toNano(1),
           bounce: true,
           payload: payload,
         });
+
+        toast('Transaction Sent');
       } else if (type === TypeAction.GasFailure) {
-        console.log('gas failure');
         const payload = {
           abi: JSON.stringify(testContract.ABI),
           method: 'increaseState',
@@ -74,7 +77,7 @@ export default defineComponent({
             count: 253,
           },
         };
-        const { transaction: tx } = await provider.sendMessage({
+        const { transaction: tx } = await provider.sendMessageDelayed({
           sender: senderAddress,
           recipient: new Address(testContract.address),
           amount: toNano(0.001),
@@ -82,7 +85,9 @@ export default defineComponent({
           payload: payload,
         });
 
-        const traceStream = subscriber.trace(tx);
+        toast('Transaction Sent');
+
+        const traceStream = subscriber.trace(await tx);
 
         traceStream.on(data => {
           this.eventData = JSON.stringify(data, null, 2);
@@ -96,15 +101,16 @@ export default defineComponent({
             count: 254,
           },
         };
-        const { transaction: tx } = await provider.sendMessage({
+        const { transaction: tx } = await provider.sendMessageDelayed({
           sender: senderAddress,
           recipient: new Address(testContract.address),
           amount: toNano(1),
           bounce: true,
           payload: payload,
         });
+        toast('Transaction Sent');
 
-        const traceStream = subscriber.trace(tx);
+        const traceStream = subscriber.trace(await tx);
 
         traceStream.on(data => {
           this.eventData = JSON.stringify(data, null, 2);

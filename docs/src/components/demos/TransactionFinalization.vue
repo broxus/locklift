@@ -16,9 +16,9 @@
 <script lang="ts">
 import { defineComponent, ref, Ref } from 'vue';
 import { Address, ProviderRpcClient } from 'everscale-inpage-provider';
-import { testContract, toNano } from './../../helpers';
-
-const provider = new ProviderRpcClient();
+import { testContract, toast, toNano } from './../../helpers';
+import { useProvider } from '../../providers/useProvider';
+const { provider } = useProvider();
 
 export default defineComponent({
   name: 'IncreaseStateComponent',
@@ -73,7 +73,7 @@ export default defineComponent({
             count: 256,
           },
         };
-        const { transaction: tx } = await provider.sendMessage({
+        const { transaction: tx } = await provider.sendMessageDelayed({
           sender: senderAddress,
           recipient: new Address(testContract.address),
           amount: toNano(0.3),
@@ -81,8 +81,10 @@ export default defineComponent({
           payload: payload,
         });
 
+        toast('Transaction sent', 0);
+
         const subscriber = new provider.Subscriber();
-        const traceStream = subscriber.trace(tx);
+        const traceStream = subscriber.trace(await tx);
 
         traceStream.on(async data => {
           if (data.aborted) {
@@ -92,7 +94,11 @@ export default defineComponent({
           }
         });
       } catch (err: any) {
-        transaction.value = err.message || 'Unknown Error';
+        if (err.message.includes('"exitCode": -14,')) {
+          transaction.value = err.message || 'Unknown Error';
+        } else {
+          toast(err.message, 0);
+        }
       }
     }
 
