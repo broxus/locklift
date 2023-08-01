@@ -19,12 +19,16 @@ import EntityCardList from './../../src/components/EntityCardList.vue';
 import DeployAccount from './../../src/components/demos/DeployAccount.vue';
 import ComputeActionPhases from './../../src/components/demos/ComputeActionPhases.vue';
 import TransactionFinalization from './../../src/components/demos/TransactionFinalization.vue';
+import { toast } from '../../src/helpers';
 
 export default {
   ...DefaultTheme,
   Layout: BDKLayout,
   enhanceApp({ app }) {
     DefaultTheme.enhanceApp({ app });
+    app.config.errorHandler = function (err, vm, info) {
+      toast(err.message, 0);
+    };
     app.use(Toast, {
       position: 'top-right',
       timeout: 5000,
