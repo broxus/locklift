@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { useRoute, useData } from 'vitepress';
 import DefaultTheme from 'vitepress/theme';
-import { onMounted, computed, ref, Ref, onUpdated } from 'vue';
+import { onMounted, computed, ref, Ref, onUpdated, provide, reactive } from 'vue';
 
 import { getApiReference, ApiRefPage } from './../../../src/api';
 import BDKWalletControl from './BDKWalletControl.vue';
 import BDKOutline from './shared/outline/BDKOutline.vue';
+import { testContract } from '../../../src/helpers';
+import { Address } from 'everscale-inpage-provider';
 
 const { Layout } = DefaultTheme;
 const route = useRoute();
@@ -24,6 +26,13 @@ let apiReference: Ref<void | ApiRefPage | undefined> = ref();
 const isApiReferencePage = computed(() => {
   return frontmatter.value.apiReference ?? false;
 });
+
+const addresses = testContract.getAddress();
+const testAddress = reactive(new Address(addresses.address));
+const dublicateTestAddress = reactive(new Address(addresses.dublicateAddress));
+
+provide('testAddress', testAddress);
+provide('dublicateTestAddress', dublicateTestAddress);
 
 onMounted(async () => {
   if (!isApiReferencePage.value) {

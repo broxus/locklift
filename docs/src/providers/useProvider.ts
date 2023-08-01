@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { createApp, h, nextTick, ref, shallowRef, watch } from 'vue';
+import { createApp, h, inject, nextTick, provide, reactive, ref, shallowRef, watch } from 'vue';
 
 import {
   Permissions,
@@ -11,9 +11,10 @@ import {
   RawProviderRequest,
   RawProviderApiResponse,
   RawProviderEventData,
+  Address,
 } from 'everscale-inpage-provider';
 
-import { tryCatchToast } from './../helpers';
+import { testContract, tryCatchToast } from './../helpers';
 
 import ProviderSelector from './../../.vitepress/theme/components/ProviderSelector.vue';
 
@@ -129,7 +130,7 @@ class Connector {
         this.providerPromise = new Promise<Provider>(resolve => {
           this.providerResolve = resolve;
 
-          const savedProviderKey = this.getCookie('savedProviderKey');
+          const savedProviderKey = getSavedProviderKey();
           if (savedProviderKey) {
             const savedProvider = this.getProviderByKey(savedProviderKey);
             if (savedProvider) {
@@ -146,7 +147,7 @@ class Connector {
 
   public initiateConnection() {
     if (this.providerResolve) {
-      const savedProviderKey = this.getCookie('savedProviderKey');
+      const savedProviderKey = getSavedProviderKey();
       if (savedProviderKey) {
         const savedProvider = this.getProviderByKey(savedProviderKey);
         if (savedProvider) {
@@ -210,7 +211,7 @@ class Connector {
   }
 
   selectProvider(onSelect: (provider: Provider) => void): boolean {
-    const savedProviderKey = this.getCookie('savedProviderKey');
+    const savedProviderKey = getSavedProviderKey();
 
     if (savedProviderKey) {
       const savedProvider = this.getProviderByKey(savedProviderKey);
@@ -310,21 +311,6 @@ class Connector {
     document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/';
   }
 
-  getCookie(name: string) {
-    if (typeof document === 'undefined') {
-      return null;
-    }
-
-    let nameEQ = name + '=';
-    let ca = document.cookie.split(';');
-    for (let i = 0; i < ca.length; i++) {
-      let c = ca[i];
-      while (c.charAt(0) == ' ') c = c.substring(1, c.length);
-      if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
-    }
-    return null;
-  }
-
   disconnectProvider() {
     this.provider.inner = undefined;
 
@@ -352,6 +338,21 @@ const connector = new Connector({
   ],
 });
 
+export const getSavedProviderKey = (name: string = 'savedProviderKey') => {
+  if (typeof document === 'undefined') {
+    return null;
+  }
+
+  let nameEQ = name + '=';
+  let ca = document.cookie.split(';');
+  for (let i = 0; i < ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+    if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+  }
+  return null;
+};
+
 // NOTE: it uses fallback to allow using other extensions
 const provider = new ProviderRpcClient({
   forceUseFallback: true,
@@ -365,23 +366,20 @@ const connectToWallet = async () => {
     fallback: connector.asProviderFallback(),
   });
 
-  tryCatchToast(async () => {
-    await provider.requestPermissions({
-      permissions: ['basic', 'accountInteraction'],
-    });
-  })();
+  await provider.requestPermissions({
+    permissions: ['basic', 'accountInteraction'],
+  });
 };
 
 const changeAccount = async () => {
-  tryCatchToast(async () => {
-    await provider.changeAccount();
-  })();
+  await provider.changeAccount();
 };
 
 const disconnect = async () => {
   await provider.disconnect();
 
   connector.disconnectProvider();
+  location.reload();
 };
 
 const hasProvider = ref(false);

@@ -8,10 +8,13 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
-import { Address, ProviderRpcClient } from 'everscale-inpage-provider';
-import { testContract, toNano, txResultToast } from './../../helpers';
+import { defineComponent, inject, ref } from 'vue';
+import { Address } from 'everscale-inpage-provider';
+import { testContract, toNano } from './../../helpers';
 import { toast } from '../../helpers/toast';
+
+import { useProvider } from '../../providers/useProvider';
+const { provider } = useProvider();
 
 enum TypeAction {
   Success = 0,
@@ -19,14 +22,15 @@ enum TypeAction {
   ActionPhaseFailure256 = 2,
 }
 
-const provider = new ProviderRpcClient();
-
 export default defineComponent({
   name: 'IncreaseStateComponent',
   setup() {
     const eventData = ref();
 
-    return { eventData };
+    const testAddress: Address = inject('testAddress')!;
+    const dublicateTestAddress: Address = inject('dublicateTestAddress')!;
+
+    return { eventData, testAddress, dublicateTestAddress };
   },
   methods: {
     async increaseState(type: TypeAction) {
@@ -34,23 +38,18 @@ export default defineComponent({
       const { accountInteraction } = await provider.requestPermissions({
         permissions: ['basic', 'accountInteraction'],
       });
-
       const exampleContract = new provider.Contract(
         testContract.ABI,
-        new Address(testContract.address)
+        new Address(testContract.getAddress())
       );
       const senderAddress = accountInteraction?.address!;
-
       const subscriber = new provider.Subscriber();
       const contractEvents = exampleContract.events(subscriber);
-
       const eventCallback = (event: any) => {
         this.eventData = JSON.stringify(event, null, 2);
         contractEvents.stopProducer();
       };
-
       contractEvents.on(eventCallback);
-
       if (type === TypeAction.Success) {
         const payload = {
           abi: JSON.stringify(testContract.ABI),
@@ -59,16 +58,14 @@ export default defineComponent({
             count: 253,
           },
         };
-
         await provider.sendMessageDelayed({
           sender: senderAddress,
-          recipient: new Address(testContract.address),
+          recipient: this.testAddress,
           amount: toNano(1),
           bounce: true,
           payload: payload,
         });
-
-        toast('Transaction Sent');
+        toast('Transaction Sent', 1);
       } else if (type === TypeAction.GasFailure) {
         const payload = {
           abi: JSON.stringify(testContract.ABI),
@@ -79,16 +76,13 @@ export default defineComponent({
         };
         const { transaction: tx } = await provider.sendMessageDelayed({
           sender: senderAddress,
-          recipient: new Address(testContract.address),
+          recipient: this.testAddress,
           amount: toNano(0.001),
           bounce: true,
           payload: payload,
         });
-
-        toast('Transaction Sent');
-
+        toast('Transaction Sent', 1);
         const traceStream = subscriber.trace(await tx);
-
         traceStream.on(data => {
           this.eventData = JSON.stringify(data, null, 2);
           traceStream.stopProducer();
@@ -103,15 +97,13 @@ export default defineComponent({
         };
         const { transaction: tx } = await provider.sendMessageDelayed({
           sender: senderAddress,
-          recipient: new Address(testContract.address),
+          recipient: this.testAddress,
           amount: toNano(1),
           bounce: true,
           payload: payload,
         });
-        toast('Transaction Sent');
-
+        toast('Transaction Sent', 1);
         const traceStream = subscriber.trace(await tx);
-
         traceStream.on(data => {
           this.eventData = JSON.stringify(data, null, 2);
           traceStream.stopProducer();

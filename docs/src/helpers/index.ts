@@ -1,9 +1,26 @@
 import { Transaction } from 'everscale-inpage-provider';
 import { toast } from './toast';
+import { getSavedProviderKey } from '../providers/useProvider';
 
 export const testContract = {
-  address: `0:25eeaaf295e4559808b93a5bcd5791f3aa969c1dd61ced5e5e1df0e349573b35`,
-  dublicateAddress: `0:ce58a5340674998f7dbbc4e796aca41c30eb5c72abaa6e5cd5a44b3e79dfcf02`,
+  contracts: {
+    'EVER Wallet': {
+      address: `0:25eeaaf295e4559808b93a5bcd5791f3aa969c1dd61ced5e5e1df0e349573b35`,
+      dublicateAddress: `0:ce58a5340674998f7dbbc4e796aca41c30eb5c72abaa6e5cd5a44b3e79dfcf02`,
+    },
+    'VENOM Wallet': {
+      address: `0:8978c67c7bb707773e91b4f3a0c33b24346910dd0a906ea6806501fd4a8fec61`,
+      dublicateAddress: `0:a494e9f70a4b641ae4c19b91371a60dacf2ecfc1bb5ab46d7ac3dbb257ebd553`,
+    },
+  },
+  getAddress: () => {
+    const providerKey = getSavedProviderKey();
+    if (providerKey) {
+      return (testContract.contracts as Record<string, any>)[providerKey];
+    }
+
+    return testContract.contracts['EVER Wallet'];
+  },
   ABI: {
     'ABI version': 2,
     version: '2.2',

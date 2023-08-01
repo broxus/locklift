@@ -14,8 +14,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, Ref } from 'vue';
-import { Address, ProviderRpcClient } from 'everscale-inpage-provider';
+import { defineComponent, inject, ref, Ref } from 'vue';
+import { Address } from 'everscale-inpage-provider';
 import { testContract, toast, toNano } from './../../helpers';
 import { useProvider } from '../../providers/useProvider';
 const { provider } = useProvider();
@@ -29,15 +29,12 @@ export default defineComponent({
     const newState2 = ref('');
     const transaction = ref('');
 
+    const testAddress: Address = inject('testAddress')!;
+    const dublicateTestAddress: Address = inject('dublicateTestAddress')!;
+
     async function fetchStates(state_1: Ref<string>, state_2: Ref<string>) {
-      const exampleContract_1 = new provider.Contract(
-        testContract.ABI,
-        new Address(testContract.address)
-      );
-      const exampleContract_2 = new provider.Contract(
-        testContract.ABI,
-        new Address(testContract.dublicateAddress)
-      );
+      const exampleContract_1 = new provider.Contract(testContract.ABI, testAddress);
+      const exampleContract_2 = new provider.Contract(testContract.ABI, dublicateTestAddress);
 
       const { _state: newState_1 } = await exampleContract_1.methods.getDetails().call();
       const { _state: newState_2 } = await exampleContract_2.methods.getDetails().call();
@@ -53,10 +50,7 @@ export default defineComponent({
           permissions: ['basic', 'accountInteraction'],
         });
 
-        const exampleContract_1 = new provider.Contract(
-          testContract.ABI,
-          new Address(testContract.address)
-        );
+        const exampleContract_1 = new provider.Contract(testContract.ABI, testAddress);
 
         const senderAddress = accountInteraction?.address!;
 
@@ -68,20 +62,20 @@ export default defineComponent({
           abi: JSON.stringify(testContract.ABI),
           method: 'setOtherState',
           params: {
-            other: new Address(testContract.dublicateAddress),
+            other: dublicateTestAddress,
             _state: Number(prevState_1) + 1,
             count: 256,
           },
         };
         const { transaction: tx } = await provider.sendMessageDelayed({
           sender: senderAddress,
-          recipient: new Address(testContract.address),
+          recipient: testAddress,
           amount: toNano(0.3),
           bounce: true,
           payload: payload,
         });
 
-        toast('Transaction sent', 0);
+        toast('Transaction sent', 1);
 
         const subscriber = new provider.Subscriber();
         const traceStream = subscriber.trace(await tx);

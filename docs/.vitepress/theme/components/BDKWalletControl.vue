@@ -10,7 +10,7 @@
 
 <script lang="ts">
 /* eslint-disable */
-import { defineComponent, ref, onMounted } from 'vue';
+import { defineComponent, ref, onMounted, inject } from 'vue';
 
 import DisconnectIcon from './shared/BDKDisconnectIcon.vue';
 
@@ -42,6 +42,7 @@ export default defineComponent({
       await connectToWallet();
 
       connected.value = true;
+      location.reload();
     };
 
     const disconnectWallet = async () => {
