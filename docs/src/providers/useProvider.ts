@@ -405,7 +405,10 @@ provider.hasProvider().then(async hasTonProvider => {
 
   const currentProviderState = await provider.getProviderState();
   selectedNetwork.value = currentProviderState.networkId.toString();
-  await connectToWallet();
+
+  if (currentProviderState.permissions.accountInteraction != null) {
+    await connectToWallet();
+  }
 });
 
 watch(
