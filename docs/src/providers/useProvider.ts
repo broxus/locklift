@@ -14,7 +14,7 @@ import {
   Address,
 } from 'everscale-inpage-provider';
 
-import { testContract, tryCatchToast } from './../helpers';
+import { testContract } from './../helpers';
 
 import ProviderSelector from './../../.vitepress/theme/components/ProviderSelector.vue';
 
@@ -393,9 +393,7 @@ provider.hasProvider().then(async hasTonProvider => {
   }
   hasProvider.value = true;
 
-  tryCatchToast(async () => {
-    await provider.ensureInitialized();
-  })();
+  await provider.ensureInitialized();
 
   (await provider.subscribe('permissionsChanged')).on('data', event => {
     selectedAccount.value = event.permissions.accountInteraction;
@@ -407,11 +405,7 @@ provider.hasProvider().then(async hasTonProvider => {
 
   const currentProviderState = await provider.getProviderState();
   selectedNetwork.value = currentProviderState.networkId.toString();
-  if (currentProviderState.permissions.accountInteraction != null) {
-    tryCatchToast(async () => {
-      await connectToWallet();
-    })();
-  }
+  await connectToWallet();
 });
 
 watch(

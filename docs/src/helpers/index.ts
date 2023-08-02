@@ -133,11 +133,11 @@ export const errorExtractor = async <
   });
 };
 
-export const txResultToast = (txResult: Transaction) => {
-  if (txResult.aborted) {
-    toast(`Transaction aborted with code ${txResult.exitCode}`, 0);
-  } else {
-    toast(`Message sent`, 1);
-  }
-};
+// export const txResultToast = (txResult: Transaction) => {
+//   if (txResult.aborted) {
+//     toast(`Transaction aborted with code ${txResult.exitCode}`, 0);
+//   } else {
+//     toast(`Message sent`, 1);
+//   }
+// };
 export * from './toast';
