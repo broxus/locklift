@@ -44,7 +44,7 @@ The `init` command initializes a new Locklift project with a basic structure and
 
 After initializing your project, the next step is to configure your Locklift environment. This involves creating and setting up the `locklift.config.ts` file, which is crucial for defining how your project will interact with different networks.
 
-The configuration file allows you to specify settings such as the network connections, giver settings, key management, and more. While a detailed explanation of each configuration option is outside the scope of this section, you can refer to the dedicated [Configuration](./configuration.md) section for a deeper understanding.
+The configuration file allows you to specify settings such as the network connections, giver settings, key management, and more. While a detailed explanation of each configuration option is outside the scope of this section, you can refer to the dedicated [Configuration](./../configuration.md) section for a deeper understanding.
 
 ## Building Contracts
 

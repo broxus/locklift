@@ -1,5 +1,4 @@
 ---
-title: Deploying Contracts
 outline: deep
 ---
 

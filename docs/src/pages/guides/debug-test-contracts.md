@@ -1,5 +1,4 @@
 ---
-title: Debug & Testing Contracts
 outline: deep
 ---
 

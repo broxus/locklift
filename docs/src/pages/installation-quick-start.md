@@ -259,5 +259,5 @@ Sample deployed at: 0:a56a1882231c9d901a1576ec2187575b01d1e33dd71108525b205784a4
 ```
 
 :::tip
-In essence, the deployment process is divided into two parts - funding from the giver, and then the actual deployment of the code. We will delve deeper into this process further in the [Deploying Contracts](./deploying-contracts.md).
+In essence, the deployment process is divided into two parts - funding from the giver, and then the actual deployment of the code. We will delve deeper into this process further in the [Deploying Contracts](./guides/deploying-contracts.md).
 :::

@@ -11,19 +11,20 @@ module.exports = {
 
   plugins: [vue()],
   rewrites: {
-    'src/pages/index.md': 'index.md',
-    'src/pages/guides/installation-quick-start.md': 'guides/installation-quick-start.md',
-    'src/pages/guides/configuration.md': 'guides/configuration.md',
+    // 'src/pages/index.md': 'index.md',
+    'src/pages/installation-quick-start.md': 'installation-quick-start.md',
+    'src/pages/configuration.md': 'configuration.md',
+    'src/pages/concepts/accounts-wallets.md': 'concepts/accounts-wallets.md',
+    'src/pages/concepts/messages.md': 'concepts/messages.md',
+    'src/pages/concepts/transaction-finalization.md': 'concepts/transaction-finalization.md',
+    'src/pages/concepts/compute-action-phases.md': 'concepts/compute-action-phases.md',
+
     'src/pages/guides/setting-up-a-project.md': 'guides/setting-up-a-project.md',
     'src/pages/guides/compilation-contracts.md': 'guides/compilation-contracts.md',
     'src/pages/guides/debug-test-contracts.md': 'guides/debug-test-contracts.md',
     'src/pages/guides/deploying-contracts.md': 'guides/deploying-contracts.md',
     'src/pages/guides/writing-scripts.md': 'guides/writing-scripts.md',
     'src/pages/guides/getting-help.md': 'guides/getting-help.md',
-    'src/pages/concepts/accounts-wallets.md': 'concepts/accounts-wallets.md',
-    'src/pages/concepts/messages.md': 'concepts/messages.md',
-    'src/pages/concepts/transaction-finalization.md': 'concepts/transaction-finalization.md',
-    'src/pages/concepts/compute-action-phases.md': 'concepts/compute-action-phases.md',
     'src/pages/advanced/compilation-artifacts.md': 'advanced/compilation-artifacts.md',
     'src/pages/advanced/building-plugins.md': 'advanced/building-plugins.md',
     'src/pages/plugins.md': 'plugins.md',
@@ -38,21 +39,14 @@ module.exports = {
       { text: 'Community', link: HELP_URL },
     ],
     sidebar: [
+      { text: 'Overview', link: '/index.md' },
       {
-        items: [
-          {
-            text: 'Overview',
-            link: 'index.md',
-          },
-          {
-            text: 'Installation & Quick Start',
-            link: 'guides/installation-quick-start.md',
-          },
-          {
-            text: 'Configuration',
-            link: 'guides/configuration.md',
-          },
-        ],
+        text: 'Installation & Quick Start',
+        link: '/installation-quick-start.md',
+      },
+      {
+        text: 'Configuration',
+        link: '/configuration.md',
       },
       {
         text: 'Core Concepts',
@@ -60,19 +54,19 @@ module.exports = {
         items: [
           {
             text: 'Accounts & Wallets',
-            link: 'concepts/accounts-wallets.md',
+            link: '/concepts/accounts-wallets.md',
           },
           {
             text: 'Internal & External Messages',
-            link: 'concepts/messages.md',
+            link: '/concepts/messages.md',
           },
           {
             text: 'Transaction Finalization',
-            link: 'concepts/transaction-finalization.md',
+            link: '/concepts/transaction-finalization.md',
           },
           {
             text: 'Compute and Action Phases',
-            link: 'concepts/compute-action-phases.md',
+            link: '/concepts/compute-action-phases.md',
           },
         ],
       },
@@ -83,19 +77,19 @@ module.exports = {
         items: [
           {
             text: 'Setting Up a Project',
-            link: 'guides/setting-up-a-project.md',
+            link: '/guides/setting-up-a-project.md',
           },
           {
             text: 'Compiling Contracts',
-            link: 'guides/compilation-contracts.md',
+            link: '/guides/compilation-contracts.md',
           },
           {
             text: 'Debugging & Testing Contracts',
-            link: 'guides/debug-test-contracts.md',
+            link: '/guides/debug-test-contracts.md',
           },
-          { text: 'Deploying Contracts', link: 'guides/deploying-contracts.md' },
-          { text: 'Writing Scripts', link: 'guides/writing-scripts.md' },
-          { text: 'Getting help', link: 'guides/getting-help.md' },
+          { text: 'Deploying Contracts', link: '/guides/deploying-contracts.md' },
+          { text: 'Writing Scripts', link: '/guides/writing-scripts.md' },
+          { text: 'Getting help', link: '/guides/getting-help.md' },
         ],
       },
       {
@@ -104,21 +98,21 @@ module.exports = {
         items: [
           {
             text: 'Compilation Artifacts',
-            link: 'advanced/compilation-artifacts.md',
+            link: '/advanced/compilation-artifacts.md',
           },
           {
             text: 'Building plugins',
-            link: 'advanced/building-plugins.md',
+            link: '/advanced/building-plugins.md',
           },
         ],
       },
       {
         text: 'Plugins',
-        link: 'plugins.md',
+        link: '/plugins.md',
       },
       {
         text: 'Projects',
-        link: 'projects.md',
+        link: '/projects.md',
       },
     ],
 
