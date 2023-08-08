@@ -1,37 +1,13 @@
-include:
-  - project: "infrastructure/gitlab-ci"
-    ref: main
-    file: "/templates/cloudbuild-common.gitlab-ci.yaml"
-  - project: "infrastructure/gitlab-ci"
-    ref: main
-    file: "templates/deploy.gitlab-ci.yaml"
+image: node: 18
 
-stages:
-  - cloudbuild
-  - deploy
-
-cloudbuild:image:prod:
+pages:
+  script:
+    - cd docs
+    - npm install
+    - npx vitepress build
+    - mv .vitepress/dist public
+  artifacts:
+    paths:
+      - public
   only:
     - docs
-  except:
-    - tags
-  extends: .cloudbuild:common
-
-deploy:prod:
-  only:
-    - docs
-  except:
-    - tags
-  extends: .deploy
-  environment:
-    name: prod
-    on_stop: stop:prod
-
-stop:prod:
-  only:
-    - docs
-  except:
-    - tags
-  extends: .stop
-  environment:
-    name: prod
