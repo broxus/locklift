@@ -36,10 +36,8 @@
     "vite": "^4.3.9",
     "vite-plugin-externals": "^0.6.2",
     "vite-plugin-resolve-extension-vue": "^0.1.0",
-    "vitepress": "1.0.0-beta.3",
-    "vue": "^3.2.47"
-  },
-  "dependencies": {
-    "eth-ton-abi-converter": "^0.5.2"
+    "vitepress": "1.0.0-beta.6",
+    "vue": "^3.2.47",
+    "vue-toastification": "^2.0.0-rc.5"
   }
 }
