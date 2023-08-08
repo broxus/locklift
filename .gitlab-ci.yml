@@ -10,9 +10,6 @@ stages:
   - cloudbuild
   - deploy
 
-cloudbuild:test:
-  extends: .cloudbuild:locklift
-
 cloudbuild:image:prod:
   only:
     - docs
