@@ -1,4 +1,4 @@
-build/
+
 node_modules/
 .idea
 sample-project/build
@@ -15,3 +15,4 @@ sample-project-typescript/build
 *.map
 *.js
 tsconfig.tsbuildinfo
+/test
