@@ -1,4 +1,3 @@
-
 FROM node:18 as builder
 
 WORKDIR /app
@@ -6,6 +5,12 @@ WORKDIR /app
 COPY docs/ .
 
 RUN npm install --force
+
+RUN ls -la /app/
+RUN ls -la /app/.vitepress
+RUN ls -la /app/.vitepress/theme
+
+
 RUN npx vitepress build
 
 FROM nginx:1.21
