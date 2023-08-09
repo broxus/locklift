@@ -16,3 +16,6 @@ sample-project-typescript/build
 *.js
 tsconfig.tsbuildinfo
 /test
+
+!docs/.vitepress/config.js
+!docs/.vitepress/theme/index.js
