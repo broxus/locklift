@@ -3,13 +3,12 @@ FROM node:18 as builder
 
 WORKDIR /app
 
-COPY docs/package*.json ./
+COPY docs/ ./
 
 RUN npm ci
 
 RUN npx vitepress build
 
-RUN ls -la /app/.vitepress/dist
 
 FROM nginx:1.21
 
