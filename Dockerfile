@@ -1,4 +1,3 @@
-
 FROM node:18 as builder
 
 WORKDIR /app
@@ -8,6 +7,9 @@ COPY docs/package*.json ./
 
 RUN npm ci
 
+RUN ls -la /app/
+RUN ls -la /app/.vitepress/
+RUN ls -la /app/.vitepress/theme
 RUN npx vitepress build
 
 FROM nginx:1.21
