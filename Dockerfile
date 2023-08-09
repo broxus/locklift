@@ -3,11 +3,9 @@ FROM node:18 as builder
 
 WORKDIR /app
 
-COPY docs/ ./
-COPY docs/package*.json ./
+COPY docs/ .
 
-RUN npm ci
-
+RUN npm install --force
 RUN npx vitepress build
 
 FROM nginx:1.21
