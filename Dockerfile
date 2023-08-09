@@ -6,9 +6,9 @@ COPY docs/ .
 
 RUN npm install --force
 
-RUN ls -la /app/
-RUN ls -la /app/.vitepress
-RUN ls -la /app/.vitepress/theme
+RUN ls -lah /app/
+RUN ls -lah /app/.vitepress
+RUN ls -lah /app/.vitepress/theme
 
 
 RUN npx vitepress build
