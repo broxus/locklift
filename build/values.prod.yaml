@@ -6,14 +6,14 @@ ingress:
     cert-manager.io/cluster-issuer: letsencrypt
     kubernetes.io/tls-acme: 'true'
   hosts:
-    - host: locklift.io
+    - host: docs.locklift.io
       paths:
         - path: /
           pathType: ImplementationSpecific
   tls:
-    - secretName: locklift.io-tls
+    - secretName: docs.locklift.io-tls
       hosts:
-        - locklift.io
+        - docs.locklift.io
 
 livenessProbe:
   tcpSocket:
