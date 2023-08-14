@@ -12,7 +12,6 @@ module.exports = {
 
   plugins: [vue()],
   rewrites: {
-    // 'src/pages/index.md': 'index.md',
     'src/pages/installation-quick-start.md': 'installation-quick-start.md',
     'src/pages/configuration.md': 'configuration.md',
     'src/pages/concepts/accounts-wallets.md': 'concepts/accounts-wallets.md',
