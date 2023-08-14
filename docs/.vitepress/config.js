@@ -8,6 +8,7 @@ module.exports = {
   title: 'Locklift Documentation',
   base: '/',
   description: 'Documentation for Locklift',
+  lastUpdated: true,
 
   plugins: [vue()],
   rewrites: {
@@ -115,6 +116,9 @@ module.exports = {
         link: '/projects.md',
       },
     ],
+    editLink: {
+      pattern: 'https://github.com/broxus/locklift/edit/docs/docs/:path',
+    },
 
     socialLinks: [{ icon: 'github', link: GITHUB_URL }],
   },
