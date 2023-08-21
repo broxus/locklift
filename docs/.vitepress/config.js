@@ -31,6 +31,11 @@ module.exports = {
     'src/pages/projects.md': 'projects.md',
   },
   themeConfig: {
+    logo: {
+      light: '/locklift-logo-light.svg',
+      dark: '/locklift-logo-dark.svg',
+      alt: 'LockLift Logo',
+    },
     search: {
       provider: 'local',
     },
@@ -39,11 +44,17 @@ module.exports = {
       { text: 'Community', link: HELP_URL },
     ],
     sidebar: [
-      { text: 'Overview', link: '/index.md' },
       {
-        text: 'Installation & Quick Start',
-        link: '/installation-quick-start.md',
+        text: 'Locklift Runner',
+        items: [
+          { text: 'Overview', link: '/index.md' },
+          {
+            text: 'Installation & Quick Start',
+            link: '/installation-quick-start.md',
+          },
+        ],
       },
+
       {
         text: 'Configuration',
         link: '/configuration.md',
