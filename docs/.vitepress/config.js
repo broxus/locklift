@@ -4,6 +4,23 @@ const HELP_URL = 'https://t.me/everdev';
 const FEEDBACK_URL = '';
 const GITHUB_URL = 'https://github.com/broxus/locklift';
 
+const NAV = [
+  {
+    text: 'Broxus Docs',
+    items: [
+      { text: 'Home', link: 'https://docs.broxus.com' },
+      { text: 'Inpage Provider', link: 'https://provider-docs.broxus.com/' },
+      { text: 'OctusBridge Integration', link: 'https://integrate.octusbridge.io/' },
+      {
+        text: 'TIP-3 Api Reference',
+        link: 'https://tip3-api-reference.netlify.app/',
+      },
+    ],
+  },
+  { text: 'Feedback', link: FEEDBACK_URL },
+  { text: 'Community', link: HELP_URL },
+];
+
 module.exports = {
   title: 'Locklift Documentation',
   base: '/',
@@ -39,10 +56,7 @@ module.exports = {
     search: {
       provider: 'local',
     },
-    nav: [
-      { text: 'Feedback', link: FEEDBACK_URL },
-      { text: 'Community', link: HELP_URL },
-    ],
+    nav: NAV,
     sidebar: [
       {
         text: 'Locklift Runner',
