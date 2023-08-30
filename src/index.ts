@@ -162,6 +162,7 @@ export class Locklift<FactorySource extends FactoryType> {
           keystore,
           clock,
           accountsStorage,
+          // TODO: only for proxy!
         }).then(client => {
           client.setPollingInterval(5);
           return client;
