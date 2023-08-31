@@ -121,7 +121,6 @@ export class Locklift<FactorySource extends FactoryType> {
     network?: keyof LockliftConfig["networks"],
   ): Promise<Locklift<T>> {
     const networkConfig = config.networks[network as string] as NetworkValue<ConfigState.INTERNAL>;
-
     let keystore = new SimpleKeystore();
     if (networkConfig) {
       const giverKeys = getGiverKeyPair(networkConfig.giver);
@@ -142,31 +141,27 @@ export class Locklift<FactorySource extends FactoryType> {
 
     const proxyNetwork = new LockliftNetwork();
     await proxyNetwork.initialize();
-    // TODO: fix ts-ignore
-    if (
-      // @ts-ignore
-      networkConfig?.connection?.type === "proxy" &&
-      // @ts-ignore
-      networkConfig?.connection?.data?.connectionFactory === undefined
-    ) {
-      // @ts-ignore
-      networkConfig.connection.data.connectionFactory = proxyNetwork.connectionFactory;
-    }
-
     const accountsStorage = new SimpleAccountsStorage();
     const clock = new Clock();
+    //@ts-ignore
+    networkConfig.connection.data.connectionFactory = proxyNetwork.connectionFactory;
+    const everClient = await EverscaleStandaloneClient.create({
+      connection: networkConfig?.connection,
+      keystore,
+      clock,
+      accountsStorage,
+    });
+
+    if (
+      networkConfig?.connection?.type === "proxy" &&
+      networkConfig?.connection?.data?.connectionFactory === undefined
+    ) {
+      networkConfig.connection.data.connectionFactory = proxyNetwork.connectionFactory;
+      everClient.setPollingInterval(5);
+    }
+
     const provider = new ProviderRpcClient({
-      fallback: () =>
-        EverscaleStandaloneClient.create({
-          connection: networkConfig?.connection,
-          keystore,
-          clock,
-          accountsStorage,
-          // TODO: only for proxy!
-        }).then(client => {
-          client.setPollingInterval(5);
-          return client;
-        }),
+      fallback: async () => everClient,
     });
     try {
       await provider.ensureInitialized();
