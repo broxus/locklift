@@ -60,10 +60,6 @@ export const createTimeMovement = async (
   clock: Clock,
   connectionConfig: NetworkValue<ConfigState.INTERNAL>,
 ): Promise<TimeMovement> => {
-  if (typeof connectionConfig.connection === "string") {
-    return new TimeMovement(undefined, clock, false);
-  }
-
   switch (connectionConfig.connection.type) {
     case "proxy":
       return new TimeMovement(undefined, clock, true);
