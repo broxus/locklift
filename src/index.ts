@@ -22,6 +22,7 @@ import { getGiver } from "./internal/giver";
 import { logger } from "./internal/logger";
 import { TracingTransport } from "./internal/tracing/transport";
 import { LockliftNetwork } from "@broxus/locklift-network";
+import { ConnectionData } from "everscale-standalone-client";
 
 export * from "everscale-inpage-provider";
 export type { Signer } from "everscale-standalone-client";
@@ -141,32 +142,35 @@ export class Locklift<FactorySource extends FactoryType> {
 
     const proxyNetwork = new LockliftNetwork();
     await proxyNetwork.initialize();
-    const accountsStorage = new SimpleAccountsStorage();
-    const clock = new Clock();
-    //@ts-ignore
-    networkConfig.connection.data.connectionFactory = proxyNetwork.connectionFactory;
-    const everClient = await EverscaleStandaloneClient.create({
-      connection: networkConfig?.connection,
-      keystore,
-      clock,
-      accountsStorage,
-    });
 
     if (
-      networkConfig?.connection?.type === "proxy" &&
+      isProxyConnection(networkConfig?.connection) &&
       networkConfig?.connection?.data?.connectionFactory === undefined
     ) {
       networkConfig.connection.data.connectionFactory = proxyNetwork.connectionFactory;
-      everClient.setPollingInterval(5);
     }
 
+    const accountsStorage = new SimpleAccountsStorage();
+    const clock = new Clock();
+
     const provider = new ProviderRpcClient({
-      fallback: async () => everClient,
+      fallback: () =>
+        EverscaleStandaloneClient.create({
+          connection: networkConfig?.connection,
+          keystore,
+          clock,
+          accountsStorage,
+        }).then(client => {
+          if (isProxyConnection(networkConfig?.connection)) {
+            client.setPollingInterval(5);
+          }
+          return client;
+        }),
     });
     try {
       await provider.ensureInitialized();
     } catch (e: any) {
-      logger.printError(`${chalk.bold(`${e.message}\nMake sure local node is running. or...`)}`);
+      logger.printError(`${chalk.bold(`${e.message}`)}`);
       process.exit(1);
     }
     const transactions = new Transactions(provider);
@@ -181,10 +185,8 @@ export class Locklift<FactorySource extends FactoryType> {
     locklift.factory = factory;
 
     const tracingTransport = (() => {
-      // @ts-ignore
       switch (networkConfig?.connection.type) {
         case "graphql":
-          // @ts-ignore
           return TracingTransport.fromGqlConnection(networkConfig.connection.data.endpoints[0], provider);
         case "jrpc":
           return TracingTransport.fromJrpcConnection(provider);
@@ -213,3 +215,8 @@ export class Locklift<FactorySource extends FactoryType> {
     return locklift;
   }
 }
+const isProxyConnection = <T extends ConnectionData>(
+  connectionData: T | undefined,
+): connectionData is Extract<T, { type: "proxy" }> => {
+  return connectionData?.type === "proxy";
+};
