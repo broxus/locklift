@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import commander from "commander";
 import { ProviderRpcClient } from "everscale-inpage-provider";
-import type { Ed25519KeyPair } from "everscale-standalone-client";
+import type { ConnectionData, Ed25519KeyPair } from "everscale-standalone-client";
 import { ConnectionProperties, NETWORK_PRESETS } from "everscale-standalone-client/nodejs";
 import { Giver } from "../factory";
 import Joi from "joi";
@@ -44,7 +44,7 @@ export type Networks<T extends ConfigState = ConfigState.EXTERNAL> = Record<"loc
 export interface NetworkValue<T extends ConfigState = ConfigState.EXTERNAL> {
   giver: GiverConfig;
   keys: T extends ConfigState.EXTERNAL ? KeysConfig : Required<KeysConfig>;
-  connection: ConnectionProperties;
+  connection: T extends ConfigState.EXTERNAL ? ConnectionProperties : ConnectionData;
   providerConfig?: {
     message?: MessageProperties;
     initInput?: nt.InitInput | Promise<nt.InitInput>;
@@ -178,7 +178,20 @@ export function loadConfig(configPath: string): LockliftConfig<ConfigState.INTER
         path: value.keys.path || "m/44'/396'/0'/0/INDEX",
       };
     }
+    if (typeof value.connection === "string") {
+      value.connection = getPresetParams(value.connection) || value.connection;
+    }
   }
 
   return config as unknown as LockliftConfig<ConfigState.INTERNAL>;
 }
+
+const getPresetParams = (preset: string): ConnectionData | undefined => {
+  if (isKeyofNetworkPreset(preset)) {
+    return NETWORK_PRESETS[preset];
+  }
+};
+
+const isKeyofNetworkPreset = (preset: string): preset is keyof typeof NETWORK_PRESETS => {
+  return Object.keys(NETWORK_PRESETS).find(el => el === preset) !== undefined;
+};
