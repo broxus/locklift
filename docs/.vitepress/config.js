@@ -31,6 +31,7 @@ module.exports = {
   rewrites: {
     'src/pages/installation-quick-start.md': 'installation-quick-start.md',
     'src/pages/configuration.md': 'configuration.md',
+    'src/pages/locklift-network/overview.md': 'locklift-network/overview.md',
     'src/pages/concepts/accounts-wallets.md': 'concepts/accounts-wallets.md',
     'src/pages/concepts/messages.md': 'concepts/messages.md',
     'src/pages/concepts/transaction-finalization.md': 'concepts/transaction-finalization.md',
@@ -72,6 +73,10 @@ module.exports = {
       {
         text: 'Configuration',
         link: '/configuration.md',
+      },
+      {
+        text: 'Locklift Network',
+        items: [{ text: 'Overview', link: '/locklift-network/overview.md' }],
       },
       {
         text: 'Core Concepts',

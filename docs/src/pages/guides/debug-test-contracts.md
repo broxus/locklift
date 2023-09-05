@@ -360,7 +360,7 @@ const accountTransaction = await locklift.tracing.trace(myAccount.runTarget(...)
 Here's an example of tracing output:
 
 ```bash
-npx locklift test -n local
+npx locklift test
 ```
 
 ```

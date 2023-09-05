@@ -158,11 +158,38 @@ linker: {
 
 ## Networks
 
-The `networks` field allows you to specify the different networks that you'll be connecting to. Each network that you're using must be defined separately, with its own connection, giver, tracing, and keys.
+The `networks` field allows you to specify the different networks that you'll be connecting to. Each network that you're using must be defined separately, with its own connection, giver, and keys.
+
+In addition to the networks you define, Locklift comes bundled with a built-in network called Proxy, a local TVM network node designed for development. By default, if you're using Locklift, then you're already using the Proxy network. When Locklift executes your tests, scripts, or tasks, an in-process Proxy network node is started automatically.
+
+:::tip
+For more information about the Proxy network, see the [Locklift Networks](/locklift-network/overview.md) page.
+:::
 
 ```typescript
 networks: {
+  proxy: {
+    giver: {
+      // Check if you need provide custom giver
+      address: "0:ece57bcc6c530283becbbd8a3b24d3c5987cdddc3c8b7b33be6e4a6312490415",
+      key: "172af540e43a524763dd53b26a066d472a97c4de37d5498170564510608250c3",
+    },
+    connection: {
+      id: 1001,
+      // @ts-ignore
+      type: "proxy",
+      // @ts-ignore
+      data: {},
+    },
+    keys: {
+      // Use everdev to generate your phrase
+      // !!! Never commit it in your repos !!!
+      phrase: "action inject penalty envelope rabbit element slim tornado dinner pizza off blood",
+      amount: 20,
+    },
+  },
   local: {
+    // Specify connection settings for https://github.com/broxus/everscale-standalone-client/
     connection: {
       id: 1,
       group: "localnet",
@@ -173,19 +200,19 @@ networks: {
         local: true,
       },
     },
+    // This giver is default local-node giverV2
     giver: {
+      // Check if you need provide custom giver
       address: "0:ece57bcc6c530283becbbd8a3b24d3c5987cdddc3c8b7b33be6e4a6312490415",
       key: "172af540e43a524763dd53b26a066d472a97c4de37d5498170564510608250c3",
     },
-    tracing: {
-      endpoint: LOCAL_NETWORK_ENDPOINT,
-    },
     keys: {
-      phrase: "action inject penalty envelope rabbit element slim tornado dinner pizza off blood",
+      // Use everdev to generate your phrase
+      // !!! Never commit it in your repos !!!
+      // phrase: "action inject penalty envelope rabbit element slim tornado dinner pizza off blood",
       amount: 20,
     },
   },
-  // Other networks
   test: {
     connection: {
       id: 1,
@@ -201,11 +228,10 @@ networks: {
       address: "0:0000000000000000000000000000000000000000000000000000000000000000",
       key: "secret key",
     },
-    tracing: {
-      endpoint: DEV_NET_NETWORK_ENDPOINT,
-    },
     keys: {
-      phrase: "action inject penalty envelope rabbit element slim tornado dinner pizza off blood",
+      // Use everdev to generate your phrase
+      // !!! Never commit it in your repos !!!
+      // phrase: "action inject penalty envelope rabbit element slim tornado dinner pizza off blood",
       amount: 20,
     },
   },
@@ -223,14 +249,15 @@ networks: {
       phrase: "phrase",
       accountId: 0,
     },
-    tracing: {
-      endpoint: VENOM_TESTNET_TRACE_ENDPOINT,
-    },
     keys: {
+      // Use everdev to generate your phrase
+      // !!! Never commit it in your repos !!!
+      // phrase: "action inject penalty envelope rabbit element slim tornado dinner pizza off blood",
       amount: 20,
     },
   },
   main: {
+    // Specify connection settings for https://github.com/broxus/everscale-standalone-client/
     connection: {
       id: 1,
       type: "graphql",
@@ -241,18 +268,19 @@ networks: {
         local: false,
       },
     },
+    // This giver is default Wallet
     giver: {
       address: "0:0000000000000000000000000000000000000000000000000000000000000000",
       key: "secret key",
     },
-    tracing: {
-      endpoint: MAIN_NET_NETWORK_ENDPOINT,
-    },
     keys: {
+      // Use everdev to generate your phrase
+      // !!! Never commit it in your repos !!!
+      // phrase: "action inject penalty envelope rabbit element slim tornado dinner pizza off blood",
       amount: 20,
     },
   },
-},
+}
 ```
 
 ### Connection
@@ -416,16 +444,6 @@ Then the signer can be obtained as follows:
 ```typescript
 const signer = await locklift.keystore.getSigner('0');
 const signer2 = await locklift.keystore.getSigner('1');
-```
-
-### Tracing
-
-The `tracing` field within each network configuration allows you to specify settings for the tracing module. This is used for advanced features of the tracing module. You need to provide a `graphql` endpoint of the network here.
-
-```typescript
-tracing: {
-  endpoint: LOCAL_NETWORK_ENDPOINT,
-},
 ```
 
 ## Mocha

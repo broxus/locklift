@@ -38,7 +38,12 @@ npx locklift init --path amazing-locklift-project
 ```
 
 :::tip
-If you run `npx locklift init -f` after `npm init`, it will overwrite the existing files, including `package.json`. This process might not be ideal as it's still a bit raw. If you want to avoid this, you can run `npx locklift init` without the prior installation of Locklift. `npx` will automatically fetch Locklift and create a sample project. This is a handy workaround that doesn't contradict the steps mentioned above.
+If you run `npx locklift init -f` after `npm init`, it will overwrite the existing files, including `package.json`.
+
+This process might not be ideal as it's still a bit raw. If you want to avoid this, you can run `npx locklift init` without the prior installation of Locklift.
+`npx` will automatically fetch Locklift and create a sample project.
+
+This is a handy workaround that doesn't contradict the steps mentioned above.
 :::
 
 ### Building the Contract
@@ -97,31 +102,15 @@ This command will use the specified TON Solidity compiler and TVM linker to buil
 [INFO]  Built
 ```
 
-### Sandbox
-
-Before running tests in a local environment, make sure to first start the local node (sandbox).
-
-```bash
-everdev se start
-```
-
-or
-
-```bash
-docker run -d --name local-node -e USER_AGREEMENT=yes -p80:80 tonlabs/local-node
-```
-
-For more details on how to do this, refer to the [Everdev](https://github.com/tonlabs/everdev).
-
 ### Testing the Contract
 
 Testing the contract verifies its functions under specified conditions. We'll be utilizing [Mocha](https://mochajs.org/) for this purpose. Here's the command to execute the tests:
 
 ```bash
-npx locklift test --network local
+npx locklift test
 ```
 
-This command will automatically run the Mocha tests located in the `test` directory. The `locklift` object will be automatically configured and integrated, eliminating the need for manual import.
+This command will automatically run the Mocha tests located in the `test` directory. The `locklift` object will be automatically configured and integrated, eliminating the need for manual import. It's noteworthy to mention that the tests will be executed in Locklift's default [Proxy Network](./locklift-network/overview.md), facilitating isolated and accurate testing environments without affecting live networks.
 
 ```
 Test Sample contract
@@ -222,8 +211,17 @@ These tests offer a practical way to ensure the contract behaves as expected bef
 Once we have built and tested our contract, we can deploy it using a Node JS script. The command to do this is:
 
 ```bash
-npx locklift run --network local --script scripts/1-deploy-sample.ts
+npx locklift run --network mainnet --script scripts/1-deploy-sample.ts
 ```
+
+:::tip
+Before launching into a live network, consider testing your deployment in the [Proxy network](./locklift-network/overview.md) which is used by Locklift by default. This allows for a secure and convenient way to ensure everything is working correctly before the actual deployment.
+
+```bash
+npx locklift run --script scripts/1-deploy-sample.ts
+```
+
+::::
 
 This command will run the specified script with an already configured `locklift` module. In the example above, we are deploying the `Sample.tsol` contract.
 

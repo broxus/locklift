@@ -56,17 +56,19 @@ npx locklift build
 
 ## Running Tests
 
-You can also run Mocha tests for your project contracts using the `test` command.
+The introduction of the [Proxy network](./../locklift-network/overview.md) has significantly streamlined the testing process. When using Locklift to run tests, the framework automatically selects the Proxy network as the default environment. This eliminates the need to specify a network manually or initiate a local sandbox each time, simplifying the overall testing procedure and saving valuable time.
+
+You can run Mocha tests for your project contracts using the `test` command.
 
 ```bash
-npx locklift test --network local
+npx locklift test
 ```
 
 Alternatively, you can use the `npm run test` command if you have added the following to your `package.json` file:
 
 ```json
 "scripts": {
-  "test": "npx locklift test --network local"
+  "test": "npx locklift test"
 }
 ```
 
@@ -87,9 +89,9 @@ npm run test
   3 passing (3s)
 ```
 
-### Sandbox
+### Local Node Sandbox (Optional)
 
-When running tests in a local environment, make sure to first start the local node (sandbox).
+Proxy network is used by default, if you prefer to use your own local node for testing, you can still do so. Make sure to first start the local node (sandbox).
 
 ```bash
 everdev se start
@@ -101,17 +103,49 @@ or
 docker run -d --name local-node -e USER_AGREEMENT=yes -p80:80 tonlabs/local-node
 ```
 
+:::info
 For more details on how to do this, refer to the [Everdev](https://github.com/tonlabs/everdev).
+:::
+
+Then, you can specify the local network in the test command:
+
+```bash
+npx locklift test --network local
+```
+
+or in your `package.json` file:
+
+```json
+"scripts": {
+  "test": "npx locklift test --network local"
+}
+```
+
+### Running Tests in Different Networks
+
+While it's possible to run tests in different networks by using the network flag followed by the network name, we generally recommend doing this primarily when you are conducting integration tests or testing interactions with contracts in specific networks. Here's how you can specify a network:
+
+```bash
+npx locklift test --network <network_name>
+```
 
 ## Running Scripts
 
 Locklift enables you to run arbitrary Node JS scripts with an already configured `locklift` module using the `run` command:
 
 ```bash
-npx locklift run --network local --script scripts/1-deploy-sample.ts
+npx locklift run --script scripts/1-deploy-sample.ts
 ```
 
-For a more detailed guide on writing scripts, please refer to the "Writing Scripts" section of the guide.
+Alternatively, you can specify a network with the following command:
+
+```bash
+npx locklift run --network venom-testnet --script scripts/1-deploy-sample.ts
+```
+
+:::tip
+For a more detailed guide on writing scripts, please refer to the [Writing Scripts](./writing-scripts.md).
+:::
 
 ## Setting Up Your Editor
 
