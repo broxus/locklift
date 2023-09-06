@@ -112,21 +112,27 @@ In this test, we first load the contract factory and verify that the `code`, `AB
 
 ## Running Tests
 
-To run Mocha tests for your project contracts, use the npm run test command. This command is already included in your package.json file as a part of the Locklift project template. It is configured to test the project in a local environment.
+The testing process for your project contracts has been made easier with the advent of the [Proxy network](./../locklift-network/overview.md). By default, the framework selects the Proxy network as the testing environment when you run tests using Locklift. This feature eliminates the need to manually specify a network or initiate a local sandbox each time, thereby streamlining the testing procedure and saving you time.
+
+To run Mocha tests for your project contracts, use the `test` command:
+
+```bash
+npx locklift test
+```
+
+If you have included the following in your `package.json` file, you can also use the `npm run test` command:
 
 ```json
 "scripts": {
-  "test": "npx locklift test --network local"
+  "test": "npx locklift test"
 }
 ```
 
-Then, run your tests:
+After running your tests, you should see output similar to:
 
 ```bash
 npm run test
 ```
-
-You'll see output similar to this:
 
 ```
   Test Sample contract
@@ -139,15 +145,10 @@ You'll see output similar to this:
   3 passing (3s)
 ```
 
-If you prefer to run the tests using Locklift directly, you can also do so:
+### Local Node Sandbox (Optional)
 
-```bash
-npx locklift test --network local
-```
-
-### Sandbox
-
-When running tests in a local environment, make sure to first start the local node (sandbox).
+Although the Proxy network is used by default, you can switch to your own local node for testing if you prefer.
+Remember to start the local node (sandbox) first:
 
 ```bash
 everdev se start
@@ -159,7 +160,29 @@ or
 docker run -d --name local-node -e USER_AGREEMENT=yes -p80:80 tonlabs/local-node
 ```
 
-For more details on how to do this, refer to the [Everdev](https://github.com/tonlabs/everdev).
+For more information on how to do this, check out [Everdev](https://github.com/tonlabs/everdev).
+
+Once your local node is up and running, you can specify the local network in the test command:
+
+```bash
+npx locklift test --network local
+```
+
+Alternatively, you can specify the local network in your `package.json` file:
+
+```json
+"scripts": {
+  "test": "npx locklift test --network local"
+}
+```
+
+### Running Tests in Various Networks
+
+You can run tests in different networks by using the network flag followed by the network name. However, we generally advise doing this mainly when performing integration tests or testing interactions with contracts in specific networks. Here's an example of how you can specify a network:
+
+```bash
+npx locklift test --network <network_name>
+```
 
 ### Test Configuration
 
