@@ -124,6 +124,9 @@
     "underscore": "^1.13.1",
     "yargs": "^17.6.0"
   },
+  "overrides": {
+    "nekoton-wasm": "$nekoton-wasm"
+  },
   "devDependencies": {
     "@types/chai": "^4.3.1",
     "@types/download": "^8.0.1",
