@@ -40,9 +40,11 @@ export type KeysConfig = {
   amount: number;
 };
 
-export type Networks<T extends ConfigState = ConfigState.EXTERNAL> = Record<"local" | string, NetworkValue<T>>;
-export interface NetworkValue<T extends ConfigState = ConfigState.EXTERNAL> {
-  giver: GiverConfig;
+export type Networks<T extends ConfigState = ConfigState.EXTERNAL> = Record<"local" | string, NetworkValue<T>> & {
+  proxy: NetworkValue<T, "proxy">;
+};
+export interface NetworkValue<T extends ConfigState = ConfigState.EXTERNAL, P extends string = ""> {
+  giver: T extends ConfigState.EXTERNAL ? (P extends "proxy" ? GiverConfig | undefined : GiverConfig) : GiverConfig;
   keys: T extends ConfigState.EXTERNAL ? KeysConfig : Required<KeysConfig>;
   connection: T extends ConfigState.EXTERNAL ? ConnectionProperties : ConnectionData;
   providerConfig?: {
@@ -169,8 +171,9 @@ export function loadConfig(configPath: string): LockliftConfig<ConfigState.INTER
   if (validationResult.error) {
     throw new Error(validationResult.error.annotate());
   }
-  const config = validationResult.value;
-  for (const value of Object.values(config.networks)) {
+  const config = { ...validationResult.value } as unknown as LockliftConfig<ConfigState.INTERNAL>;
+
+  for (const [key, value] of Object.entries(config.networks)) {
     if (value.keys != null) {
       value.keys = {
         ...value.keys,
@@ -180,6 +183,15 @@ export function loadConfig(configPath: string): LockliftConfig<ConfigState.INTER
     }
     if (typeof value.connection === "string") {
       value.connection = getPresetParams(value.connection) || value.connection;
+    }
+    if (key === "proxy") {
+      config.networks[key] = {
+        ...value,
+        giver: value.giver || {
+          address: "0:ece57bcc6c530283becbbd8a3b24d3c5987cdddc3c8b7b33be6e4a6312490415",
+          key: "172af540e43a524763dd53b26a066d472a97c4de37d5498170564510608250c3",
+        },
+      };
     }
   }
 

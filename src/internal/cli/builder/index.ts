@@ -21,6 +21,8 @@ import { promisify } from "util";
 import { catchError, concat, defer, filter, from, map, mergeMap, tap, throwError, toArray } from "rxjs";
 import { logger } from "../../logger";
 import semver from "semver/preload";
+import { getContractsTree } from "../../utils";
+import { BuildCash } from "../../buildCash";
 
 export type BuilderConfig = {
   includesPath?: string;
@@ -58,7 +60,9 @@ export class Builder {
 
   async buildContracts(): Promise<boolean> {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const contractsTree = this.getContractsTree()!;
+    const contractsTree = getContractsTree(this.options.contracts)!;
+    const buildCash = new BuildCash(contractsTree).buildTree();
+    console.log(buildCash);
 
     try {
       logger.printInfo(`Found ${contractsTree.length} sources`);
@@ -186,7 +190,7 @@ export class Builder {
 
   buildDocs(): boolean {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const contractsTree = this.getContractsTree()!;
+    const contractsTree = getContractsTree(this.options.contracts)!;
 
     try {
       logger.printInfo(`Found ${contractsTree.length} sources`);
@@ -279,13 +283,5 @@ export class Builder {
 
       return acc;
     }, []);
-  }
-
-  private getContractsTree() {
-    const contractsNestedTree = dirTree(this.options.contracts, {
-      extensions: /\.(sol|tsol)/,
-    });
-
-    return flatDirTree(contractsNestedTree);
   }
 }

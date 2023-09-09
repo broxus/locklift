@@ -43,6 +43,21 @@ const config: LockliftConfig = {
     version: "0.15.48",
   },
   networks: {
+    proxy: {
+      connection: {
+        id: 1001,
+        // @ts-ignore
+        type: "proxy",
+        // @ts-ignore
+        data: {},
+      },
+      keys: {
+        // Use everdev to generate your phrase
+        // !!! Never commit it in your repos !!!
+        // phrase: "action inject penalty envelope rabbit element slim tornado dinner pizza off blood",
+        amount: 20,
+      },
+    },
     local: {
       // Specify connection settings for https://github.com/broxus/everscale-standalone-client/
       connection: {
@@ -63,31 +78,6 @@ const config: LockliftConfig = {
       },
       tracing: {
         endpoint: LOCAL_NETWORK_ENDPOINT,
-      },
-      keys: {
-        // Use everdev to generate your phrase
-        // !!! Never commit it in your repos !!!
-        // phrase: "action inject penalty envelope rabbit element slim tornado dinner pizza off blood",
-        amount: 20,
-      },
-    },
-    test: {
-      connection: {
-        id: 1,
-        type: "graphql",
-        group: "dev",
-        data: {
-          endpoints: [DEV_NET_NETWORK_ENDPOINT],
-          latencyDetectionInterval: 1000,
-          local: false,
-        },
-      },
-      giver: {
-        address: "0:0000000000000000000000000000000000000000000000000000000000000000",
-        key: "secret key",
-      },
-      tracing: {
-        endpoint: DEV_NET_NETWORK_ENDPOINT,
       },
       keys: {
         // Use everdev to generate your phrase
