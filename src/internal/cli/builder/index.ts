@@ -61,9 +61,7 @@ export class Builder {
   async buildContracts(): Promise<boolean> {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const contractsTree = getContractsTree(this.options.contracts)!;
-    const start = Date.now();
-    const buildCash = new BuildCash(contractsTree).buildTree();
-    logger.printInfo(`Build cash time: ${Date.now() - start}ms`);
+    const buildCash = await new BuildCash(contractsTree).buildTree();
     // console.log(buildCash);
     if (buildCash.length === 0) {
       logger.printInfo("No new sources, skip build stage");

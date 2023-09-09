@@ -1,9 +1,8 @@
 import fs from "fs-extra";
 
-export const tryToGetFileChangeTime = (filePath: string): number | undefined => {
-  try {
-    return fs.statSync(filePath).mtime.getTime();
-  } catch (e) {
-    return undefined;
-  }
+export const tryToGetFileChangeTime = (filePath: string): Promise<number | undefined> => {
+  return fs
+    .stat(filePath)
+    .then(file => file.mtime.getTime())
+    .catch(() => undefined);
 };
