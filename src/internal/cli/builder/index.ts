@@ -61,14 +61,19 @@ export class Builder {
   async buildContracts(): Promise<boolean> {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const contractsTree = getContractsTree(this.options.contracts)!;
+    const start = Date.now();
     const buildCash = new BuildCash(contractsTree).buildTree();
-    console.log(buildCash);
-
+    logger.printInfo(`Build cash time: ${Date.now() - start}ms`);
+    // console.log(buildCash);
+    if (buildCash.length === 0) {
+      logger.printInfo("No new sources, skip build stage");
+      return true;
+    }
     try {
-      logger.printInfo(`Found ${contractsTree.length} sources`);
-      await from(contractsTree)
+      logger.printInfo(`Found ${buildCash.length} new sources`);
+      await from(buildCash)
         .pipe(
-          map(el => ({ ...el, path: resolve(el.path) })),
+          map(el => ({ path: resolve(el) })),
           map(el => ({
             ...el,
             contractFileName: extractContractName(el.path),

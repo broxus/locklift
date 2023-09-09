@@ -3,10 +3,8 @@ import fs from "fs-extra";
 import path from "path";
 import { tryToGetNodeModules } from "../cli/builder/utils";
 import { tryToGetFileChangeTime } from "./utils";
-import { logger } from "../logger";
 import chalk from "chalk";
 const importMatcher = /^\s*import\s*(?:{[^}]+}\s*from\s*)?["']([^"']+\.tsol)["'];/gm;
-const contractMatcher = new RegExp(/^contract [A-Za-z0-9_]+\s+is [A-Za-z0-9_]+\s+\{/gm);
 export class BuildCash {
   private readonly buildCashFolder = path.join("buildCash", "buildCash.json");
   private readonly prevCash: Record<string, { modificationTime: number }>;
@@ -65,10 +63,6 @@ export class BuildCash {
       spaces: 4,
     });
 
-    // if (!this.prevCash) {
-    //   return;
-    // }
-
     const updatedOrNewFiles = Object.entries(filesWithModTime)
       .filter(([filePath, { modificationTime }]) => {
         const prevFile = this.prevCash[filePath];
@@ -88,7 +82,7 @@ export class BuildCash {
     const printArr = [] as Array<Print>;
     const filesForBuild = findFilesForBuildRecursive(updatedOrNewFiles, importToFileMap, contractsMap, printArr);
 
-    recursivePrint(printArr, 3, filesForBuild);
+    // recursivePrint(printArr, 3, filesForBuild);
     return filesForBuild;
   }
 }
@@ -110,33 +104,27 @@ const findFilesForBuildRecursive = (
 ): Array<string> => {
   return updatedOrNewFiles.reduce((acc, filePath) => {
     const importRecords = importToFileMap[filePath];
+    const prevVisited = new Map(visitedMap);
     if (visitedMap.get(filePath)) {
       return acc;
     }
+    visitedMap.set(filePath, true);
+
     /// debug
     const newPrintArr = [] as Array<Print>;
     printArr.push({ filePath, subDep: newPrintArr });
-    ///
-    if (!importRecords) {
+
+    if (!importRecords || importRecords.length === 0) {
       acc.push(filePath);
 
       return acc;
     }
-    // const notVisitedFiles = importRecords.filter(el => !visitedMap.get(el));
-    const notVisitedFiles = importRecords;
+    const notVisitedFiles = importRecords.filter(el => !prevVisited.get(el));
 
-    if (notVisitedFiles.length === 0) {
-      acc.push(filePath);
-      return acc;
-    }
     if (contractsMap.get(filePath)) {
       acc.push(filePath);
     }
 
-    visitedMap.set(filePath, true);
-    console.log(`file ${filePath} was visited, imports: ${notVisitedFiles.join("\n")})}`);
-
-    // acc.push(filePath);
     return [
       ...acc,
       ...findFilesForBuildRecursive(notVisitedFiles, importToFileMap, contractsMap, newPrintArr, visitedMap),
