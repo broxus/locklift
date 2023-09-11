@@ -1,16 +1,15 @@
 import { LockliftConfig } from "../../config";
 import { exec, execSync } from "child_process";
-import { copyExternalFiles, typeGenerator } from "../../generators";
+import { copyExternalArtifacts, typeGenerator } from "../../generators";
 import ejs from "ejs";
 import fs from "fs";
-import { resolve, parse } from "path";
+import path, { resolve, parse } from "path";
 import _ from "underscore";
-import dirTree from "directory-tree";
 import {
   execSyncWrapper,
   extractContractName,
-  flatDirTree,
   isValidCompilerOutputLog,
+  resolveExternalContracts,
   tryToGetNodeModules,
   tvcToBase64,
 } from "./utils";
@@ -18,7 +17,7 @@ import {
 const tablemark = require("tablemark");
 import { ParsedDoc } from "../types";
 import { promisify } from "util";
-import { catchError, concat, defer, filter, from, map, mergeMap, tap, throwError, toArray } from "rxjs";
+import { catchError, concat, defer, filter, from, lastValueFrom, map, mergeMap, tap, throwError, toArray } from "rxjs";
 import { logger } from "../../logger";
 import semver from "semver/preload";
 import { getContractsTree } from "../../utils";
@@ -31,6 +30,7 @@ export type BuilderConfig = {
   linkerPath: string;
   compilerParams?: Array<string>;
   externalContracts: LockliftConfig["compiler"]["externalContracts"];
+  externalContractsArtifacts: LockliftConfig["compiler"]["externalContractsArtifacts"];
 };
 type Option = {
   build: string;
@@ -61,134 +61,149 @@ export class Builder {
   async buildContracts(): Promise<boolean> {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const contractsTree = getContractsTree(this.options.contracts)!;
-    const buildCash = await new BuildCash(contractsTree).buildTree();
-    // console.log(buildCash);
-    if (buildCash.length === 0) {
-      logger.printInfo("No new sources, skip build stage");
-      return true;
-    }
-    try {
-      logger.printInfo(`Found ${buildCash.length} new sources`);
-      await from(buildCash)
-        .pipe(
-          map(el => ({ path: resolve(el) })),
-          map(el => ({
-            ...el,
-            contractFileName: extractContractName(el.path),
-          })),
 
-          mergeMap(({ path, contractFileName }) => {
-            const nodeModules = tryToGetNodeModules();
-            return defer(async () => {
-              if (semver.lte(this.compilerVersion, "0.66.0")) {
-                const additionalIncludesPath = `--include-path ${resolve(process.cwd(), "node_modules")}  ${
-                  nodeModules ? `--include-path ${nodeModules}` : ""
-                }`;
-                const includePath = `${additionalIncludesPath}`;
-                const execCommand = `cd ${this.options.build} && \
-          ${this.config.compilerPath} ${!this.options.disableIncludePath ? includePath : ""} ${path} ${(
-                  this.config.compilerParams || []
-                ).join(" ")}`;
-                return promisify(exec)(execCommand);
-              }
+    const { contractArtifacts, contractsToBuild: externalContracts } = await resolveExternalContracts(
+      this.config.externalContracts,
+    );
 
-              if (semver.gte(this.compilerVersion, "0.68.0")) {
-                const additionalIncludesPath = `${nodeModules ? `--include-path ${nodeModules}` : ""}`;
-                const includePath = `${additionalIncludesPath} ${"--base-path"} . `;
-                const execCommand = ` ${this.config.compilerPath} ${
-                  !this.options.disableIncludePath ? includePath : ""
-                } -o ${this.options.build}  ${path} ${(this.config.compilerParams || []).join(" ")}`;
-                return promisify(exec)(execCommand);
-              }
-              throw new Error("Unsupported compiler version");
-            }).pipe(
-              map(output => ({
-                output,
-                contractFileName: parse(contractFileName).name,
-                path,
-              })),
-              catchError(e => {
-                logger.printError(
-                  `path: ${path}, contractFile: ${contractFileName} error: ${e?.stderr?.toString() || e}`,
-                );
-                return throwError(undefined);
-              }),
-            );
-          }),
-          //Warnings
-          tap(
-            output =>
-              isValidCompilerOutputLog(output.output.stderr.toString()) &&
-              logger.printBuilderLog(output.output.stderr.toString()),
-          ),
+    const buildCash = new BuildCash([...contractsTree.map(el => el.path), ...externalContracts]);
+    const contractsToBuild = await buildCash.buildTree();
 
-          filter(({ output }) => {
-            //Only contracts
-            return !!output?.stdout.toString();
-          }),
-          mergeMap(({ contractFileName }) => {
-            const lib = this.config.linkerLibPath ? ` --lib ${this.config.linkerLibPath} ` : "";
-            const resolvedPathCode = resolve(this.options.build, `${contractFileName}.code`);
-            const resolvedPathAbi = resolve(this.options.build, `${contractFileName}.abi.json`);
-            const resolvedPathMap = resolve(this.options.build, `${contractFileName}.map.json`);
-            return defer(async () => {
-              const command = `${
-                this.config.linkerPath
-              } compile "${resolvedPathCode}" -a "${resolvedPathAbi}" -o ${resolve(
-                this.options.build,
-                `${contractFileName}.tvc`,
-              )} ${lib} --debug-map ${resolvedPathMap}`;
-
-              return promisify(exec)(command);
-            }).pipe(
-              map(tvmLinkerLog => {
-                return tvmLinkerLog.stdout.toString().match(new RegExp("Saved to file (.*)."));
-              }),
-              catchError(e => {
-                logger.printError(`contractFileName: ${contractFileName} error:${e?.stderr?.toString()}`);
-                return throwError(undefined);
-              }),
-              map(matchResult => {
-                if (!matchResult) {
-                  throw new Error("Linking error, noting linking");
-                }
-                return matchResult[1];
-              }),
-              mergeMap(tvcFile => {
-                return concat(
-                  defer(() =>
-                    promisify(fs.writeFile)(
-                      resolve(this.options.build, `${contractFileName}.base64`),
-                      tvcToBase64(fs.readFileSync(tvcFile)),
-                    ),
-                  ),
-                ).pipe(
-                  catchError(e => {
-                    logger.printError(e?.stderr?.toString());
-                    return throwError(undefined);
-                  }),
-                );
-              }),
-            );
-          }),
-          toArray(),
-          tap(() => {
-            if (this.config.externalContracts) {
-              copyExternalFiles(this.config.externalContracts, this.options.build);
-            }
-          }),
-          tap(() => typeGenerator(this.options.build)),
-          tap(() => logger.printInfo("factorySource generated")),
-        )
-        .toPromise();
-      logger.printInfo("Built");
-    } catch (err) {
-      if (err) {
-        logger.printError(err);
+    if (contractsToBuild.length > 0) {
+      logger.printInfo(`Found ${contractsToBuild.length} new sources`);
+      try {
+        await this.compileContracts(contractsToBuild);
+        logger.printInfo("Built");
+        buildCash.applyCash();
+      } catch (err) {
+        if (err) {
+          logger.printError(err);
+        }
+        return false;
       }
-      return false;
+    } else {
+      logger.printInfo("No new sources, skip build stage");
     }
+
+    if (contractArtifacts.length > 0) {
+      contractArtifacts.forEach(artifact =>
+        fs.copyFileSync(artifact, resolve(this.options.build, path.basename(artifact))),
+      );
+    }
+
+    if (this.config.externalContractsArtifacts) {
+      copyExternalArtifacts(this.config.externalContractsArtifacts, this.options.build);
+    }
+    typeGenerator(this.options.build);
+    logger.printInfo("factorySource generated");
     return true;
+  }
+  private compileContracts(contractsToBuild: Array<string>) {
+    return lastValueFrom(
+      from(contractsToBuild).pipe(
+        map(el => ({ path: resolve(el) })),
+        map(el => ({
+          ...el,
+          contractFileName: extractContractName(el.path),
+        })),
+
+        mergeMap(({ path, contractFileName }) => {
+          const nodeModules = tryToGetNodeModules();
+          return defer(async () => {
+            if (semver.lte(this.compilerVersion, "0.66.0")) {
+              const additionalIncludesPath = `--include-path ${resolve(process.cwd(), "node_modules")}  ${
+                nodeModules ? `--include-path ${nodeModules}` : ""
+              }`;
+              const includePath = `${additionalIncludesPath}`;
+              const execCommand = `cd ${this.options.build} && \
+          ${this.config.compilerPath} ${!this.options.disableIncludePath ? includePath : ""} ${path} ${(
+                this.config.compilerParams || []
+              ).join(" ")}`;
+              return promisify(exec)(execCommand);
+            }
+
+            if (semver.gte(this.compilerVersion, "0.68.0")) {
+              const additionalIncludesPath = `${nodeModules ? `--include-path ${nodeModules}` : ""}`;
+              const includePath = `${additionalIncludesPath} ${"--base-path"} . `;
+              const execCommand = ` ${this.config.compilerPath} ${
+                !this.options.disableIncludePath ? includePath : ""
+              } -o ${this.options.build}  ${path} ${(this.config.compilerParams || []).join(" ")}`;
+              return promisify(exec)(execCommand);
+            }
+            throw new Error("Unsupported compiler version");
+          }).pipe(
+            map(output => ({
+              output,
+              contractFileName: parse(contractFileName).name,
+              path,
+            })),
+            catchError(e => {
+              logger.printError(
+                `path: ${path}, contractFile: ${contractFileName} error: ${e?.stderr?.toString() || e}`,
+              );
+              return throwError(undefined);
+            }),
+          );
+        }),
+        //Warnings
+        tap(
+          output =>
+            isValidCompilerOutputLog(output.output.stderr.toString()) &&
+            logger.printBuilderLog(output.output.stderr.toString()),
+        ),
+
+        filter(({ output }) => {
+          //Only contracts
+          return !!output?.stdout.toString();
+        }),
+        mergeMap(({ contractFileName }) => {
+          const lib = this.config.linkerLibPath ? ` --lib ${this.config.linkerLibPath} ` : "";
+          const resolvedPathCode = resolve(this.options.build, `${contractFileName}.code`);
+          const resolvedPathAbi = resolve(this.options.build, `${contractFileName}.abi.json`);
+          const resolvedPathMap = resolve(this.options.build, `${contractFileName}.map.json`);
+          return defer(async () => {
+            const command = `${
+              this.config.linkerPath
+            } compile "${resolvedPathCode}" -a "${resolvedPathAbi}" -o ${resolve(
+              this.options.build,
+              `${contractFileName}.tvc`,
+            )} ${lib} --debug-map ${resolvedPathMap}`;
+
+            return promisify(exec)(command);
+          }).pipe(
+            map(tvmLinkerLog => {
+              return tvmLinkerLog.stdout.toString().match(new RegExp("Saved to file (.*)."));
+            }),
+            catchError(e => {
+              logger.printError(`contractFileName: ${contractFileName} error:${e?.stderr?.toString()}`);
+              return throwError(undefined);
+            }),
+            map(matchResult => {
+              if (!matchResult) {
+                throw new Error("Linking error, noting linking");
+              }
+              return matchResult[1];
+            }),
+            mergeMap(tvcFile => {
+              return concat(
+                defer(() =>
+                  promisify(fs.writeFile)(
+                    resolve(this.options.build, `${contractFileName}.base64`),
+                    tvcToBase64(fs.readFileSync(tvcFile)),
+                  ),
+                ),
+              ).pipe(
+                catchError(e => {
+                  logger.printError(e?.stderr?.toString());
+                  return throwError(undefined);
+                }),
+              );
+            }),
+          );
+        }),
+        toArray(),
+      ),
+    );
   }
 
   buildDocs(): boolean {
