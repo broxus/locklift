@@ -53,7 +53,7 @@ export interface NetworkValue<T extends ConfigState = ConfigState.EXTERNAL, P ex
     : GiverConfig;
   keys: T extends ConfigState.EXTERNAL ? KeysConfig : Required<KeysConfig>;
   connection: T extends ConfigState.EXTERNAL ? ConnectionProperties : ConnectionData;
-  providerConfig?: {
+  clientConfig?: {
     message?: MessageProperties;
     initInput?: nt.InitInput | Promise<nt.InitInput>;
   };
@@ -152,7 +152,7 @@ export const JoiConfig = Joi.object<LockliftConfig>({
           }),
         }),
       ]),
-      providerConfig: Joi.object({
+      clientConfig: Joi.object({
         message: Joi.object({}).optional().unknown(),
         initInput: Joi.any().optional(),
       }).optional(),

@@ -163,8 +163,8 @@ export class Locklift<FactorySource extends FactoryType> {
           keystore,
           clock,
           accountsStorage,
-          message: networkConfig.providerConfig?.message,
-          initInput: networkConfig.providerConfig?.initInput,
+          message: networkConfig.clientConfig?.message,
+          initInput: networkConfig.clientConfig?.initInput,
         }).then(client => {
           if (isProxyConnection(networkConfig?.connection)) {
             client.setPollingInterval(5);

@@ -12,6 +12,7 @@ program
   .description("Build contracts by using Ever Solidity compiler and TVM linker")
   .option("-c, --contracts <contracts>", "Path to the contracts folder", "contracts")
   .option("-b, --build <build>", "Path to the build folder", "build")
+  .option("-f, --force", "Force build contracts", false)
   .option("--disable-include-path", "Disables including node_modules. Use this with old compiler versions", false)
   .addOption(
     new Option("--config <config>", "Path to the config file")

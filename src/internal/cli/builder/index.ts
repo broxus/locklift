@@ -36,6 +36,7 @@ type Option = {
   build: string;
   disableIncludePath: boolean;
   contracts: string;
+  isForce: boolean;
 };
 export class Builder {
   private options: Option;
@@ -65,16 +66,23 @@ export class Builder {
     const { contractArtifacts, contractsToBuild: externalContracts } = await resolveExternalContracts(
       this.config.externalContracts,
     );
+    const totalContracts = [...contractsTree.map(el => el.path), ...externalContracts];
 
-    const buildCash = new BuildCache([...contractsTree.map(el => el.path), ...externalContracts]);
-    const contractsToBuild = await buildCash.buildTree();
+    const buildCache = new BuildCache(totalContracts);
 
+    if (this.options.isForce) {
+      buildCache.clearCache();
+    }
+
+    const contractsToBuild = await buildCache.buildTree();
+
+    logger.printInfo(`Found ${totalContracts.length} sources`);
     if (contractsToBuild.length > 0) {
-      logger.printInfo(`Found ${contractsToBuild.length} new sources`);
+      logger.printInfo(`Found ${contractsToBuild.length} changes, compiling...`);
       try {
         await this.compileContracts(contractsToBuild);
         logger.printInfo("Built");
-        buildCash.applyCash();
+        buildCache.applyCache();
       } catch (err) {
         if (err) {
           logger.printError(err);
@@ -82,7 +90,7 @@ export class Builder {
         return false;
       }
     } else {
-      logger.printInfo("No new sources, skip build stage");
+      logger.printInfo("No changes found, skip compilation");
     }
 
     if (contractArtifacts.length > 0) {

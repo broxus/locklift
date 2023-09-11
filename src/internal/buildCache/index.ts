@@ -8,13 +8,13 @@ import { CacheRecord } from "./types";
 
 const importMatcher = /^\s*import\s*(?:{[^}]+}\s*from\s*)?["']([^"']+\.t?sol)["']\s*;/gm;
 export class BuildCache {
-  private readonly buildCacheFolder = path.join(".buildCache.json");
-  private readonly prevCash: CacheRecord;
+  private readonly buildCacheFolder = path.join(".cache/build.json");
+  private readonly prevCache: CacheRecord;
   private currentCache: CacheRecord = {};
 
   constructor(private readonly contracts: string[]) {
     fs.ensureFileSync(this.buildCacheFolder);
-    this.prevCash = fs.readJSONSync(this.buildCacheFolder, { throws: false }) || [];
+    this.prevCache = fs.readJSONSync(this.buildCacheFolder, { throws: false }) || [];
   }
 
   async buildTree() {
@@ -101,7 +101,7 @@ export class BuildCache {
   getUpdatedOrNewFiles(filesWithModTime: CacheRecord) {
     return Object.entries(filesWithModTime)
       .filter(([filePath, { modificationTime }]) => {
-        const prevFile = this.prevCash[filePath];
+        const prevFile = this.prevCache[filePath];
         if (!prevFile) {
           return true;
         }
@@ -114,8 +114,13 @@ export class BuildCache {
       return { ...acc, [el]: { modificationTime: fs.statSync(el).mtime.getTime() } };
     }, {} as CacheRecord);
   }
-  applyCash() {
+  applyCache() {
     fs.writeJSONSync(this.buildCacheFolder, this.currentCache, {
+      spaces: 4,
+    });
+  }
+  clearCache() {
+    fs.writeJSONSync(this.buildCacheFolder, [], {
       spaces: 4,
     });
   }

@@ -10,6 +10,7 @@ export const buildStep = async (
     contracts: string;
     disableIncludePath: boolean;
   } & Pick<LockliftConfig, "compiler" | "linker">,
+  isForce: boolean,
 ) => {
   fs.ensureDirSync(options.build);
   const builder = Builder.create(await compilerConfigResolver(config), {
@@ -17,6 +18,7 @@ export const buildStep = async (
 
     disableIncludePath: options.disableIncludePath,
     contracts: options.contracts,
+    isForce,
   });
 
   const status = await builder.buildContracts();
