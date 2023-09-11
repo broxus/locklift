@@ -46,7 +46,7 @@ export const commandInjector = (rootProgram: commander.Command) => {
             "Disables including node_modules. Use this with old compiler versions",
             false,
           )
-
+          .option("-f, --force", "Force build contracts", false)
           .option("-n, --network <network>", "Network to use, choose from configuration")
           .addOption(
             new Option("--config <config>", "Path to the config file")
@@ -59,7 +59,7 @@ export const commandInjector = (rootProgram: commander.Command) => {
             const config = await options.config();
 
             if (!skipSteps?.build) {
-              await buildStep(config, options as any);
+              await buildStep(config, options as any, options.force);
             }
 
             // Initialize Locklift

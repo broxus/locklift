@@ -19,6 +19,7 @@ program
   .option("-t, --test <test>", "Path to Mocha test folder", "test")
   .option("-c, --contracts <contracts>", "Path to the contracts folder", "contracts")
   .option("-b, --build <build>", "Path to the build folder", "build")
+  .option("-f, --force", "Force build contracts", false)
   .option("--disable-include-path", "Disables including node_modules. Use this with old compiler versions", false)
   .option("-n, --network <network>", "Network to use, choose from configuration", LOCKLIFT_NETWORK_NAME)
   .addOption(
@@ -36,7 +37,7 @@ program
       process.exit(1);
     }
     if (!options.disableBuild) {
-      await buildStep(config, options);
+      await buildStep(config, options, options.force);
     }
     // Initialize Locklift and pass it into tests context
     const locklift = await Locklift.setup(config, options.network);

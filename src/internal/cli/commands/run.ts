@@ -14,6 +14,8 @@ program
   .option("--disable-build", "Disable automatic contracts build", false)
   .option("-c, --contracts <contracts>", "Path to the contracts folder", "contracts")
   .option("-b, --build <build>", "Path to the build folder", "build")
+  .option("-f, --force", "Force build contracts", false)
+
   .option("--disable-include-path", "Disables including node_modules. Use this with old compiler versions", false)
   .option("-p, --params [value...]", "Parameters to pass to the script")
   .option("-n, --network <network>", "Network to use, choose from configuration", LOCKLIFT_NETWORK_NAME)
@@ -33,7 +35,7 @@ program
       process.exit(1);
     }
     if (!options.disableBuild) {
-      await buildStep(config, options);
+      await buildStep(config, options, config.force);
     }
     // Initialize Locklift
     await initLockliftStep(config, options);
