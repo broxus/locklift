@@ -121,6 +121,9 @@ export class Locklift<FactorySource extends FactoryType> {
     config: LockliftConfig<ConfigState.INTERNAL>,
     network?: keyof LockliftConfig["networks"],
   ): Promise<Locklift<T>> {
+    if (network && !config.networks[network]) {
+      throw new Error(`Network ${network} not found in config`);
+    }
     const networkConfig = config.networks[network as string] as NetworkValue<ConfigState.INTERNAL>;
     let keystore = new SimpleKeystore();
     if (networkConfig) {
@@ -160,6 +163,8 @@ export class Locklift<FactorySource extends FactoryType> {
           keystore,
           clock,
           accountsStorage,
+          message: networkConfig.providerConfig?.message,
+          initInput: networkConfig.providerConfig?.initInput,
         }).then(client => {
           if (isProxyConnection(networkConfig?.connection)) {
             client.setPollingInterval(5);

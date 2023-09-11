@@ -13,7 +13,8 @@ export enum ConfigState {
   EXTERNAL,
   INTERNAL,
 }
-
+export const LOCKLIFT_NETWORK_NAME = "locklift";
+type LockliftNetwork = typeof LOCKLIFT_NETWORK_NAME;
 export interface LockliftConfig<T extends ConfigState = ConfigState.EXTERNAL> {
   compiler: {
     includesPath?: string;
@@ -42,10 +43,14 @@ export type KeysConfig = {
 };
 
 export type Networks<T extends ConfigState = ConfigState.EXTERNAL> = Record<"local" | string, NetworkValue<T>> & {
-  proxy: NetworkValue<T, "proxy">;
+  [key in LockliftNetwork]: NetworkValue<T, LockliftNetwork>;
 };
 export interface NetworkValue<T extends ConfigState = ConfigState.EXTERNAL, P extends string = ""> {
-  giver: T extends ConfigState.EXTERNAL ? (P extends "proxy" ? GiverConfig | undefined : GiverConfig) : GiverConfig;
+  giver: T extends ConfigState.EXTERNAL
+    ? P extends LockliftNetwork
+      ? GiverConfig | undefined
+      : GiverConfig
+    : GiverConfig;
   keys: T extends ConfigState.EXTERNAL ? KeysConfig : Required<KeysConfig>;
   connection: T extends ConfigState.EXTERNAL ? ConnectionProperties : ConnectionData;
   providerConfig?: {
@@ -188,7 +193,7 @@ export function loadConfig(configPath: string): LockliftConfig<ConfigState.INTER
     if (typeof value.connection === "string") {
       value.connection = getPresetParams(value.connection) || value.connection;
     }
-    if (key === "proxy") {
+    if (key === LOCKLIFT_NETWORK_NAME) {
       config.networks[key] = {
         ...value,
         giver: value.giver || {
