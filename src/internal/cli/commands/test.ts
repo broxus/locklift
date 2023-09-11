@@ -4,7 +4,7 @@ import "ts-mocha";
 import path from "path";
 import dirTree from "directory-tree";
 
-import { loadConfig } from "../../config";
+import { loadConfig, LOCKLIFT_NETWORK_NAME } from "../../config";
 import { Locklift } from "../../../index";
 import * as utils from "../builder/utils";
 
@@ -20,7 +20,7 @@ program
   .option("-c, --contracts <contracts>", "Path to the contracts folder", "contracts")
   .option("-b, --build <build>", "Path to the build folder", "build")
   .option("--disable-include-path", "Disables including node_modules. Use this with old compiler versions", false)
-  .requiredOption("-n, --network <network>", "Network to use, choose from configuration")
+  .option("-n, --network <network>", "Network to use, choose from configuration", LOCKLIFT_NETWORK_NAME)
   .addOption(
     new Option("--config <config>", "Path to the config file")
       .default(() => loadConfig("locklift.config.ts"))

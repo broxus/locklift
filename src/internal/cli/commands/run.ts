@@ -1,6 +1,6 @@
 import { Command, Option } from "commander";
 import "ts-node";
-import { loadConfig } from "../../config";
+import { loadConfig, LOCKLIFT_NETWORK_NAME } from "../../config";
 
 import { buildStep } from "../steps/build";
 import { initLockliftStep } from "../steps/initLocklift";
@@ -16,7 +16,7 @@ program
   .option("-b, --build <build>", "Path to the build folder", "build")
   .option("--disable-include-path", "Disables including node_modules. Use this with old compiler versions", false)
   .option("-p, --params [value...]", "Parameters to pass to the script")
-  .requiredOption("-n, --network <network>", "Network to use, choose from configuration")
+  .option("-n, --network <network>", "Network to use, choose from configuration", LOCKLIFT_NETWORK_NAME)
   .addOption(
     new Option("--config <config>", "Path to the config file")
       .default(() => loadConfig("locklift.config.ts"))

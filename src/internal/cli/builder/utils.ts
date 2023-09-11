@@ -1,6 +1,6 @@
 import fs from "fs";
 import { DirectoryTree } from "directory-tree";
-import { LockliftConfig } from "../../config";
+import { ExternalContracts, LockliftConfig } from "../../config";
 import { BuilderConfig } from "./index";
 import { ComponentType } from "../../compilerComponentsStore/constants";
 import { getComponent } from "../../compilerComponentsStore";
@@ -12,7 +12,9 @@ import {
   ExecSyncOptionsWithBufferEncoding,
   ExecSyncOptionsWithStringEncoding,
 } from "child_process";
-import { resolve } from "path";
+import path, { resolve } from "path";
+import { promisify } from "util";
+import { logger } from "../../logger";
 
 export function checkDirEmpty(dir: fs.PathLike): fs.PathLike | boolean {
   if (!fs.existsSync(dir)) {
@@ -43,6 +45,7 @@ export const compilerConfigResolver = async ({
     includesPath: compiler.includesPath,
     externalContracts: compiler.externalContracts,
     compilerParams: compiler.compilerParams,
+    externalContractsArtifacts: compiler.externalContractsArtifacts,
   } as BuilderConfig;
   if ("path" in compiler) {
     builderConfig.compilerPath = compiler.path;
@@ -102,3 +105,39 @@ export const tryToGetNodeModules = (): string | undefined => {
 
 export const isValidCompilerOutputLog = (output: string): boolean =>
   !!output.trim() && output.trim() !== "Compiler run successful, no output requested.";
+export const resolveExternalContracts = async (externalContracts?: ExternalContracts) => {
+  return Promise.all(
+    Object.entries(externalContracts || {}).map(async ([pathToFolder, contractsNames]) => {
+      const folderFiles = await promisify(fs.readdir)(pathToFolder).catch(() => {
+        throw new Error(`Cannot read folder ${pathToFolder} that was provided in config.externalContracts`);
+      });
+      const contractsArtifacts = folderFiles
+        .filter(file => contractsNames.some(contract => contract === file.split(".")[0]))
+        .filter(file => file.endsWith(".abi.json") || file.endsWith(".tvc") || file.endsWith(".base64"))
+        .map(file => path.join(pathToFolder, file));
+      if (contractsArtifacts.length > 0) {
+        logger.printWarn(
+          `config.compiler.externalContracts WARNING: Folder ${pathToFolder} contains contract artifacts, but this is deprecated, please use config.compiler.externalContractsArtifacts instead`,
+        );
+      }
+      const contractFiles = folderFiles
+        .filter(file => file.endsWith(".tsol") || file.endsWith(".sol"))
+        .filter(file => contractsNames.some(contract => contract === file.split(".")[0]))
+        .map(file => path.join(pathToFolder, file));
+      return {
+        contractsArtifacts,
+        contractFiles,
+      };
+    }),
+  ).then(contractsAndArtifacts =>
+    contractsAndArtifacts.reduce(
+      (acc, { contractsArtifacts, contractFiles }) => {
+        return {
+          contractsToBuild: [...acc.contractsToBuild, ...contractFiles],
+          contractArtifacts: [...acc.contractArtifacts, ...contractsArtifacts],
+        };
+      },
+      { contractArtifacts: [] as string[], contractsToBuild: [] as string[] },
+    ),
+  );
+};
