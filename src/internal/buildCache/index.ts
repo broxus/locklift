@@ -12,9 +12,9 @@ export class BuildCache {
   private readonly prevCache: CacheRecord;
   private currentCache: CacheRecord = {};
 
-  constructor(private readonly contracts: string[]) {
+  constructor(private readonly contracts: string[], isForce: boolean) {
     fs.ensureFileSync(this.buildCacheFolder);
-    this.prevCache = fs.readJSONSync(this.buildCacheFolder, { throws: false }) || [];
+    this.prevCache = isForce ? [] : fs.readJSONSync(this.buildCacheFolder, { throws: false }) || [];
   }
 
   async buildTree() {

@@ -68,11 +68,7 @@ export class Builder {
     );
     const totalContracts = [...contractsTree.map(el => el.path), ...externalContracts];
 
-    const buildCache = new BuildCache(totalContracts);
-
-    if (this.options.isForce) {
-      buildCache.clearCache();
-    }
+    const buildCache = new BuildCache(totalContracts, this.options.isForce);
 
     const contractsToBuild = await buildCache.buildTree();
 
