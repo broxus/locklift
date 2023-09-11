@@ -21,7 +21,7 @@ import { catchError, concat, defer, filter, from, lastValueFrom, map, mergeMap, 
 import { logger } from "../../logger";
 import semver from "semver/preload";
 import { getContractsTree } from "../../utils";
-import { BuildCash } from "../../buildCash";
+import { BuildCache } from "../../buildCache";
 
 export type BuilderConfig = {
   includesPath?: string;
@@ -66,7 +66,7 @@ export class Builder {
       this.config.externalContracts,
     );
 
-    const buildCash = new BuildCash([...contractsTree.map(el => el.path), ...externalContracts]);
+    const buildCash = new BuildCache([...contractsTree.map(el => el.path), ...externalContracts]);
     const contractsToBuild = await buildCash.buildTree();
 
     if (contractsToBuild.length > 0) {

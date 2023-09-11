@@ -13,8 +13,6 @@ declare global {
 const LOCAL_NETWORK_ENDPOINT = process.env.NETWORK_ENDPOINT || "http://localhost/graphql";
 
 const VENOM_TESTNET_ENDPOINT = process.env.VENOM_TESTNET_ENDPOINT || "https://jrpc-devnet.venom.foundation/";
-const VENOM_TESTNET_TRACE_ENDPOINT =
-  process.env.VENOM_TESTNET_TRACE_ENDPOINT || "https://gql-devnet.venom.network/graphql";
 
 // Create your own link on https://dashboard.evercloud.dev/
 

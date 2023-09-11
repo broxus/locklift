@@ -4,17 +4,17 @@ import { tryToGetNodeModules } from "../cli/builder/utils";
 import { tryToGetFileChangeTime } from "./utils";
 import chalk from "chalk";
 import { defer, from, lastValueFrom, map, mergeMap, tap, toArray } from "rxjs";
-import { CashRecord } from "./types";
+import { CacheRecord } from "./types";
 
-const importMatcher = /^\s*import\s*(?:{[^}]+}\s*from\s*)?["']([^"']+\.tsol)["'];/gm;
-export class BuildCash {
-  private readonly buildCashFolder = path.join("buildCash", "buildCash.json");
-  private readonly prevCash: CashRecord;
-  private currentCash: CashRecord = {};
+const importMatcher = /^\s*import\s*(?:{[^}]+}\s*from\s*)?["']([^"']+\.t?sol)["']\s*;/gm;
+export class BuildCache {
+  private readonly buildCacheFolder = path.join(".buildCache.json");
+  private readonly prevCash: CacheRecord;
+  private currentCache: CacheRecord = {};
 
   constructor(private readonly contracts: string[]) {
-    fs.ensureFileSync(this.buildCashFolder);
-    this.prevCash = fs.readJSONSync(this.buildCashFolder, { throws: false }) || [];
+    fs.ensureFileSync(this.buildCacheFolder);
+    this.prevCash = fs.readJSONSync(this.buildCacheFolder, { throws: false }) || [];
   }
 
   async buildTree() {
@@ -22,7 +22,7 @@ export class BuildCash {
     const uniqFiles = this.getUniqueFiles(contractsWithImports);
     const filesWithModTime = this.applyModTime(uniqFiles);
 
-    this.currentCash = filesWithModTime;
+    this.currentCache = filesWithModTime;
     const updatedOrNewFiles = this.getUpdatedOrNewFiles(filesWithModTime);
 
     const importToImportersMap = contractsWithImports.reduce((acc, current) => {
@@ -49,7 +49,7 @@ export class BuildCash {
             }),
           ).pipe(
             tap(contractFile => {
-              if (new RegExp(/^contract [A-Za-z0-9_]+\s+(is\s+[A-Za-z0-9_,\s]+)*\{/gm).test(contractFile)) {
+              if (new RegExp(/^\s*contract [A-Za-z0-9_]+\s*(is\s+[A-Za-z0-9_,\s]+)*\{/gm).test(contractFile)) {
                 contractsMap.set(el, true);
               }
             }),
@@ -98,7 +98,7 @@ export class BuildCash {
     ].forEach(el => uniqFiles.add(el));
     return Array.from(uniqFiles);
   }
-  getUpdatedOrNewFiles(filesWithModTime: CashRecord) {
+  getUpdatedOrNewFiles(filesWithModTime: CacheRecord) {
     return Object.entries(filesWithModTime)
       .filter(([filePath, { modificationTime }]) => {
         const prevFile = this.prevCash[filePath];
@@ -109,13 +109,13 @@ export class BuildCash {
       })
       .map(([filePath]) => filePath);
   }
-  applyModTime(files: string[]): CashRecord {
+  applyModTime(files: string[]): CacheRecord {
     return files.reduce((acc, el) => {
       return { ...acc, [el]: { modificationTime: fs.statSync(el).mtime.getTime() } };
-    }, {} as CashRecord);
+    }, {} as CacheRecord);
   }
   applyCash() {
-    fs.writeJSONSync(this.buildCashFolder, this.currentCash, {
+    fs.writeJSONSync(this.buildCacheFolder, this.currentCache, {
       spaces: 4,
     });
   }
