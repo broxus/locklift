@@ -66,15 +66,15 @@ export class Builder {
       this.config.externalContracts,
     );
 
-    const buildCash = new BuildCache([...contractsTree.map(el => el.path), ...externalContracts]);
-    const contractsToBuild = await buildCash.buildTree();
+    const buildCache = new BuildCache([...contractsTree.map(el => el.path), ...externalContracts]);
+    const contractsToBuild = await buildCache.buildTree();
 
     if (contractsToBuild.length > 0) {
       logger.printInfo(`Found ${contractsToBuild.length} new sources`);
       try {
         await this.compileContracts(contractsToBuild);
         logger.printInfo("Built");
-        buildCash.applyCash();
+        buildCache.applyCache();
       } catch (err) {
         if (err) {
           logger.printError(err);
