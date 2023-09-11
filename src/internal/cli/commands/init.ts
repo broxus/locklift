@@ -40,10 +40,13 @@ program
       },
       author: "",
       license: "ISC",
+      overrides: {
+        "nekoton-wasm": "npm:nekoton-wasm-locklift@1.20.2",
+      },
     };
     fs.writeFileSync(path.join(options.path, "./package.json"), JSON.stringify(packageJson, null, 2));
     const dependencies =
-      "npm i --save-dev typescript@4.7.4 prettier chai @types/chai @types/mocha @types/node everscale-standalone-client ts-mocha locklift dotenv@16.0.3";
+      "npm i --save-dev typescript@4.7.4 prettier chai @types/chai @types/mocha @types/node ts-mocha locklift dotenv@16.0.3";
     logger.printInfo("Installing required dependencies...");
 
     if (options.path) {
