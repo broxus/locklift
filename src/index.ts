@@ -124,7 +124,7 @@ export class Locklift<FactorySource extends FactoryType> {
     if (network && !config.networks[network]) {
       throw new Error(`Network ${network} not found in config`);
     }
-    const networkConfig = config.networks[network as string] as NetworkValue<ConfigState.INTERNAL>;
+    const networkConfig = config.networks[network as string] as NetworkValue<ConfigState.INTERNAL> | undefined;
     let keystore = new SimpleKeystore();
     if (networkConfig) {
       const giverKeys = getGiverKeyPair(networkConfig.giver);
@@ -147,6 +147,7 @@ export class Locklift<FactorySource extends FactoryType> {
     await proxyNetwork.initialize();
 
     if (
+      !!networkConfig &&
       isProxyConnection(networkConfig?.connection) &&
       networkConfig?.connection?.data?.connectionFactory === undefined
     ) {
@@ -163,8 +164,8 @@ export class Locklift<FactorySource extends FactoryType> {
           keystore,
           clock,
           accountsStorage,
-          message: networkConfig.clientConfig?.message,
-          initInput: networkConfig.clientConfig?.initInput,
+          message: networkConfig?.clientConfig?.message,
+          initInput: networkConfig?.clientConfig?.initInput,
         }).then(client => {
           if (isProxyConnection(networkConfig?.connection)) {
             client.setPollingInterval(5);
@@ -215,7 +216,6 @@ export class Locklift<FactorySource extends FactoryType> {
       locklift.testing = timeMovement;
       locklift.context = context;
     }
-
     await initializeExtenders({ locklift, config, network });
     return locklift;
   }
