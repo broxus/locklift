@@ -1,9 +1,7 @@
 import { Command, Option } from "commander";
 import { loadConfig } from "../../config";
 
-import fs from "fs-extra";
-import { Builder } from "../builder";
-import { compilerConfigResolver } from "../builder/utils";
+import { buildStep } from "../steps/build";
 
 const program = new Command();
 
@@ -22,13 +20,7 @@ program
   .action(async options => {
     const config = await options.config();
 
-    fs.ensureDirSync(options.build);
-
-    const builder = Builder.create(await compilerConfigResolver(config), options);
-
-    const status = await builder.buildContracts();
-
-    if (!status) process.exit(1);
+    await buildStep(config, options, options.force);
 
     process.exit(0);
   });

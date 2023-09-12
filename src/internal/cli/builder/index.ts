@@ -36,7 +36,7 @@ type Option = {
   build: string;
   disableIncludePath: boolean;
   contracts: string;
-  isForce: boolean;
+  force: boolean;
 };
 export class Builder {
   private options: Option;
@@ -68,7 +68,7 @@ export class Builder {
     );
     const totalContracts = [...contractsTree.map(el => el.path), ...externalContracts];
 
-    const buildCache = new BuildCache(totalContracts, this.options.isForce);
+    const buildCache = new BuildCache(totalContracts, this.options.force, this.options.build);
 
     const contractsToBuild = await buildCache.buildTree();
 
@@ -78,7 +78,7 @@ export class Builder {
       try {
         await this.compileContracts(contractsToBuild);
         logger.printInfo("Built");
-        buildCache.applyCache();
+        buildCache.applyCurrentCache();
       } catch (err) {
         if (err) {
           logger.printError(err);

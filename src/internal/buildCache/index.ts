@@ -5,25 +5,43 @@ import { tryToGetFileChangeTime } from "./utils";
 import chalk from "chalk";
 import { defer, from, lastValueFrom, map, mergeMap, tap, toArray } from "rxjs";
 import { CacheRecord } from "./types";
+import _ from "lodash";
 
 const importMatcher = /^\s*import\s*(?:{[^}]+}\s*from\s*)?["']([^"']+\.t?sol)["']\s*;/gm;
+const artifactsExtensions = [".tvc", ".abi.json", ".code"];
 export class BuildCache {
   private readonly buildCacheFolder = path.join(".cache/build.json");
   private readonly prevCache: CacheRecord;
   private currentCache: CacheRecord = {};
 
-  constructor(private readonly contracts: string[], isForce: boolean) {
+  constructor(private readonly contracts: string[], isForce: boolean, private readonly buildFolder: string) {
     fs.ensureFileSync(this.buildCacheFolder);
     this.prevCache = isForce ? [] : fs.readJSONSync(this.buildCacheFolder, { throws: false }) || [];
   }
-
+  getBuiltContracts() {
+    const files = fs.readdirSync(this.buildFolder);
+    return _(files)
+      .groupBy(el => el.split(".")[0])
+      .entries()
+      .filter(([, files]) => artifactsExtensions.every(ext => files.some(file => file.endsWith(ext))))
+      .map(([contractName]) => contractName)
+      .value();
+  }
   async buildTree() {
-    const { contractsMap, contractsWithImports } = await this.findContractsAndImports();
+    const builtContracts = this.getBuiltContracts();
+
+    const { contractsMap, contractsWithImports } = await this.findContractsAndImports(this.contracts);
+
+    Array.from(contractsMap.keys())
+      .filter(el => !builtContracts.includes(path.basename(el).split(".")[0]))
+      .map(pathToContract => pathToContract)
+      .forEach(el => this.removeRecordFromCache(el));
+
     const uniqFiles = this.getUniqueFiles(contractsWithImports);
     const filesWithModTime = this.applyModTime(uniqFiles);
 
     this.currentCache = filesWithModTime;
-    const updatedOrNewFiles = this.getUpdatedOrNewFiles(filesWithModTime);
+    const updatedOrNewFiles = this.getUpdatedOrNewFiles(filesWithModTime, this.prevCache);
 
     const importToImportersMap = contractsWithImports.reduce((acc, current) => {
       current.imports.forEach(imp => {
@@ -36,12 +54,12 @@ export class BuildCache {
     return findFilesForBuildRecursive(updatedOrNewFiles, importToImportersMap, contractsMap, printArr);
   }
 
-  async findContractsAndImports() {
+  async findContractsAndImports(contracts: string[]) {
     const pathToNodeModules = tryToGetNodeModules();
 
     const contractsMap = new Map<string, boolean>();
     const contractsWithImports = await lastValueFrom(
-      from(this.contracts).pipe(
+      from(contracts).pipe(
         mergeMap(el =>
           from(
             fs.readFile(el, {
@@ -98,10 +116,10 @@ export class BuildCache {
     ].forEach(el => uniqFiles.add(el));
     return Array.from(uniqFiles);
   }
-  getUpdatedOrNewFiles(filesWithModTime: CacheRecord) {
+  getUpdatedOrNewFiles(filesWithModTime: CacheRecord, cache: CacheRecord) {
     return Object.entries(filesWithModTime)
       .filter(([filePath, { modificationTime }]) => {
-        const prevFile = this.prevCache[filePath];
+        const prevFile = cache[filePath];
         if (!prevFile) {
           return true;
         }
@@ -114,8 +132,13 @@ export class BuildCache {
       return { ...acc, [el]: { modificationTime: fs.statSync(el).mtime.getTime() } };
     }, {} as CacheRecord);
   }
-  applyCache() {
+  applyCurrentCache() {
     fs.writeJSONSync(this.buildCacheFolder, this.currentCache, {
+      spaces: 4,
+    });
+  }
+  applyOldCache() {
+    fs.writeJSONSync(this.buildCacheFolder, this.prevCache, {
       spaces: 4,
     });
   }
@@ -123,6 +146,10 @@ export class BuildCache {
     fs.writeJSONSync(this.buildCacheFolder, [], {
       spaces: 4,
     });
+  }
+  removeRecordFromCache(filePath: string) {
+    delete this.prevCache[filePath];
+    this.applyOldCache();
   }
 }
 type Print = { filePath: string; subDep: Array<Print> };

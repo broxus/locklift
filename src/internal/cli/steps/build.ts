@@ -18,7 +18,7 @@ export const buildStep = async (
 
     disableIncludePath: options.disableIncludePath,
     contracts: options.contracts,
-    isForce,
+    force: isForce,
   });
 
   const status = await builder.buildContracts();
