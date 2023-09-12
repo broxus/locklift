@@ -13,6 +13,7 @@ import code from "./commands/getContractCode";
 
 import { commandInjector } from "../../plugins/utils";
 import { tryToAttachEntryFile } from "./utils";
+import clean from "./commands/clean";
 
 const main = async () => {
   global.extenders = [];
@@ -20,6 +21,7 @@ const main = async () => {
   tryToAttachEntryFile();
 
   program.addCommand(init);
+  program.addCommand(clean);
   program.addCommand(test);
   program.addCommand(build);
   program.addCommand(run);
