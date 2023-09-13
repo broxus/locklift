@@ -29,7 +29,7 @@ When Locklift executes your tests, scripts, or tasks, an in-process Locklift net
 
 There's no need to make any changes to your tests or scripts.
 
-Locklift is simply another network. If you wanted to be explicit, you could run, for example, `npx locklift test -n proxy`.
+Locklift is simply another network. If you wanted to be explicit, you could run, for example, `npx locklift test -n locklift`.
 
 ## Why would I want to use Locklift?
 
