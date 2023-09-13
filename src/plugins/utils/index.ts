@@ -12,6 +12,7 @@ export const initializeExtenders = (params: {
   network?: keyof LockliftConfig["networks"];
 }): Promise<void> => {
   const extenders = global.extenders.filter((extender): extender is Required<Extender> => !!extender.initializer);
+
   if (extenders.length === 0) {
     return Promise.resolve();
   }
