@@ -6,23 +6,23 @@ outline: deep
 
 ## Installation
 
-Locklift is typically used through a local installation in your project, which ensures reproducibility and prevents future version conflicts.
+Locklift is typically utilized through a local installation in your project. This ensures reproducibility and prevents future version conflicts.
 
-To install Locklift, you need Node.js 14 or later. First, initialize an npm project by navigating to an empty folder and running:
+If you're starting a new project, you can simplify the process by running:
 
 ```bash
-npm init
+mkdir myProject
+cd myProject
+npx locklift init
 ```
 
-Follow the prompts to create your new project.
+This will create your project directory, install Locklift, and initialize your project.
 
-Once your project is initialized, you can install Locklift with the following command:
+If your project already exists, you can install Locklift using:
 
 ```bash
 npm install --save-dev locklift
 ```
-
-With Locklift installed, you can now utilize its functionalities for your smart contract development.
 
 ## Quick Start
 
@@ -110,7 +110,7 @@ Testing the contract verifies its functions under specified conditions. We'll be
 npx locklift test
 ```
 
-This command will automatically run the Mocha tests located in the `test` directory. The `locklift` object will be automatically configured and integrated, eliminating the need for manual import. It's noteworthy to mention that the tests will be executed in Locklift's default [Proxy Network](./locklift-network/overview.md), facilitating isolated and accurate testing environments without affecting live networks.
+This command will automatically run the Mocha tests located in the `test` directory. The `locklift` object will be automatically configured and integrated, eliminating the need for manual import. It's noteworthy to mention that the tests will be executed in Locklift's default [Locklift Network](./locklift-network/overview.md), facilitating isolated and accurate testing environments without affecting live networks.
 
 ```
 Test Sample contract
@@ -215,7 +215,7 @@ npx locklift run --network mainnet --script scripts/1-deploy-sample.ts
 ```
 
 :::tip
-Before launching into a live network, consider testing your deployment in the [Proxy network](./locklift-network/overview.md) which is used by Locklift by default. This allows for a secure and convenient way to ensure everything is working correctly before the actual deployment.
+Before launching into a live network, consider testing your deployment in the [Locklift network](./locklift-network/overview.md) which is used by Locklift by default. This allows for a secure and convenient way to ensure everything is working correctly before the actual deployment.
 
 ```bash
 npx locklift run --script scripts/1-deploy-sample.ts

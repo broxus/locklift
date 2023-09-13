@@ -112,7 +112,7 @@ In this test, we first load the contract factory and verify that the `code`, `AB
 
 ## Running Tests
 
-The testing process for your project contracts has been made easier with the advent of the [Proxy network](./../locklift-network/overview.md). By default, the framework selects the Proxy network as the testing environment when you run tests using Locklift. This feature eliminates the need to manually specify a network or initiate a local sandbox each time, thereby streamlining the testing procedure and saving you time.
+The testing process for your project contracts has been made easier with the advent of the [Locklift network](./../locklift-network/overview.md). By default, the framework selects the Locklift network as the testing environment when you run tests using Locklift. This feature eliminates the need to manually specify a network or initiate a local sandbox each time, thereby streamlining the testing procedure and saving you time.
 
 To run Mocha tests for your project contracts, use the `test` command:
 
@@ -147,7 +147,7 @@ npm run test
 
 ### Local Node Sandbox (Optional)
 
-Although the Proxy network is used by default, you can switch to your own local node for testing if you prefer.
+Although the Locklift network is used by default, you can switch to your own local node for testing if you prefer.
 Remember to start the local node (sandbox) first:
 
 ```bash

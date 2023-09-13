@@ -160,20 +160,15 @@ linker: {
 
 The `networks` field allows you to specify the different networks that you'll be connecting to. Each network that you're using must be defined separately, with its own connection, giver, and keys.
 
-In addition to the networks you define, Locklift comes bundled with a built-in network called Proxy, a local TVM network node designed for development. By default, if you're using Locklift, then you're already using the Proxy network. When Locklift executes your tests, scripts, or tasks, an in-process Proxy network node is started automatically.
+In addition to the networks you define, Locklift comes bundled with a built-in network called Locklift, a local TVM network node designed for development. By default, if you're using Locklift, then you're already using the Locklift network. When Locklift executes your tests, scripts, or tasks, an in-process Locklift network node is started automatically.
 
 :::tip
-For more information about the Proxy network, see the [Locklift Networks](/locklift-network/overview.md) page.
+For more information about the Locklift network, see the [Locklift Networks](/locklift-network/overview.md) page.
 :::
 
 ```typescript
 networks: {
-  proxy: {
-    giver: {
-      // Check if you need provide custom giver
-      address: "0:ece57bcc6c530283becbbd8a3b24d3c5987cdddc3c8b7b33be6e4a6312490415",
-      key: "172af540e43a524763dd53b26a066d472a97c4de37d5498170564510608250c3",
-    },
+  locklift: {
     connection: {
       id: 1001,
       // @ts-ignore
@@ -200,12 +195,6 @@ networks: {
         local: true,
       },
     },
-    // This giver is default local-node giverV2
-    giver: {
-      // Check if you need provide custom giver
-      address: "0:ece57bcc6c530283becbbd8a3b24d3c5987cdddc3c8b7b33be6e4a6312490415",
-      key: "172af540e43a524763dd53b26a066d472a97c4de37d5498170564510608250c3",
-    },
     keys: {
       // Use everdev to generate your phrase
       // !!! Never commit it in your repos !!!
@@ -223,10 +212,6 @@ networks: {
         latencyDetectionInterval: 1000,
         local: false,
       },
-    },
-    giver: {
-      address: "0:0000000000000000000000000000000000000000000000000000000000000000",
-      key: "secret key",
     },
     keys: {
       // Use everdev to generate your phrase
@@ -267,11 +252,6 @@ networks: {
         latencyDetectionInterval: 1000,
         local: false,
       },
-    },
-    // This giver is default Wallet
-    giver: {
-      address: "0:0000000000000000000000000000000000000000000000000000000000000000",
-      key: "secret key",
     },
     keys: {
       // Use everdev to generate your phrase
@@ -318,31 +298,6 @@ connection: {
 ### Giver
 
 The Giver module in Locklift is akin to a specialized smart contract designed with the specific role of distributing tokens. In the context of a local node (sandbox), a preset Giver exists, already equipped with native tokens for your convenience. The `giver` field within each network configuration allows you to specify the settings for the giver for that network.
-
-Here's how you can define the Giver for different networks within your Locklift configuration:
-
-```typescript
-networks: {
-  local: {
-    // The default Giver for a local node is giverV2
-    giver: {
-      address: "0:ece57bcc6c530283becbbd8a3b24d3c5987cdddc3c8b7b33be6e4a6312490415",
-      key: "172af540e43a524763dd53b26a066d472a97c4de37d5498170564510608250c3",
-      // To use a custom giver, uncomment and modify the following line
-      // giverFactory: (ever, keyPair, address) => new SimpleGiver(ever, keyPair, address),
-    },
-  },
-  mainnet: {
-    // On the mainnet, the default SafeMultisig wallet serves as the Giver
-    giver: {
-      address: "0:ece57bcc6c530283becbbd8a3b24d3c5987cdddc3c8b7b33be6e4a6312490415",
-      // Instead of a key, a bip39 phrase can be used
-      phrase: "action inject penalty envelope rabbit element slim tornado dinner pizza off blood",
-      accountId: 0,
-    },
-  },
-},
-```
 
 All known wallets and givers such as `EverWallet` or `GiverV2` (from local node) will be detected automatically. You only need to provide giver credentials - (address, secret key, or phrase with account id). If you want to use something custom you will need to provide a `giverFactory` callback for `networks.giver.giverFactory` that callback should return something that implements the `Giver` interface.
 
@@ -457,3 +412,17 @@ mocha: {
 ```
 
 This example sets the timeout for Mocha tests to 2000 seconds.
+
+## Package.json Overrides
+
+Along with the `locklift.config.ts` configuration file, Locklift also utilizes the `package.json` file for configuring certain aspects of your project. One such aspect is the version of the Nekoton WASM SDK that your project uses.
+
+Locklift uses an extended version of the Nekoton WASM SDK, and you can ensure that all sub-libraries use this extended version by adding an `overrides` field to your `package.json` file. Here's what the `overrides` field should look like:
+
+```json
+"overrides": {
+  "nekoton-wasm": "npm:nekoton-wasm-locklift@^1.20.2"
+}
+```
+
+Adding this field to your `package.json` file ensures that all sub-libraries in your project use the extended version of the Nekoton WASM SDK that is compatible with Locklift.

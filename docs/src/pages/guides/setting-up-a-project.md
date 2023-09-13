@@ -22,23 +22,27 @@ npx locklift --version
 
 ## Project Initialization
 
-To initialize a new project with Locklift, you need to have Node 14 or later installed. Navigate to an empty folder, initialize an npm project, and install Locklift using the following commands:
+Locklift is typically utilized through a local installation in your project. This ensures reproducibility and prevents future version conflicts.
+
+If you're starting a new project, you can simplify the process by running:
 
 ```bash
-npm init
-npm install --save-dev locklift
-```
-
-If Locklift is installed globally, you can use the command `locklift init` to initialize a new project in the current directory, provided the directory is completely empty.
-
-```bash
+// Create a new directory
+mkdir myProject
+cd myProject
 // initialize in current directory
 npx locklift init -f
 // or specify new one
 npx locklift init --path amazing-locklift-project
 ```
 
-The `init` command initializes a new Locklift project with a basic structure and installs necessary dependencies.
+This will create your project directory, install Locklift, and initialize your project.
+
+If your project already exists, you can install Locklift using:
+
+```bash
+npm install --save-dev locklift
+```
 
 ## Project Configuration
 
@@ -56,7 +60,7 @@ npx locklift build
 
 ## Running Tests
 
-The introduction of the [Proxy network](./../locklift-network/overview.md) has significantly streamlined the testing process. When using Locklift to run tests, the framework automatically selects the Proxy network as the default environment. This eliminates the need to specify a network manually or initiate a local sandbox each time, simplifying the overall testing procedure and saving valuable time.
+The introduction of the [Locklift network](./../locklift-network/overview.md) has significantly streamlined the testing process. When using Locklift to run tests, the framework automatically selects the Locklift network as the default environment. This eliminates the need to specify a network manually or initiate a local sandbox each time, simplifying the overall testing procedure and saving valuable time.
 
 You can run Mocha tests for your project contracts using the `test` command.
 
@@ -91,7 +95,7 @@ npm run test
 
 ### Local Node Sandbox (Optional)
 
-Proxy network is used by default, if you prefer to use your own local node for testing, you can still do so. Make sure to first start the local node (sandbox).
+Locklift network is used by default, if you prefer to use your own local node for testing, you can still do so. Make sure to first start the local node (sandbox).
 
 ```bash
 everdev se start

@@ -66,13 +66,13 @@ In addition to these resources, you can also refer to the [`Deploying Contracts`
 
 ## Run Scripts
 
-Running Locklift scripts is simplified with the `run` command, which by default utilizes the [Proxy Network](./../locklift-network/overview.md) to facilitate seamless and efficient script execution:
+Running Locklift scripts is simplified with the `run` command, which by default utilizes the [Locklift Network](./../locklift-network/overview.md) to facilitate seamless and efficient script execution:
 
 ```bash
 npx locklift run --script scripts/1-deploy-sample.ts
 ```
 
-This command runs the `1-deploy-sample.ts` script within the Locklift environment, taking advantage of the Proxy network's features to provide a convenient and effective testing ground.
+This command runs the `1-deploy-sample.ts` script within the Locklift environment, taking advantage of the Locklift network's features to provide a convenient and effective testing ground.
 
 If you wish to specify a different network for script execution, you can do so using the following command:
 
