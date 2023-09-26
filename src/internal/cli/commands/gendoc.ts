@@ -30,7 +30,7 @@ program
     fs.ensureDirSync(options.build);
     fs.ensureDirSync(options.docs);
 
-    const builder = new Builder(await compilerConfigResolver(config), options);
+    const builder = Builder.create(await compilerConfigResolver(config), options);
 
     try {
       const status = builder.buildDocs();

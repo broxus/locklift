@@ -7,6 +7,7 @@ import BigNumber from "bignumber.js";
 export const fetchMsgData = async (msgId: string, endpoint: string): Promise<MsgTree> => {
   const msgQuery = `{
     messages(
+      timeout: 1000,
       filter: {
         id: {
           eq: "${msgId}"

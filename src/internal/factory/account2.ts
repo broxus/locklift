@@ -9,7 +9,6 @@ import {
   SimpleAccountsStorage,
   WalletV3Account,
 } from "everscale-standalone-client/nodejs";
-import { validateAccountAbi } from "./utils";
 
 type MSigType = ConstructorParameters<typeof MsigAccount>[0]["type"];
 
@@ -77,8 +76,6 @@ export class AccountFactory2<T extends FactoryType> {
         };
       }
       case WalletTypes.MsigAccount: {
-        const { abi } = this.sourceFactory.getContractArtifacts(params.contract);
-        validateAccountAbi(abi);
         const contractWithTx = await this.sourceFactory.deployContract(params);
         const account = new MsigAccount({
           publicKey: params.publicKey,

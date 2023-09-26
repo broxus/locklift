@@ -42,6 +42,7 @@ export const compilerConfigResolver = async ({
   const builderConfig: BuilderConfig = {
     includesPath: compiler.includesPath,
     externalContracts: compiler.externalContracts,
+    compilerParams: compiler.compilerParams,
   } as BuilderConfig;
   if ("path" in compiler) {
     builderConfig.compilerPath = compiler.path;
@@ -90,8 +91,10 @@ export function execSyncWrapper(command: string, options?: ExecSyncOptions): str
   }
 }
 export const tryToGetNodeModules = (): string | undefined => {
+  const findNodeModules = require("find-node-modules");
+
   try {
-    return resolve(require.resolve("locklift/package.json"), "../../");
+    return resolve(findNodeModules()[0]);
   } catch (e) {
     return undefined;
   }

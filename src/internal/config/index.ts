@@ -1,12 +1,14 @@
 import fs from "fs";
 import path from "path";
 import commander from "commander";
-import * as ss from "superstruct";
 import { ProviderRpcClient } from "everscale-inpage-provider";
 import type { Ed25519KeyPair } from "everscale-standalone-client";
-import { ConnectionProperties } from "everscale-standalone-client";
+import { ConnectionProperties, NETWORK_PRESETS } from "everscale-standalone-client/nodejs";
 import { generateBip39Phrase } from "everscale-crypto";
 import { Giver } from "../factory";
+import Joi from "joi";
+import { MessageProperties } from "everscale-standalone-client/client";
+import * as nt from "nekoton-wasm";
 
 export enum ConfigState {
   EXTERNAL,
@@ -17,6 +19,7 @@ export interface LockliftConfig<T extends ConfigState = ConfigState.EXTERNAL> {
   compiler: {
     includesPath?: string;
     externalContracts?: ExternalCotracts;
+    compilerParams?: Array<string>;
   } & ({ path: string } | { version: string });
 
   linker:
@@ -39,106 +42,105 @@ export type KeysConfig = {
 };
 
 export type Networks<T extends ConfigState = ConfigState.EXTERNAL> = Record<"local" | string, NetworkValue<T>>;
-export type NetworkValue<T extends ConfigState = ConfigState.EXTERNAL> = {
+export interface NetworkValue<T extends ConfigState = ConfigState.EXTERNAL> {
   giver: GiverConfig;
   keys: T extends ConfigState.EXTERNAL ? KeysConfig : Required<KeysConfig>;
   connection: ConnectionProperties;
+  providerConfig?: {
+    message?: MessageProperties;
+    initInput?: nt.InitInput | Promise<nt.InitInput>;
+  };
   tracing?: {
     endpoint: string;
   };
-};
+}
 
 export type ExternalCotracts = Record<string, Array<string>>;
 export type GiverConfig = {
   address: string;
-  giverFactory: (ever: ProviderRpcClient, keyPair: Ed25519KeyPair, address: string) => Giver;
+  giverFactory?: (ever: ProviderRpcClient, keyPair: Ed25519KeyPair, address: string) => Giver;
 } & ({ key: string } | { phrase: string; accountId: number });
 
-const MochaConfig = ss.type({
-  tsconfig: ss.optional(ss.string()),
-});
-const Config = ss.union([
-  ss.object({
-    // NOTE: assign(object, union) doesn't work
-    compiler: ss.union([
-      ss.object({
-        includesPath: ss.optional(ss.string()),
-        externalContracts: ss.optional(ss.record(ss.string(), ss.array(ss.string()))),
-        path: ss.string(),
-      }),
-      ss.object({
-        includesPath: ss.optional(ss.string()),
-        externalContracts: ss.optional(ss.record(ss.string(), ss.array(ss.string()))),
-        version: ss.string(),
-      }),
-    ]),
-    linker: ss.union([
-      ss.object({
-        path: ss.string(),
-        lib: ss.string(),
-      }),
-      ss.object({
-        version: ss.string(),
-      }),
-    ]),
-    networks: ss.record(
-      ss.string(),
-      ss.object({
-        // NOTE: assign(object, union) doesn't work
-        giver: ss.union([
-          ss.object({
-            address: ss.string(),
-            giverFactory: ss.func() as unknown as ss.Struct<GiverConfig["giverFactory"], null>,
-            key: ss.string(),
-          }),
-          ss.object({
-            address: ss.string(),
-            giverFactory: ss.func(),
-            phrase: ss.string(),
-            accountId: ss.number(),
-          }),
-        ]),
-        keys: ss.object({
-          path: ss.optional(ss.string()),
-          phrase: ss.optional(ss.string()),
-          amount: ss.number(),
+export const JoiConfig = Joi.object<LockliftConfig>({
+  compiler: Joi.alternatives([
+    Joi.object({
+      includesPath: Joi.string().optional(),
+      compilerParams: Joi.array().items(Joi.string()).optional(),
+      externalContracts: Joi.object().pattern(Joi.string(), Joi.array().items(Joi.string())),
+      path: Joi.string(),
+    }),
+    Joi.object({
+      includesPath: Joi.string().optional(),
+      compilerParams: Joi.array().items(Joi.string()).optional(),
+      externalContracts: Joi.object().pattern(Joi.string(), Joi.array().items(Joi.string())),
+      version: Joi.string(),
+    }),
+  ]),
+  linker: Joi.alternatives([
+    Joi.object({
+      path: Joi.string(),
+      lib: Joi.string(),
+    }),
+    Joi.object({
+      version: Joi.string(),
+    }),
+  ]),
+  networks: Joi.object().pattern(
+    Joi.string(),
+
+    Joi.object({
+      giver: Joi.alternatives().conditional(Joi.object({ phrase: Joi.string().required() }).unknown(), {
+        then: Joi.object({
+          address: Joi.string(),
+          giverFactory: Joi.any().optional(),
+          phrase: Joi.string(),
+          accountId: Joi.number(),
         }),
-        connection: ss.union([
-          ss.string(),
-          // NOTE: assign(object, union) doesn't work
-          ss.union([
-            ss.object({
-              id: ss.optional(ss.number()),
-              group: ss.optional(ss.string()),
-              type: ss.pattern(ss.string(), /graphql/),
-              data: ss.object({
-                endpoints: ss.array(ss.string()),
-                local: ss.optional(ss.boolean()),
-                latencyDetectionInterval: ss.optional(ss.number()),
-                maxLatency: ss.optional(ss.number()),
-              }),
-            }),
-            ss.object({
-              id: ss.optional(ss.number()),
-              group: ss.string(),
-              type: ss.pattern(ss.string(), /jrpc/),
-              data: ss.object({
-                endpoint: ss.string(),
-              }),
-            }),
-          ]),
-        ]),
-        tracing: ss.optional(
-          ss.object({
-            endpoint: ss.string(),
-          }),
-        ),
+        otherwise: Joi.object({
+          address: Joi.string(),
+          giverFactory: Joi.any().optional(),
+          key: Joi.string(),
+        }),
       }),
-    ),
-    mocha: MochaConfig,
-  }),
-  ss.object(),
-]);
+      keys: Joi.object({
+        path: Joi.string().optional(),
+        phrase: Joi.string().optional(),
+        amount: Joi.number(),
+      }),
+      connection: Joi.alternatives([
+        ...Object.keys(NETWORK_PRESETS).map(el => el),
+        Joi.object({
+          id: Joi.number().optional(),
+          type: Joi.alternatives(["graphql", "jrpc"]),
+          group: Joi.string().optional(),
+          data: Joi.alternatives().conditional("type", {
+            is: "graphql",
+            then: Joi.object({
+              endpoints: Joi.array().items(Joi.string()),
+              local: Joi.boolean().optional(),
+              latencyDetectionInterval: Joi.number().optional(),
+              maxLatency: Joi.number().optional(),
+            }),
+            otherwise: Joi.object({
+              endpoint: Joi.string(),
+            }),
+          }),
+        }),
+      ]),
+      providerConfig: Joi.object({
+        message: Joi.object({}).optional().unknown(),
+        initInput: Joi.any().optional(),
+      }).optional(),
+
+      tracing: Joi.object({
+        endpoint: Joi.string(),
+      }).optional(),
+    }).unknown(),
+  ),
+  mocha: Joi.object({
+    tsconfig: Joi.string().optional(),
+  }).unknown(true),
+}).unknown();
 
 export function loadConfig(configPath: string): LockliftConfig<ConfigState.INTERNAL> {
   const resolvedConfigPath = path.resolve(process.cwd(), configPath);
@@ -148,32 +150,22 @@ export function loadConfig(configPath: string): LockliftConfig<ConfigState.INTER
   }
 
   const configFile = require(resolvedConfigPath);
-  try {
-    const config: LockliftConfig = ss.create(configFile.default, Config) as LockliftConfig;
 
-    for (const value of Object.values(config.networks)) {
-      if (value.keys != null) {
-        value.keys = {
-          ...value.keys,
-          phrase: value.keys?.phrase || generateBip39Phrase(12),
-          path: value.keys.path || "m/44'/396'/0'/0/INDEX",
-        };
-      }
-    }
-
-    return config as unknown as LockliftConfig<ConfigState.INTERNAL>;
-  } catch (e: any) {
-    if (e instanceof ss.StructError) {
-      const failures = e
-        .failures()
-        .map(error => {
-          return `\n  Path: ${error.path.join(".")}\n  Error: ${error.message}`;
-        })
-        .join("\n");
-      console.error(`Invalid config:\n${failures}`);
-      process.exit(1);
-    } else {
-      throw e;
+  const validationResult = JoiConfig.validate(configFile.default);
+  if (validationResult.error) {
+    console.log(validationResult.error.annotate());
+    throw new Error("");
+  }
+  const config = validationResult.value;
+  for (const value of Object.values(config.networks)) {
+    if (value.keys != null) {
+      value.keys = {
+        ...value.keys,
+        phrase: value.keys?.phrase || generateBip39Phrase(12),
+        path: value.keys.path || "m/44'/396'/0'/0/INDEX",
+      };
     }
   }
+
+  return config as unknown as LockliftConfig<ConfigState.INTERNAL>;
 }

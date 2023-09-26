@@ -2,11 +2,12 @@ import { BalanceChangeInfoStorage, MsgError, TraceType, ViewTraceTree, ViewTrace
 import chalk from "chalk";
 
 import { ContractWithName } from "../../../types";
-import { convertForLogger } from "../utils";
+import { convertForLogger, extractAddress } from "../utils";
 
 import { extractFeeAndSentValueFromMessage, mapParams } from "./mappers";
 import BigNumber from "bignumber.js";
 import _ from "lodash";
+import { NameAndType } from "./viewTracingTree";
 
 export const mapType: Record<TraceType, string> = {
   [TraceType.BOUNCE]: "BONCE",
@@ -146,4 +147,12 @@ export const getErrorsInfo = (
       {},
     ),
   };
+};
+
+export const isDesiredMethod = ({ name, type, contract }: NameAndType, trace: ViewTraceTree): boolean => {
+  return (
+    type === trace.type &&
+    name === trace.decodedMsg?.method &&
+    (contract ? extractAddress(contract).equals(extractAddress(trace.contract.contract)) : true)
+  );
 };

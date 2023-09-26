@@ -12,7 +12,7 @@ import _ from "lodash";
 
 import { Address, Contract, DecodedEventWithTransaction } from "everscale-inpage-provider";
 import { AbiEventName } from "everscale-inpage-provider/dist/models";
-import { extractAddress, extractStringAddress, fetchAccounts, isT } from "../utils";
+import { extractStringAddress, fetchAccounts, isT } from "../utils";
 import { ContractWithName } from "../../../types";
 import {
   applyTotalFees,
@@ -20,13 +20,14 @@ import {
   getBalanceChangingInfo,
   getBalanceDiff,
   getErrorsInfo,
+  isDesiredMethod,
   printer,
   PrinterConfig,
 } from "./utils";
 import { Tokens } from "./tokens";
 import { pipe } from "rxjs";
 
-type NameAndType<T extends string = string> = { type: TraceType; name: T; contract?: Addressable };
+export type NameAndType<T extends string = string> = { type: TraceType; name: T; contract?: Addressable };
 type EventNames<Abi> = DecodedEventWithTransaction<Abi, AbiEventName<Abi>>["event"];
 
 type EventsNamesInner<T extends Contract<any>> = EventNames<T extends Contract<infer f> ? f : never>;
@@ -93,7 +94,7 @@ export class ViewTracingTree {
       .map(el => el?.params)
       .filter(isT);
 
-  private findForContract = <
+  findForContract = <
     C extends Contract<any>,
     N extends (keyof C["methods"] & string) | EventsNamesInner<C>,
     Abi extends C extends Contract<infer f> ? f : never,
@@ -102,8 +103,7 @@ export class ViewTracingTree {
     contract,
     name,
   }: { contract: C } & { name: N }) => {
-    //@ts-ignore
-    if (name in contract._functions) {
+    if (name in contract.methodsAbi) {
       return this.findByType<N, MethodParams<C, N>>({ name, type: TraceType.FUNCTION_CALL, contract });
     }
     return this.findByType<N, E>({ name, type: TraceType.EVENT, contract });
@@ -112,26 +112,30 @@ export class ViewTracingTree {
   findByType = <M extends string, P>(params: NameAndType): Array<ViewTrace<M, P>["decodedMsg"]> =>
     this._findByType<M, P>(params, this.viewTraceTree).map(el => el.decodedMsg);
 
-  findByTypeWithFullData = <M extends string, P>(params: NameAndType) =>
-    this._findByType<M, P>(params, this.viewTraceTree);
+  findByTypeWithFullData = <M extends string, P>(params: NameAndType) => {
+    return this._findByType<M, P>(params, this.viewTraceTree);
+  };
 
   private _findByType = <M extends string, P>(
     { type, name, contract }: NameAndType,
     tree: ViewTraceTree,
+    isRoot = true,
   ): Array<ViewTrace<M, P>> => {
     const matchedMethods: Array<ViewTrace<M, P>> = [];
+
+    if (isRoot && isDesiredMethod({ type, name, contract }, tree)) {
+      matchedMethods.push(tree as any);
+    }
+
     for (const trace of tree.outTraces) {
-      if (
-        type === trace.type &&
-        name === trace.decodedMsg?.method &&
-        (contract ? extractAddress(contract).equals(extractAddress(trace.contract.contract)) : true)
-      ) {
+      if (isDesiredMethod({ type, name, contract }, trace)) {
         matchedMethods.push(trace as any);
       }
       if (trace.outTraces.length > 0) {
-        matchedMethods.push(...this._findByType<M, P>({ name, type, contract }, trace));
+        matchedMethods.push(...this._findByType<M, P>({ name, type, contract }, trace, false));
       }
     }
+
     return matchedMethods;
   };
   totalGasUsed = () => calculateTotalFees(this.viewTraceTree).toNumber();

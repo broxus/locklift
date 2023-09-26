@@ -1,5 +1,5 @@
 import { LockliftConfig } from "../../config";
-import { exec } from "child_process";
+import { exec, execSync } from "child_process";
 import { copyExternalFiles, typeGenerator } from "../../generators";
 import ejs from "ejs";
 import fs from "fs";
@@ -20,12 +20,14 @@ import { ParsedDoc } from "../types";
 import { promisify } from "util";
 import { catchError, concat, defer, filter, from, map, mergeMap, tap, throwError, toArray } from "rxjs";
 import { logger } from "../../logger";
+import semver from "semver/preload";
 
 export type BuilderConfig = {
   includesPath?: string;
   compilerPath: string;
   linkerLibPath: string;
   linkerPath: string;
+  compilerParams?: Array<string>;
   externalContracts: LockliftConfig["compiler"]["externalContracts"];
 };
 type Option = {
@@ -38,8 +40,20 @@ export class Builder {
   private nameRegex = /======= (?<contract>.*) =======/g;
   private docRegex = /(?<doc>^{(\s|.)*?^})/gm;
 
-  constructor(private readonly config: BuilderConfig, options: Option) {
+  constructor(private readonly config: BuilderConfig, options: Option, private readonly compilerVersion: string) {
     this.options = options;
+  }
+
+  static create(config: BuilderConfig, options: Option): Builder {
+    const matchedCompilerVersion = execSync(config.compilerPath + " --version")
+      .toString()
+      .trim()
+      .match(/(?<=Version: )(.*)(?=\+commit)/);
+
+    if (!matchedCompilerVersion) {
+      throw new Error("Cannot get compiler version");
+    }
+    return new Builder(config, options, matchedCompilerVersion[0]);
   }
 
   async buildContracts(): Promise<boolean> {
@@ -58,19 +72,40 @@ export class Builder {
 
           mergeMap(({ path, contractFileName }) => {
             const nodeModules = tryToGetNodeModules();
-            const additionalIncludesPath = `--include-path ${resolve(process.cwd(), "node_modules")}  ${
-              nodeModules ? `--include-path ${nodeModules}` : ""
-            }`;
-            const includePath = `${additionalIncludesPath}`;
-            return defer(async () =>
-              promisify(exec)(`cd ${this.options.build} && \
-          ${this.config.compilerPath} ${!this.options.disableIncludePath ? includePath : ""} ${path}`),
-            ).pipe(
+            return defer(async () => {
+              if (semver.lte(this.compilerVersion, "0.66.0")) {
+                const additionalIncludesPath = `--include-path ${resolve(process.cwd(), "node_modules")}  ${
+                  nodeModules ? `--include-path ${nodeModules}` : ""
+                }`;
+                const includePath = `${additionalIncludesPath}`;
+                const execCommand = `cd ${this.options.build} && \
+          ${this.config.compilerPath} ${!this.options.disableIncludePath ? includePath : ""} ${path} ${(
+                  this.config.compilerParams || []
+                ).join(" ")}`;
+                return promisify(exec)(execCommand);
+              }
+
+              if (semver.gte(this.compilerVersion, "0.68.0")) {
+                const additionalIncludesPath = `${nodeModules ? `--include-path ${nodeModules}` : ""}`;
+                const includePath = `${additionalIncludesPath} ${"--base-path"} . `;
+                const execCommand = ` ${this.config.compilerPath} ${
+                  !this.options.disableIncludePath ? includePath : ""
+                } -o ${this.options.build}  ${path} ${(this.config.compilerParams || []).join(" ")}`;
+                return promisify(exec)(execCommand);
+              }
+              throw new Error("Unsupported compiler version");
+            }).pipe(
               map(output => ({
                 output,
                 contractFileName: parse(contractFileName).name,
                 path,
               })),
+              catchError(e => {
+                logger.printError(
+                  `path: ${path}, contractFile: ${contractFileName} error: ${e?.stderr?.toString() || e}`,
+                );
+                return throwError(undefined);
+              }),
             );
           }),
           //Warnings
@@ -79,11 +114,7 @@ export class Builder {
               isValidCompilerOutputLog(output.output.stderr.toString()) &&
               logger.printBuilderLog(output.output.stderr.toString()),
           ),
-          //Errors
-          catchError(e => {
-            logger.printError(e?.stderr?.toString() || e);
-            return throwError(undefined);
-          }),
+
           filter(({ output }) => {
             //Only contracts
             return !!output?.stdout.toString();
@@ -92,13 +123,14 @@ export class Builder {
             const lib = this.config.linkerLibPath ? ` --lib ${this.config.linkerLibPath} ` : "";
             const resolvedPathCode = resolve(this.options.build, `${contractFileName}.code`);
             const resolvedPathAbi = resolve(this.options.build, `${contractFileName}.abi.json`);
+            const resolvedPathMap = resolve(this.options.build, `${contractFileName}.map.json`);
             return defer(async () => {
               const command = `${
                 this.config.linkerPath
               } compile "${resolvedPathCode}" -a "${resolvedPathAbi}" -o ${resolve(
                 this.options.build,
                 `${contractFileName}.tvc`,
-              )} ${lib}`;
+              )} ${lib} --debug-map ${resolvedPathMap}`;
 
               return promisify(exec)(command);
             }).pipe(
@@ -106,7 +138,7 @@ export class Builder {
                 return tvmLinkerLog.stdout.toString().match(new RegExp("Saved to file (.*)."));
               }),
               catchError(e => {
-                logger.printError(e?.stderr?.toString());
+                logger.printError(`contractFileName: ${contractFileName} error:${e?.stderr?.toString()}`);
                 return throwError(undefined);
               }),
               map(matchResult => {

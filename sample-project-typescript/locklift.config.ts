@@ -1,6 +1,10 @@
-import { LockliftConfig } from "locklift";
+import { lockliftChai, LockliftConfig } from "locklift";
 import { FactorySource } from "./build/factorySource";
-import { SimpleGiver, GiverWallet, GiverWalletV2_3 } from "./giverSettings";
+import * as dotenv from "dotenv";
+import chai from "chai";
+
+dotenv.config();
+chai.use(lockliftChai);
 
 declare global {
   const locklift: import("locklift").Locklift<FactorySource>;
@@ -8,6 +12,10 @@ declare global {
 
 const LOCAL_NETWORK_ENDPOINT = process.env.NETWORK_ENDPOINT || "http://localhost/graphql";
 const DEV_NET_NETWORK_ENDPOINT = process.env.DEV_NET_NETWORK_ENDPOINT || "https://devnet-sandbox.evercloud.dev/graphql";
+
+const VENOM_TESTNET_ENDPOINT = process.env.VENOM_TESTNET_ENDPOINT || "https://jrpc-devnet.venom.foundation/";
+const VENOM_TESTNET_TRACE_ENDPOINT =
+  process.env.VENOM_TESTNET_TRACE_ENDPOINT || "https://gql-devnet.venom.network/graphql";
 
 // Create your own link on https://dashboard.evercloud.dev/
 const MAIN_NET_NETWORK_ENDPOINT = process.env.MAIN_NET_NETWORK_ENDPOINT || "https://mainnet.evercloud.dev/XXX/graphql";
@@ -50,7 +58,6 @@ const config: LockliftConfig = {
       // This giver is default local-node giverV2
       giver: {
         // Check if you need provide custom giver
-        giverFactory: (ever, keyPair, address) => new SimpleGiver(ever, keyPair, address),
         address: "0:ece57bcc6c530283becbbd8a3b24d3c5987cdddc3c8b7b33be6e4a6312490415",
         key: "172af540e43a524763dd53b26a066d472a97c4de37d5498170564510608250c3",
       },
@@ -76,13 +83,35 @@ const config: LockliftConfig = {
         },
       },
       giver: {
-        giverFactory: (ever, keyPair, address) => new GiverWallet(ever, keyPair, address),
-        address: "",
-        phrase: "",
-        accountId: 0,
+        address: "0:0000000000000000000000000000000000000000000000000000000000000000",
+        key: "secret key",
       },
       tracing: {
         endpoint: DEV_NET_NETWORK_ENDPOINT,
+      },
+      keys: {
+        // Use everdev to generate your phrase
+        // !!! Never commit it in your repos !!!
+        // phrase: "action inject penalty envelope rabbit element slim tornado dinner pizza off blood",
+        amount: 20,
+      },
+    },
+    venom_testnet: {
+      connection: {
+        id: 1000,
+        type: "jrpc",
+        group: "dev",
+        data: {
+          endpoint: VENOM_TESTNET_ENDPOINT,
+        },
+      },
+      giver: {
+        address: "0:0000000000000000000000000000000000000000000000000000000000000000",
+        phrase: "phrase",
+        accountId: 0,
+      },
+      tracing: {
+        endpoint: VENOM_TESTNET_TRACE_ENDPOINT,
       },
       keys: {
         // Use everdev to generate your phrase
@@ -105,10 +134,8 @@ const config: LockliftConfig = {
       },
       // This giver is default Wallet
       giver: {
-        giverFactory: (ever, keyPair, address) => new GiverWalletV2_3(ever, keyPair, address),
-        address: "",
-        phrase: "",
-        accountId: 0,
+        address: "0:0000000000000000000000000000000000000000000000000000000000000000",
+        key: "secret key",
       },
       tracing: {
         endpoint: MAIN_NET_NETWORK_ENDPOINT,

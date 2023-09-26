@@ -15,7 +15,7 @@ program
   .option("-c, --contracts <contracts>", "Path to the contracts folder", "contracts")
   .option("-b, --build <build>", "Path to the build folder", "build")
   .option("--disable-include-path", "Disables including node_modules. Use this with old compiler versions", false)
-
+  .option("-p, --params [value...]", "Parameters to pass to the script")
   .requiredOption("-n, --network <network>", "Network to use, choose from configuration")
   .addOption(
     new Option("--config <config>", "Path to the config file")
@@ -37,7 +37,16 @@ program
     }
     // Initialize Locklift
     await initLockliftStep(config, options);
-    require(path.resolve(process.cwd(), options.script));
+    const scriptContent = require(path.resolve(process.cwd(), options.script));
+    if (scriptContent.default) {
+      await scriptContent
+        .default(...options.params)
+        .then(() => process.exit(0))
+        .catch((e: any) => {
+          console.log(e);
+          process.exit(1);
+        });
+    }
   });
 
 export default program;

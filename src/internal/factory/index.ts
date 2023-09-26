@@ -5,14 +5,12 @@ import dirTree from "directory-tree";
 import { ConstructorParams, ContractWithName, DeployTransaction, Optional } from "../../types";
 import * as utils from "../../utils";
 import { Giver } from "./giver";
-import { AccountFactory } from "./account";
 import { Deployer } from "./deployer";
-import { emptyContractAbi, tryToDetectContract, validateAccountAbi } from "./utils";
+import { emptyContractAbi, tryToDetectContract } from "./utils";
 import { flatDirTree } from "../cli/builder/utils";
 import { AccountFactory2 } from "./account2";
 import { SimpleAccountsStorage } from "everscale-standalone-client/nodejs";
 
-export { Account, AccountFactory } from "./account";
 export * from "./giver";
 export * from "./deployer";
 
@@ -40,15 +38,15 @@ export class Factory<T extends FactoryType> {
   public accounts: AccountFactory2<T>;
   private constructor(
     private readonly ever: ProviderRpcClient,
-    private readonly giver: Giver,
+    private readonly giver: () => Giver,
     private readonly accountsStorage: SimpleAccountsStorage,
   ) {
-    this.accounts = new AccountFactory2(this, giver.sendTo.bind(giver), accountsStorage);
+    this.accounts = new AccountFactory2(this, (...params) => giver().sendTo(...params), accountsStorage);
   }
 
   public static async setup<T extends FactoryType>(
     ever: ProviderRpcClient,
-    giver: Giver,
+    giver: () => Giver,
     accountsStorage: SimpleAccountsStorage,
   ): Promise<Factory<T>> {
     const factory = new Factory<T>(ever, giver, accountsStorage);
@@ -61,14 +59,17 @@ export class Factory<T extends FactoryType> {
   }
 
   private get deployer() {
-    return new Deployer(this.ever, this.giver);
+    return new Deployer(this.ever, this.giver());
   }
 
   public deployContract = async <ContractName extends keyof T>(
-    args: DeployContractParams<T, ContractName>,
+    args: DeployContractParams<T, ContractName> & { giver?: Giver },
   ): Promise<{ contract: Contract<T[ContractName]> } & DeployTransaction> => {
     const { tvc, abi } = this.getContractArtifacts(args.contract);
-    return this.deployer.deployContract(
+
+    const deployer = args.giver ? new Deployer(this.ever, args.giver) : this.deployer;
+
+    return deployer.deployContract(
       abi,
       {
         tvc: args.tvc || tvc,
@@ -79,12 +80,6 @@ export class Factory<T extends FactoryType> {
       args.constructorParams,
       args.value,
     );
-  };
-
-  public getAccountsFactory = <ContractName extends keyof T>(contractName: ContractName) => {
-    const { tvc, abi } = this.getContractArtifacts(contractName as ContractName);
-    validateAccountAbi(abi);
-    return new AccountFactory(this.deployer, this.ever, abi, tvc);
   };
 
   public getDeployedContract = <ContractName extends keyof T>(
