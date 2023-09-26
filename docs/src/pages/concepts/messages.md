@@ -4,7 +4,7 @@ outline: deep
 
 # Concept of Internal & External Messages
 
-In Threaded Virtual Machine (TVM) blockchains, messages are integral to facilitating interactions between smart contracts or between smart contracts and external applications. Messages essentially serve as the main communication medium, enabling contracts to execute various operations. Messages are categorized into three types:
+In TON Virtual Machine (TVM) blockchains, messages are integral to facilitating interactions between smart contracts or between smart contracts and external applications. Messages essentially serve as the main communication medium, enabling contracts to execute various operations. Messages are categorized into three types:
 
 - External Inbound Messages
 - Internal Messages

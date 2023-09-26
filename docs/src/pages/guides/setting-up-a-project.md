@@ -157,7 +157,7 @@ For an enhanced development experience, you can leverage code editors that suppo
 
 For Visual Studio Code, we recommend the [Everscale Solidity support](https://marketplace.visualstudio.com/items?itemName=everscale.solidity-support) extension, which provides syntax highlighting, snippets, error checking, and other useful features for Everscale blockchain development.
 
-For JetBrains IDEs, consider using the [T-Sol (Threaded Solidity) plugin](https://github.com/broxus/intellij-t-sol). T-Sol enhances the coding experience by providing features like syntax highlighting, code completion, file templates, goto declaration, find usages, and code formatting.
+For JetBrains IDEs, consider using the [T-Sol (TON Solidity) plugin](https://github.com/broxus/intellij-t-sol). T-Sol enhances the coding experience by providing features like syntax highlighting, code completion, file templates, goto declaration, find usages, and code formatting.
 
 ## Plugins and Dependencies
 

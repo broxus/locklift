@@ -1,6 +1,6 @@
 # Building Locklift Plugins
 
-In this guide, we will walk you through the process of creating plugins for Locklift, a Node JS framework designed for the building, testing, running, and maintaining of smart contracts for TVM (Threaded Virtual Machine) blockchains like Everscale, Venom, Gosh, and TON.
+In this guide, we will walk you through the process of creating plugins for Locklift, a Node JS framework designed for the building, testing, running, and maintaining of smart contracts for TVM (TON Virtual Machine) blockchains like Everscale, Venom, Gosh, and TON.
 
 To simplify the process, we'll use the [`locklift-plugin-boilerplate`](https://github.com/broxus/locklift-plugin-boilerplate/tree/master) as a template. This boilerplate provides a basic structure for creating new plugins, making it easier to get started.
 
