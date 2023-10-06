@@ -10,6 +10,7 @@ const NAV = [
     items: [
       { text: 'Home', link: 'https://docs.broxus.com' },
       { text: 'Inpage Provider', link: 'https://provider-docs.broxus.com/' },
+      { text: 'Nekoton-python', link: 'https://nekoton-py-docs.broxus.com/ ' },
       { text: 'OctusBridge Integration', link: 'https://integrate.octusbridge.io/' },
       {
         text: 'TIP-3 Api Reference',
