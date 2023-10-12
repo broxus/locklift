@@ -8,26 +8,162 @@ In the world of blockchain technology, the concept of transaction finalization i
 
 ## Actor Model & Async Transactions
 
-TVM-compatible blockchains operate based on a pure actor model, an asynchronous and concurrent computational model. In this system, each contract acts as an independent actor, processing its own messages. Hence, the execution of a smart contract or transaction is not a single, atomic operation. Instead, it's a sequence of actions that can happen asynchronously.
+TVM-compatible blockchains operate based on the pure actor model, an asynchronous and concurrent computational model. Within this system, each contract functions as an independent actor, processing its individual messages. The execution of a smart contract or a transaction within a single contract is a synchronous atomic operation. However, when an operation involves multiple contracts, interactions between them can occur asynchronously.
 
-For instance, let's imagine `Contract A` calling `Contract B`. In many other blockchain models, if `Contract B` runs out of gas during execution, the entire transaction would be rolled back, including the state changes in `Contract A` that occurred prior to the call. However, in the actor model of TVM blockchains, if `Contract B` encounters an error, the changes `Contract A` made before calling `Contract B` would persist. The execution failure of `Contract B` only rolls back changes related to `Contract B`'s execution. This characteristic ensures a higher degree of reliability and security in transaction processing.
+For instance, let's imagine `Contract A` calling `Contract B`.
+In many other blockchain models, if `Contract B` runs out of gas during execution, the entire transaction would be rolled back, including the state changes in `Contract A` that occurred prior to the call.
+
+However, in the actor model of TVM blockchains, if `Contract B` encounters an error, the changes `Contract A` made before calling `Contract B` would persist. The execution failure of `Contract B` only rolls back changes related to `Contract B`'s execution. This characteristic ensures a higher degree of reliability and security in transaction processing.
 
 ### Demonstration
 
-<BDKImgContainer src="./../transaction-finalization.png" padding="20px 0 20px 0"/>
+<BDKImgContainer src="./../transaction-finalization.png" padding="20px 0 20px 0" maxWidth="60%"/>
 
 <TransactionFinalization />
 
 To demonstrate this concept, consider the TypeScript example below. It interacts with two smart contracts, `Contract A` and `Contract B`. `Contract A` calls a function on `Contract B`, which runs out of gas and fails. The state changes in `Contract B` are rolled back, but the state changes in `Contract A` persist.
 
-```typescript
+::: code-group
+
+```typescript [Everscale Inpage Provider]
 import {
   Address,
   ProviderRpcClient,
 } from 'everscale-inpage-provider';
-import { testContract, toNano } from './../../helpers';
+
+import { testContract } from '.';
 
 const provider = new ProviderRpcClient();
+
+async function fetchStates() {
+  const ContractA = new provider.Contract(
+    testContract.ABI,
+    new Address(testContract.address)
+  );
+  const ContractB = new provider.Contract(
+    testContract.ABI,
+    new Address(testContract.dublicateAddress)
+  );
+
+  const { _state: prevState_A } = await ContractA.methods
+    .getDetails()
+    .call();
+  const { _state: prevState_B } = await ContractB.methods
+    .getDetails()
+    .call();
+
+  console.log(`prevState_A: ${prevState_A}`);
+  console.log(`prevState_B: ${prevState_B}`);
+}
+
+async function executeTransaction() {
+  try {
+    await provider.ensureInitialized();
+    const { accountInteraction } = await provider.requestPermissions({
+      permissions: ['basic', 'accountInteraction'],
+    });
+
+    const ContractA = new provider.Contract(
+      testContract.ABI,
+      new Address(testContract.address)
+    );
+
+    const senderAddress = accountInteraction?.address!;
+
+    await fetchStates();
+
+    const { _state: prevState_A } = await ContractA.methods
+      .getDetails()
+      .call();
+
+    const payload = {
+      abi: JSON.stringify(testContract.ABI),
+      method: 'setOtherState',
+      params: {
+        other: new Address(testContract.dublicateAddress),
+        _state: Number(prevState_A) + 1,
+        count: 256,
+      },
+    };
+    const { transaction: tx } = await provider.sendMessage({
+      sender: senderAddress,
+      recipient: new Address(testContract.address),
+      amount: (0.3 * 10 ** 9).toString(),
+      bounce: true,
+      payload: payload,
+    });
+
+    console.log(`Transaction: ${JSON.stringify(tx, null, 2)}`);
+
+    const subscriber = new provider.Subscriber();
+    const traceStream = subscriber.trace(tx);
+
+    traceStream.on(async data => {
+      if (data.aborted) {
+        await fetchStates();
+        traceStream.stopProducer();
+      }
+    });
+  } catch (err: any) {
+    console.log(`Error: ${err.message || 'Unknown Error'}`);
+  }
+}
+
+executeTransaction();
+```
+
+```typescript [Everscale Standalone Client]
+import {
+  Address,
+  ProviderRpcClient,
+} from 'everscale-inpage-provider';
+import {
+  EverscaleStandaloneClient,
+  SimpleKeystore,
+  SimpleAccountsStorage,
+  MsigAccount,
+} from 'everscale-standalone-client/nodejs';
+
+const keystore = new SimpleKeystore({
+  0: {
+    publicKey:
+      '4038a63fb2b95c0b85516f289fe87b8fc87860b7ba0920cd285e0bad53cff8a5',
+    secretKey:
+      'ae218eb9c8df7ab217ee4ecef0e74f178efdb8b9f697be6f6b72a7681110716a',
+  },
+});
+
+const signer = await keystore.getSigner('0');
+
+const account = new MsigAccount({
+  address: testContract.address.toString(),
+  publicKey: signer?.publicKey,
+  type: 'SafeMultisig',
+});
+
+const simpleAccountStorage = new SimpleAccountsStorage();
+simpleAccountStorage.addAccount(account);
+
+const provider = new ProviderRpcClient({
+  fallback: () =>
+    EverscaleStandaloneClient.create({
+      connection: {
+        id: 1,
+        type: 'graphql',
+        group: 'dev',
+        data: {
+          endpoints: [
+            'https://devnet.evercloud.dev/89a3b8f46a484f2ea3bdd364ddaee3a3/graphql',
+          ],
+          latencyDetectionInterval: 1000,
+          local: false,
+        },
+      },
+      keystore: keystore,
+      accountsStorage: simpleAccountStorage,
+    }),
+  forceUseFallback: true,
+});
 
 async function fetchStates() {
   const ContractA = new provider.Contract(
@@ -105,6 +241,8 @@ async function executeTransaction() {
 
 executeTransaction();
 ```
+
+:::
 
 In this example, `Contract A` calls the `setOtherState()` function, which changes the state of `Contract A` and calls the `increaseState()` function on `Contract B`. The `increaseState()` function is designed to fail due to insufficient gas. When this function fails, the state changes in `Contract B` are rolled back, but the state changes in `Contract A` persist, demonstrating the asynchronous nature of transactions in TVM-compatible blockchains.
 

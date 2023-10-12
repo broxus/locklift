@@ -267,9 +267,9 @@ networks: {
 
 The `connection` field within each network configuration allows you to specify the settings for connecting to that network. There are two types of transport that you can use: `graphql` and `jrpc`. The configuration for each type of transport looks like this:
 
-For `graphql`:
+::: code-group
 
-```typescript
+```typescript [graphql]
 connection: {
   id: 1,
   group: "localnet",
@@ -282,9 +282,7 @@ connection: {
 },
 ```
 
-For `jrpc`:
-
-```typescript
+```typescript [jrpc]
 connection: {
   id: 1,
   type: 'jrpc',
@@ -294,6 +292,8 @@ connection: {
   },
 },
 ```
+
+:::
 
 ### Giver
 

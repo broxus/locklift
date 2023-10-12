@@ -56,7 +56,29 @@ function increaseState(uint count) public  {
 
 In the TypeScript code, we subscribe to the `StateChange` event and call the `increaseState` function. Here's how we do it:
 
-```typescript
+::: code-group
+
+```typescript [Everscale Inpage Provider]
+import {
+  Address,
+  ProviderRpcClient,
+} from 'everscale-inpage-provider';
+
+import { testContract } from '.';
+
+const provider = new ProviderRpcClient();
+
+const permissions = await provider.requestPermissions({
+  permissions: ['basic', 'accountInteraction'],
+});
+
+const senderAddress = permissions.address;
+
+const exampleContract = new provider.Contract(
+  testContract.ABI,
+  new Address(testContract.address)
+);
+
 const contractEvents = exampleContract.events(subscriber);
 
 const eventCallback = (event: any) => {
@@ -77,11 +99,100 @@ const payload = {
 await provider.sendMessage({
   sender: senderAddress,
   recipient: new Address(testContract.address),
-  amount: toNano(1),
+  amount: (1 * 10 ** 9).toString(),
   bounce: true,
   payload: payload,
 });
 ```
+
+```typescript [Everscale Standalone Client]
+import {
+  Address,
+  ProviderRpcClient,
+} from 'everscale-inpage-provider';
+import {
+  EverscaleStandaloneClient,
+  SimpleKeystore,
+  SimpleAccountsStorage,
+  MsigAccount,
+} from 'everscale-standalone-client/nodejs';
+
+import { testContract } from '.';
+
+const keystore = new SimpleKeystore({
+  0: {
+    publicKey:
+      '4038a63fb2b95c0b85516f289fe87b8fc87860b7ba0920cd285e0bad53cff8a5',
+    secretKey:
+      'ae218eb9c8df7ab217ee4ecef0e74f178efdb8b9f697be6f6b72a7681110716a',
+  },
+});
+
+const signer = await keystore.getSigner('0');
+
+const account = new MsigAccount({
+  address: testContract.address.toString(),
+  publicKey: signer?.publicKey,
+  type: 'SafeMultisig',
+});
+
+const simpleAccountStorage = new SimpleAccountsStorage();
+simpleAccountStorage.addAccount(account);
+
+const provider = new ProviderRpcClient({
+  fallback: () =>
+    EverscaleStandaloneClient.create({
+      connection: {
+        id: 1,
+        type: 'graphql',
+        group: 'dev',
+        data: {
+          endpoints: [
+            'https://devnet.evercloud.dev/89a3b8f46a484f2ea3bdd364ddaee3a3/graphql',
+          ],
+          latencyDetectionInterval: 1000,
+          local: false,
+        },
+      },
+      keystore: keystore,
+      accountsStorage: simpleAccountStorage,
+    }),
+  forceUseFallback: true,
+});
+
+const exampleContract = new provider.Contract(
+  testContract.ABI,
+  new Address(testContract.address)
+);
+
+const subscriber = new provider.Subscriber();
+const contractEvents = exampleContract.events(subscriber);
+
+const eventCallback = (event: any) => {
+  console.log(JSON.stringify(event, null, 2));
+  contractEvents.stopProducer();
+};
+
+contractEvents.on(eventCallback);
+
+const payload = {
+  abi: JSON.stringify(testContract.ABI),
+  method: 'increaseState',
+  params: {
+    count: 253,
+  },
+};
+
+await provider.sendMessage({
+  sender: account.address,
+  recipient: new Address(testContract.address),
+  amount: (1 * 10 ** 9).toString(),
+  bounce: true,
+  payload: payload,
+});
+```
+
+:::
 
 When we click the "Call Contract" button for the first scenario, we get a response similar to the following:
 
