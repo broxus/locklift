@@ -23,6 +23,7 @@ import { logger } from "./internal/logger";
 import { TracingTransport } from "./internal/tracing/transport";
 import { LockliftNetwork } from "@broxus/locklift-network";
 import { ConnectionData } from "everscale-standalone-client";
+import { Network } from "./internal/network";
 
 export * from "everscale-inpage-provider";
 export type { Signer } from "everscale-standalone-client";
@@ -42,7 +43,7 @@ export class Locklift<FactorySource extends FactoryType> {
   #context: LockliftContext | undefined;
   #testing: TimeMovement | undefined;
   #tracing: Tracing | undefined;
-  #network: LockliftNetwork | undefined;
+  #network: Network | undefined;
 
   private constructor(
     public readonly provider: ProviderRpcClient,
@@ -95,11 +96,11 @@ export class Locklift<FactorySource extends FactoryType> {
     return this.#factory;
   }
 
-  set network(network: LockliftNetwork) {
+  set network(network: Network) {
     this.#network = network;
   }
 
-  get network(): LockliftNetwork {
+  get network(): Network {
     if (!this.#network) {
       throw new Error("Network didn't provided");
     }
@@ -156,7 +157,6 @@ export class Locklift<FactorySource extends FactoryType> {
 
     const accountsStorage = new SimpleAccountsStorage();
     const clock = new Clock();
-
     const provider = new ProviderRpcClient({
       fallback: () =>
         EverscaleStandaloneClient.create({
@@ -200,8 +200,7 @@ export class Locklift<FactorySource extends FactoryType> {
           return TracingTransport.fromProxyConnection(provider);
       }
     })() as TracingTransport;
-
-    locklift.network = proxyNetwork;
+    locklift.network = new Network(proxyNetwork, (await keystore.getSigner("0"))!, accountsStorage, provider);
     locklift.tracing = createTracing({
       ever: provider,
       features: transactions,

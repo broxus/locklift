@@ -14,7 +14,7 @@ export enum ConfigState {
   INTERNAL,
 }
 export const LOCKLIFT_NETWORK_NAME = "locklift";
-type LockliftNetwork = typeof LOCKLIFT_NETWORK_NAME;
+type LockliftNetworkName = typeof LOCKLIFT_NETWORK_NAME;
 export interface LockliftConfig<T extends ConfigState = ConfigState.EXTERNAL> {
   compiler: {
     includesPath?: string;
@@ -43,11 +43,11 @@ export type KeysConfig = {
 };
 
 export type Networks<T extends ConfigState = ConfigState.EXTERNAL> = Record<"local" | string, NetworkValue<T>> & {
-  [key in LockliftNetwork]: NetworkValue<T, LockliftNetwork>;
+  [key in LockliftNetworkName]: NetworkValue<T, LockliftNetworkName>;
 };
 export interface NetworkValue<T extends ConfigState = ConfigState.EXTERNAL, P extends string = ""> {
   giver: T extends ConfigState.EXTERNAL
-    ? P extends LockliftNetwork
+    ? P extends LockliftNetworkName
       ? GiverConfig | undefined
       : GiverConfig
     : GiverConfig;

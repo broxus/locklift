@@ -7,9 +7,10 @@ import * as utils from "../../utils";
 import { Giver } from "./giver";
 import { Deployer } from "./deployer";
 import { emptyContractAbi, tryToDetectContract } from "./utils";
-import { flatDirTree } from "../cli/builder/utils";
+import { flatDirTree, tryToGetNodeModules } from "../cli/builder/utils";
 import { AccountFactory2 } from "./account2";
 import { SimpleAccountsStorage } from "everscale-standalone-client/nodejs";
+import { getPathToVersion } from "../compilerComponentsStore/dirUtils";
 
 export * from "./giver";
 export * from "./deployer";
@@ -94,6 +95,7 @@ export class Factory<T extends FactoryType> {
     name: keyof T,
     resolvedPath: string,
   ): Promise<ContractData<T[key]>> => {
+    console.log(path.resolve(resolvedPath, (name as string) + ".tvc"));
     const tvc =
       utils.tryLoadTvcFromFile(path.resolve(resolvedPath, (name as string) + ".tvc")) ||
       utils.loadBase64FromFile(path.resolve(resolvedPath, (name as string) + ".base64"));
@@ -174,11 +176,21 @@ export class Factory<T extends FactoryType> {
       extensions: /\.json/,
     });
     const contractNames = flatDirTree(contractsNestedTree)?.map(el => el.name.slice(0, -9)) as Array<keyof T>;
+
     return await Promise.all(
-      contractNames.map(async contractName => ({
+      [...contractNames].map(async contractName => ({
         artifacts: await this.initializeContract(contractName, resolvedBuildPath),
         contractName,
       })),
-    );
+    ).then(async res => {
+      res.push({
+        artifacts: await this.initializeContract(
+          "LockliftWallet",
+          path.resolve(tryToGetNodeModules()!, "locklift/src/lockliftWalletSources"),
+        ),
+        contractName: "LockliftWallet",
+      });
+      return res;
+    });
   }
 }
