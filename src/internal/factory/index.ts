@@ -10,7 +10,6 @@ import { emptyContractAbi, tryToDetectContract } from "./utils";
 import { flatDirTree, tryToGetNodeModules } from "../cli/builder/utils";
 import { AccountFactory2 } from "./account2";
 import { SimpleAccountsStorage } from "everscale-standalone-client/nodejs";
-import { getPathToVersion } from "../compilerComponentsStore/dirUtils";
 
 export * from "./giver";
 export * from "./deployer";
@@ -41,7 +40,7 @@ export class Factory<T extends FactoryType> {
   private constructor(
     private readonly ever: ProviderRpcClient,
     private readonly giver: () => Giver,
-    private readonly accountsStorage: SimpleAccountsStorage,
+    accountsStorage: SimpleAccountsStorage,
   ) {
     this.accounts = new AccountFactory2(this, (...params) => giver().sendTo(...params), accountsStorage);
   }
@@ -50,6 +49,7 @@ export class Factory<T extends FactoryType> {
     ever: ProviderRpcClient,
     giver: () => Giver,
     accountsStorage: SimpleAccountsStorage,
+    preloadedAccounts?: Array<{ contractName: keyof T; abi: any; codeHash: string }>,
   ): Promise<Factory<T>> {
     const factory = new Factory<T>(ever, giver, accountsStorage);
     await factory.getContractsArtifacts().then(artifacts => {
@@ -57,6 +57,17 @@ export class Factory<T extends FactoryType> {
         factory.factoryCache[contractName] = artifacts;
       });
     });
+    if (preloadedAccounts) {
+      preloadedAccounts.forEach(({ contractName, abi, codeHash }) => {
+        factory.factoryCache[contractName] = {
+          code: "",
+          tvc: "",
+          abi,
+          codeHash,
+          map: {},
+        };
+      });
+    }
     return factory;
   }
 
@@ -95,7 +106,6 @@ export class Factory<T extends FactoryType> {
     name: keyof T,
     resolvedPath: string,
   ): Promise<ContractData<T[key]>> => {
-    console.log(path.resolve(resolvedPath, (name as string) + ".tvc"));
     const tvc =
       utils.tryLoadTvcFromFile(path.resolve(resolvedPath, (name as string) + ".tvc")) ||
       utils.loadBase64FromFile(path.resolve(resolvedPath, (name as string) + ".base64"));

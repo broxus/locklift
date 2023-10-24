@@ -2,10 +2,20 @@ import fs from "fs";
 import * as fsPath from "path";
 
 import { ExternalContracts } from "../config";
+import path from "path";
+import { getContractNameFromAbiPath } from "../utils";
 
-export const typeGenerator = (pathToBuildFolder: string) => {
-  const generatedCode = getAbiFiles(pathToBuildFolder)
+export const typeGenerator = (pathToBuildFolder: string, ...additionalFiles: Array<string>) => {
+  const generatedCode = [...getAbiFiles(pathToBuildFolder)]
     .map(file => getContractAbi(pathToBuildFolder, file))
+    .concat(
+      additionalFiles.map(el => {
+        return {
+          abi: fs.readFileSync(el, "utf8"),
+          name: getContractNameFromAbiPath(el),
+        };
+      }),
+    )
     .map(({ abi, name }) => ({
       contractName: name,
       code: generateContractCode({ abiSource: abi, contractName: name }),

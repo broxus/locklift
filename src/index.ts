@@ -24,6 +24,7 @@ import { TracingTransport } from "./internal/tracing/transport";
 import { LockliftNetwork } from "@broxus/locklift-network";
 import { ConnectionData } from "everscale-standalone-client";
 import { Network } from "./internal/network";
+import { ForkService } from "./internal/network/ForkService";
 
 export * from "everscale-inpage-provider";
 export type { Signer } from "everscale-standalone-client";
@@ -143,8 +144,16 @@ export class Locklift<FactorySource extends FactoryType> {
 
       keystore.addKeyPair("giver", giverKeys);
     }
+    const forkService =
+      networkConfig?.fork &&
+      (await ForkService.init({
+        forkSource: networkConfig.fork.source,
+        forkContractsConfig: networkConfig.fork.contracts,
+      }));
 
-    const proxyNetwork = new LockliftNetwork();
+    const proxyNetwork = new LockliftNetwork({
+      accountFetcher: networkConfig?.fork && forkService?.accountFetcher,
+    });
     await proxyNetwork.initialize();
 
     if (
@@ -187,7 +196,13 @@ export class Locklift<FactorySource extends FactoryType> {
     if (giver) {
       locklift.giver = giver;
     }
-    const factory = await Factory.setup<T>(provider, () => locklift.giver, accountsStorage);
+    const factory = await Factory.setup<T>(
+      provider,
+      () => locklift.giver,
+      accountsStorage,
+      forkService?.preFetchedAccounts,
+    );
+
     locklift.factory = factory;
 
     const tracingTransport = (() => {
@@ -215,6 +230,7 @@ export class Locklift<FactorySource extends FactoryType> {
       locklift.testing = timeMovement;
       locklift.context = context;
     }
+
     await initializeExtenders({ locklift, config, network });
     return locklift;
   }

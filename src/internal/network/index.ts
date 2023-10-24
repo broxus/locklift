@@ -4,6 +4,7 @@ import { Account, MsigAccount, SimpleAccountsStorage } from "everscale-standalon
 import { LOCKLIFT_WALLET_BOC } from "./lockliftWallet/sources/boc";
 import { LockliftWallet } from "./lockliftWallet";
 import { Signer } from "everscale-standalone-client";
+import { AccountFetcherResponse } from "@broxus/locklift-network/types";
 
 export class Network {
   constructor(
@@ -14,7 +15,7 @@ export class Network {
   ) {}
 
   insertWallet = (address: Address): Account => {
-    this.proxyNetwork._executor.setAccount(address, LOCKLIFT_WALLET_BOC);
+    this.proxyNetwork._executor.setAccount(address, LOCKLIFT_WALLET_BOC, "accountStuffBoc");
     const lockliftWallet = new MsigAccount({
       address,
       type: "SafeMultisig",
@@ -24,8 +25,18 @@ export class Network {
     return lockliftWallet;
   };
 
-  insertAccount = <T>({ boc, address, abi }: { address: Address; boc: string; abi: T }): Contract<T> => {
-    this.proxyNetwork._executor.setAccount(address, boc);
+  insertAccount = <T>({
+    boc,
+    address,
+    abi,
+    type,
+  }: {
+    address: Address;
+    boc: string;
+    abi: T;
+    type?: AccountFetcherResponse["type"];
+  }): Contract<T> => {
+    this.proxyNetwork._executor.setAccount(address, boc, type || "accountStuffBoc");
     return new this.provider.Contract(abi, address);
   };
 }

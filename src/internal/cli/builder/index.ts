@@ -37,6 +37,7 @@ type Option = {
   disableIncludePath: boolean;
   contracts: string;
   force: boolean;
+  externalAbiFiles?: Array<string>;
 };
 export class Builder {
   private options: Option;
@@ -98,7 +99,7 @@ export class Builder {
     if (this.config.externalContractsArtifacts) {
       copyExternalArtifacts(this.config.externalContractsArtifacts, this.options.build);
     }
-    typeGenerator(this.options.build);
+    typeGenerator(this.options.build, ...(this.options.externalAbiFiles || []));
     logger.printInfo("factorySource generated");
     return true;
   }

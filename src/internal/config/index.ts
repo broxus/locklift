@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import commander from "commander";
-import { ProviderRpcClient } from "everscale-inpage-provider";
+import { Address, ProviderRpcClient } from "everscale-inpage-provider";
 import type { ConnectionData, Ed25519KeyPair } from "everscale-standalone-client";
 import { ConnectionProperties, NETWORK_PRESETS } from "everscale-standalone-client/nodejs";
 import { Giver } from "../factory";
@@ -41,7 +41,14 @@ export type KeysConfig = {
   phrase?: string;
   amount: number;
 };
-
+export type ForkContractsConfig = Array<
+  {
+    abi: {
+      path: string;
+    };
+  } & ({ codeHash: string | { deriveAddress: string } } | { address: string })
+>;
+export type ForkSource = { type: "live"; connection: ConnectionProperties } | { type: "block"; block: number };
 export type Networks<T extends ConfigState = ConfigState.EXTERNAL> = Record<"local" | string, NetworkValue<T>> & {
   [key in LockliftNetworkName]: NetworkValue<T, LockliftNetworkName>;
 };
@@ -53,6 +60,10 @@ export interface NetworkValue<T extends ConfigState = ConfigState.EXTERNAL, P ex
     : GiverConfig;
   keys: T extends ConfigState.EXTERNAL ? KeysConfig : Required<KeysConfig>;
   connection: T extends ConfigState.EXTERNAL ? ConnectionProperties : ConnectionData;
+  fork?: {
+    source: ForkSource;
+    contracts: ForkContractsConfig;
+  };
   clientConfig?: {
     message?: MessageProperties;
     initInput?: nt.InitInput | Promise<nt.InitInput>;
@@ -193,15 +204,14 @@ export function loadConfig(configPath: string): LockliftConfig<ConfigState.INTER
     if (typeof value.connection === "string") {
       value.connection = getPresetParams(value.connection) || value.connection;
     }
-    if (key === LOCKLIFT_NETWORK_NAME) {
-      config.networks[key] = {
-        ...value,
-        giver: value.giver || {
-          address: "0:ece57bcc6c530283becbbd8a3b24d3c5987cdddc3c8b7b33be6e4a6312490415",
-          key: "172af540e43a524763dd53b26a066d472a97c4de37d5498170564510608250c3",
-        },
-      };
-    }
+
+    config.networks[key] = {
+      ...value,
+      giver: value.giver || {
+        address: "0:ece57bcc6c530283becbbd8a3b24d3c5987cdddc3c8b7b33be6e4a6312490415",
+        key: "172af540e43a524763dd53b26a066d472a97c4de37d5498170564510608250c3",
+      },
+    };
   }
 
   return config as unknown as LockliftConfig<ConfigState.INTERNAL>;
