@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import commander from "commander";
-import { Address, ProviderRpcClient } from "everscale-inpage-provider";
+import { ProviderRpcClient } from "everscale-inpage-provider";
 import type { ConnectionData, Ed25519KeyPair } from "everscale-standalone-client";
 import { ConnectionProperties, NETWORK_PRESETS } from "everscale-standalone-client/nodejs";
 import { Giver } from "../factory";

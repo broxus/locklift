@@ -2,7 +2,6 @@ import fs from "fs";
 import * as fsPath from "path";
 
 import { ExternalContracts } from "../config";
-import path from "path";
 import { getContractNameFromAbiPath } from "../utils";
 
 export const typeGenerator = (pathToBuildFolder: string, ...additionalFiles: Array<string>) => {

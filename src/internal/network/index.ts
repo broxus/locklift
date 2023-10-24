@@ -2,7 +2,6 @@ import { LockliftNetwork } from "@broxus/locklift-network";
 import { Address, Contract, ProviderRpcClient } from "everscale-inpage-provider";
 import { Account, MsigAccount, SimpleAccountsStorage } from "everscale-standalone-client/nodejs";
 import { LOCKLIFT_WALLET_BOC } from "./lockliftWallet/sources/boc";
-import { LockliftWallet } from "./lockliftWallet";
 import { Signer } from "everscale-standalone-client";
 import { AccountFetcherResponse } from "@broxus/locklift-network/types";
 
