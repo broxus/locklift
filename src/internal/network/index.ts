@@ -1,9 +1,10 @@
 import { LockliftNetwork } from "@broxus/locklift-network";
 import { Address, Contract, ProviderRpcClient } from "everscale-inpage-provider";
 import { Account, MsigAccount, SimpleAccountsStorage } from "everscale-standalone-client/nodejs";
-import { LOCKLIFT_WALLET_BOC } from "./lockliftWallet/sources/boc";
+import { LOCKLIFT_WALLET_BOC } from "./lockliftWallet/boc";
 import { Signer } from "everscale-standalone-client";
 import { AccountFetcherResponse } from "@broxus/locklift-network/types";
+import { zeroAddress } from "../../constants";
 
 export class Network {
   constructor(
@@ -14,7 +15,7 @@ export class Network {
   ) {}
 
   insertWallet = (address: Address): Account => {
-    this.proxyNetwork._executor.setAccount(address, LOCKLIFT_WALLET_BOC, "accountStuffBoc");
+    this.proxyNetwork.setAccount(address, LOCKLIFT_WALLET_BOC, "accountStuffBoc");
     const lockliftWallet = new MsigAccount({
       address,
       type: "SafeMultisig",
@@ -35,7 +36,24 @@ export class Network {
     abi: T;
     type?: AccountFetcherResponse["type"];
   }): Contract<T> => {
-    this.proxyNetwork._executor.setAccount(address, boc, type || "accountStuffBoc");
+    this.proxyNetwork.setAccount(address, boc, type || "accountStuffBoc");
     return new this.provider.Contract(abi, address);
   };
+
+  getAccount = (params: { id: string; wc: number }) => {
+    const address = getLockliftWalletAddress(params);
+    return this.insertWallet(new Address(address));
+  };
+
+  getAccounts = ({ wc = 0, idMapper, count }: { count: number; wc: number; idMapper?: (id: number) => string }) => {
+    return Array.from({ length: count }, (_, i) => {
+      const id = idMapper?.(i) || i.toString();
+      return this.getAccount({ id, wc });
+    });
+  };
 }
+
+const getLockliftWalletAddress = ({ wc = 0, id = "0" }: { id: string; wc: number }) => {
+  const [, addressTail] = zeroAddress.toString().split(":");
+  return `${wc}:lockliftWallet${id}${addressTail}`.slice(0, zeroAddress.toString().length);
+};

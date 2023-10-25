@@ -111,7 +111,7 @@ const config: LockliftConfig = {
     version: "0.15.48",
   },
   networks: {
-    locklift:{
+    locklift: {
       connection: {
         id: 1001,
         // @ts-ignore
@@ -534,87 +534,94 @@ expect(traceTree)
 ```
 
 ## Network
+
 In this paragraph we age going to explain some features of locklift network.
+
 1. It supports fork mode (see below)
 2. It supports inserting any accounts to the network
- - `locklift.network.insertWallet(address)` - insert wallet with provided address to the network
- - `locklift.network.insertAccount()` - insert account with provided address,boc,abi to the network
+
+- `locklift.network.insertWallet(address)` - insert wallet with provided address to the network
+- `locklift.network.insertAccount()` - insert account with provided address,boc,abi to the network
 
 ## Fork
+
 Locklift supports fork mode. In this mode, locklift will execute all accounts locally
 and if the contract doesn't exist in current context, it will download its state.
 
 _Note: it can be used only inside locklift network_
 
 We are supporting two types of forking:
+
 - Live mode - in this mode, locklift will download the latest state of the contract by provided network config
 - Block mode - in this mode, locklift will download the state of the contract by provided block number(mainnet only)
 
 ### Usage
+
 For using this we need to update our config file
 
 ```typescript
 const config: LockliftConfig = {
-    /// ...
-    networks: {
-        locklift: {
-            connection: {
-                /// ...
-            },
-            keys: {
-                /// ...
-            },
-            fork: {
-                source: {
-                    type: "block",
-                    block: 32438397,
-                },
-                // or
-                // source: {
-                //   type: "live"
-                //   connection: 'mainnetJrpc', // or arbitrary network config 
-                // },
-                contracts: [
-                    {
-                        abi: {
-                            path: 'path to abi file', // note: file name will be used for type generation 
-                        },
-                        // We need to provide address or code hash for contract that we want to associate with abi
-                        address: "",
-                      
-                        // or
-                        // codeHash: "",
-                      
-                        // or
-                        // codeHash:{
-                        //   deriveAddress: 'address of contract that we will use for deriving code hash and abi'
-                        // }
-                      
-                    },
-                ],
-            },
+  /// ...
+  networks: {
+    locklift: {
+      connection: {
+        /// ...
+      },
+      keys: {
+        /// ...
+      },
+      fork: {
+        source: {
+          type: "block",
+          block: 32438397,
         },
-    }
-    /// ...
-}
+        // or
+        // source: {
+        //   type: "live"
+        //   connection: 'mainnetJrpc', // or arbitrary network config
+        // },
+        contracts: [
+          {
+            abi: {
+              path: "path to abi file", // note: file name will be used for type generation
+            },
+            // We need to provide address or code hash for contract that we want to associate with abi
+            address: "",
+
+            // or
+            // codeHash: "",
+
+            // or
+            // codeHash:{
+            //   deriveAddress: 'address of contract that we will use for deriving code hash and abi'
+            // }
+          },
+        ],
+      },
+    },
+  },
+  /// ...
+};
 ```
+
 Now we can use external contracts as like it was deployed in our network.
 Let's imagine we added `Staking` project to our config
+
 ```typescript
 {
+  /// ...
+  fork: {
     /// ...
-    fork:{
-        /// ...
-        contracts: [
-            {
-                abi: {
-                    path: path.resolve(`externContarcts/Staking.json`), // note: file name will be used for type generation 
-                },
-                address: "0:675a6d63f27e3f24d41d286043a9286b2e3eb6b84fa4c3308cc2833ef6f54d68",
-            },
-        ]
-    }
-    /// ...
+    contracts: [
+      {
+        abi: {
+          path: path.resolve(`externContarcts/Staking.json`), // note: file name will be used for type generation
+        },
+        address: "0:675a6d63f27e3f24d41d286043a9286b2e3eb6b84fa4c3308cc2833ef6f54d68",
+      },
+    ];
+  }
+  /// ...
 }
 ```
 
@@ -629,28 +636,32 @@ const stakingDetails = await stakingVault.methods.getDetails().call();
 const ownerAccount = locklift.network.insertWallet(stakingDetails.owner);
 
 // And lets do something as if we were the owner
-const {traceTree} = await locklift.tracing.trace(stakingVault.methods.makeSomethingAsOwner().send({
-  from: ownerAccount.address,
-  amount: toNano(1),
-}))
+const { traceTree } = await locklift.tracing.trace(
+  stakingVault.methods.makeSomethingAsOwner().send({
+    from: ownerAccount.address,
+    amount: toNano(1),
+  }),
+);
 
-await traceTree.beautyPrint()
+await traceTree.beautyPrint();
 // And inside the output we will se detailed call trace thanks abi that was provded inside the config.network
 ```
+
 Also, you can add any contracts and used it as like it was deployed in your network.
 Some words about algorithm of searching contract in fork mode:
+
 1. If you or your contract is trying to interact with contract that wasn't deployed in your network, locklift will try to find it in fork
 2. If contract wasn't found in fork, it will show a warning
 3. If contract was found in fork locklift will try to apply ABI to this contract
 
-```bash
+````bash
 ## Run script
 
 This command runs an arbitrary Node JS script with an already configured `locklift` module.
 
 ```bash
 npx locklift run --network local --script scripts/1-deploy-sample.ts
-```
+````
 
 ```
 Sample deployed at: 0:a56a1882231c9d901a1576ec2187575b01d1e33dd71108525b205784a41ae6d0
