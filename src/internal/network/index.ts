@@ -40,20 +40,19 @@ export class Network {
     return new this.provider.Contract(abi, address);
   };
 
-  getAccount = (params: { id: string; wc: number }) => {
-    const address = getLockliftWalletAddress(params);
+  getWallet = (id: number) => {
+    const address = getLockliftWalletAddress(id.toString());
     return this.insertWallet(new Address(address));
   };
 
-  getAccounts = ({ wc = 0, idMapper, count }: { count: number; wc: number; idMapper?: (id: number) => string }) => {
+  getWallets = (count: number) => {
     return Array.from({ length: count }, (_, i) => {
-      const id = idMapper?.(i) || i.toString();
-      return this.getAccount({ id, wc });
+      return this.getWallet(i);
     });
   };
 }
 
-const getLockliftWalletAddress = ({ wc = 0, id = "0" }: { id: string; wc: number }) => {
+const getLockliftWalletAddress = (id = "0") => {
   const [, addressTail] = zeroAddress.toString().split(":");
-  return `${wc}:lockliftWallet${id}${addressTail}`.slice(0, zeroAddress.toString().length);
+  return `${0}:777${addressTail}`.slice(0, zeroAddress.toString().length - id.length).concat(id);
 };

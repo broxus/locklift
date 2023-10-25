@@ -5,8 +5,8 @@ import fs from "fs-extra";
 
 import path from "path";
 import { defer, filter, from, lastValueFrom, mergeMap, toArray } from "rxjs";
-import { BlockFetcher, LiveFetcher, SourceFetcher } from "./stateFetchers";
 import { getContractNameFromAbiPath } from "../../utils";
+import { BlockFetcher, LiveFetcher, SourceFetcher } from "./stateFetchers";
 
 export type ContractData = { contractName: string; abi: any; codeHash: string; abiPath: string };
 const cacheFile = path.join(".cache/fork.json");

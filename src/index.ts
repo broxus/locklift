@@ -24,7 +24,7 @@ import { TracingTransport } from "./internal/tracing/transport";
 import { LockliftNetwork } from "@broxus/locklift-network";
 import { ConnectionData } from "everscale-standalone-client";
 import { Network } from "./internal/network";
-import { ForkService } from "./internal/network/ForkService";
+import { ForkService } from "./internal/network/forkService";
 
 export * from "everscale-inpage-provider";
 export type { Signer } from "everscale-standalone-client";
