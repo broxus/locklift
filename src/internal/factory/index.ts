@@ -115,7 +115,11 @@ export class Factory<T extends FactoryType> {
     }
 
     const abi = utils.loadJSONFromFile(path.resolve(resolvedPath, (name as string) + ".abi.json"));
-    const map = utils.loadJSONFromFile(path.resolve(resolvedPath, (name as string) + ".map.json"));
+    let map = utils.loadJSONFromFile(path.resolve(resolvedPath, (name as string) + ".map.json"));
+
+    if ("map" in map) {
+      map = map.map;
+    }
 
     if (!abi) {
       throw new Error(`Not found ABI of Contract ${name as string}`);

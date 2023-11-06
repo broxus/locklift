@@ -129,7 +129,7 @@ export const throwTrace = (trace: Trace) => {
   if (tx.compute.status === "vm" && !tx.compute.success) {
     // last vm step is the error position
     const lastStep = vmTraces.pop() as EngineTraceInfo;
-    errPosition = contract.map.map[lastStep.cmdCodeCellHash][lastStep.cmdCodeOffset];
+    errPosition = contract.map[lastStep.cmdCodeCellHash][lastStep.cmdCodeOffset];
     if (errPosition === undefined) throw new Error(mainErrorMsg);
   }
   // ACTION PHASE ERROR
@@ -143,7 +143,7 @@ export const throwTrace = (trace: Trace) => {
     if (Number(tx.action.resultCode) === 33) failedAction = 255;
 
     const failedActionStep = actionsSent[failedAction];
-    errPosition = contract.map.map[failedActionStep.cmdCodeCellHash][failedActionStep.cmdCodeOffset];
+    errPosition = contract.map[failedActionStep.cmdCodeCellHash][failedActionStep.cmdCodeOffset];
     if (errPosition === undefined) throw new Error(mainErrorMsg);
   }
 
