@@ -59,15 +59,15 @@ export class BuildCache {
     const contractsMap = new Map<string, boolean>();
     const contractsWithImports = await lastValueFrom(
       from(contracts).pipe(
-        mergeMap(el =>
+        mergeMap(contractPath =>
           from(
-            fs.readFile(el, {
+            fs.readFile(contractPath, {
               encoding: "utf-8",
             }),
           ).pipe(
             tap(contractFile => {
               if (new RegExp(/^\s*contract [A-Za-z0-9_]+\s*(is\s+[A-Za-z0-9_,\s]+)*\{/gm).test(contractFile)) {
-                contractsMap.set(el, true);
+                contractsMap.set(contractPath, true);
               }
             }),
             mergeMap(contractFile => {
@@ -75,7 +75,7 @@ export class BuildCache {
                 map(el => el[1]),
                 mergeMap(imp =>
                   defer(async () => {
-                    const localImportPath = path.join(el, "..", imp);
+                    const localImportPath = path.join(contractPath, "..", imp);
                     const localFileChangeTime = await tryToGetFileChangeTime(localImportPath);
                     if (localFileChangeTime) {
                       return {
@@ -91,13 +91,13 @@ export class BuildCache {
                         modificationTime: nodeModulesFileChangeTime,
                       };
                     }
-                    throw new Error(`Can't find import ${imp}`);
+                    throw new Error(`Can't find import ${imp} for file ${contractPath}`);
                   }),
                 ),
                 toArray(),
               );
             }),
-            map(imports => ({ path: el, imports })),
+            map(imports => ({ path: contractPath, imports })),
           ),
         ),
         toArray(),
