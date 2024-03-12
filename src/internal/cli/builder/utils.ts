@@ -49,23 +49,24 @@ export const compilerConfigResolver = async ({
     externalContracts: compiler.externalContracts,
     compilerParams: compiler.compilerParams,
     externalContractsArtifacts: compiler.externalContractsArtifacts,
-    mode: compiler.mode,
   } as BuilderConfig;
   if ("path" in compiler) {
     builderConfig.compilerPath = compiler.path;
   }
   if ("version" in compiler) {
-    if (compiler.mode === "solc") {
+    if (semver.lte(compiler.version, "0.71.0")) {
       builderConfig.compilerPath = await getComponent({
         component: ComponentType.COMPILER,
         version: compiler.version,
       });
+      builderConfig.mode = "solc";
     }
-    if (compiler.mode === "sold") {
+    if (semver.gte(compiler.version, "0.72.0")) {
       builderConfig.compilerPath = await getComponent({
         component: ComponentType.SOLD_COMPILER,
         version: compiler.version,
       });
+      builderConfig.mode = "sold";
     }
   }
   if (linker && "path" in linker) {

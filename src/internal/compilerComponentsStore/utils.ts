@@ -1,5 +1,6 @@
 import { ComponentType } from "./constants";
 import { httpService } from "../httpService";
+import semver from "semver/preload";
 
 const platforms = {
   isWin32: process.platform === "win32",
@@ -90,6 +91,8 @@ export const getSupportedVersions = ({ component }: { component: ComponentType }
         .get<{ solc: Array<string> }>("https://binaries.tonlabs.io/solc.json")
         .then(res => res.data.solc);
     case ComponentType.SOLD_COMPILER:
-      return Promise.resolve(["0.72.0", "0.73.0"]);
+      return httpService
+        .get<{ tag_name: string }[]>("https://api.github.com/repos/tonlabs/TVM-Solidity-Compiler/releases")
+        .then(res => res.data.filter(el => semver.gte(el.tag_name, "0.72.0")).map(el => el.tag_name));
   }
 };

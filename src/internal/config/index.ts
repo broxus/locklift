@@ -8,6 +8,7 @@ import { Giver } from "../factory";
 import Joi from "joi";
 import { MessageProperties } from "everscale-standalone-client/client";
 import * as nt from "nekoton-wasm";
+import semver from "semver/preload";
 
 export enum ConfigState {
   EXTERNAL,
@@ -21,7 +22,6 @@ export interface LockliftConfig<T extends ConfigState = ConfigState.EXTERNAL> {
     externalContracts?: ExternalContracts;
     externalContractsArtifacts?: ExternalContracts;
     compilerParams?: Array<string>;
-    mode: "solc" | "sold";
   } & ({ path: string } | { version: string });
 
   linker?:
@@ -93,11 +93,15 @@ export const JoiConfig = Joi.object<LockliftConfig>({
       externalContractsArtifacts: Joi.object().pattern(Joi.string(), Joi.array().items(Joi.string())),
 
       version: Joi.string().required(),
-      mode: Joi.valid("solc", "sold").required(),
     }),
   ]),
-  linker: Joi.when("compiler.mode", {
-    is: Joi.valid("solc"),
+  linker: Joi.when("compiler.version", {
+    is: Joi.custom((value, helpers) => {
+      if (semver.lte(value, "0.71.0")) {
+        return value;
+      }
+      return helpers.message({ custom: "DUMMY MSG" });
+    }),
     then: Joi.alternatives([
       Joi.object({
         path: Joi.string(),
@@ -107,9 +111,7 @@ export const JoiConfig = Joi.object<LockliftConfig>({
         version: Joi.string(),
       }),
     ]).required(),
-    otherwise: Joi.forbidden().messages({
-      "any.unknown": "Linker should be omitted for sold mode",
-    }),
+    otherwise: Joi.any(),
   }),
   networks: Joi.object().pattern(
     Joi.string(),

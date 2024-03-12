@@ -1,20 +1,18 @@
 import { LockliftConfig } from "../../config";
-import { exec, execSync } from "child_process";
+import { execSync } from "child_process";
 import { copyExternalArtifacts, typeGenerator } from "../../generators";
 import ejs from "ejs";
 import fs from "fs";
-import path, { resolve, parse } from "path";
+import path, { resolve } from "path";
 import _ from "underscore";
 import { compileBySolC, compileBySolD, execSyncWrapper, extractContractName, resolveExternalContracts } from "./utils";
-
-const tablemark = require("tablemark");
 import { ParsedDoc } from "../types";
-import { promisify } from "util";
-import { catchError, concat, defer, filter, from, lastValueFrom, map, mergeMap, tap, throwError, toArray } from "rxjs";
+
 import { logger } from "../../logger";
 import semver from "semver/preload";
 import { getContractsTree } from "../../utils";
 import { BuildCache } from "../../buildCache";
+const tablemark = require("tablemark");
 
 export type BuilderConfig = {
   includesPath?: string;
@@ -40,7 +38,10 @@ export class Builder {
   private docRegex = /(?<doc>^{(\s|.)*?^})/gm;
 
   constructor(private readonly config: BuilderConfig, options: Option, private readonly compilerVersion: string) {
-    if (semver.lte(compilerVersion, "0.72.0")) {
+    if (semver.gte(compilerVersion, "0.72.0") && config.linkerPath) {
+      logger.printWarn("Linker are deprecated in version 0.72.0 and higher, you can remove it from config");
+    }
+    if (semver.eq(compilerVersion, "0.72.0")) {
       logger.printWarn("You are using an unstable version of the compiler. Please, do not use 0.72.0");
     }
     this.options = options;
@@ -108,6 +109,7 @@ export class Builder {
         contractFileName: extractContractName(el.path),
       }));
     if (this.config.mode === "solc") {
+      logger.printInfo("Compiling with solc");
       return compileBySolC({
         contracts,
         compilerPath: this.config.compilerPath,
@@ -120,6 +122,7 @@ export class Builder {
       });
     }
     if (this.config.mode === "sold") {
+      logger.printInfo("Compiling with sold");
       return compileBySolD({
         contracts,
         compilerPath: this.config.compilerPath,
