@@ -5,14 +5,7 @@ import ejs from "ejs";
 import fs from "fs";
 import path, { resolve, parse } from "path";
 import _ from "underscore";
-import {
-  execSyncWrapper,
-  extractContractName,
-  isValidCompilerOutputLog,
-  resolveExternalContracts,
-  tryToGetNodeModules,
-  tvcToBase64,
-} from "./utils";
+import { compileBySolC, compileBySolD, execSyncWrapper, extractContractName, resolveExternalContracts } from "./utils";
 
 const tablemark = require("tablemark");
 import { ParsedDoc } from "../types";
@@ -28,9 +21,11 @@ export type BuilderConfig = {
   compilerPath: string;
   linkerLibPath: string;
   linkerPath: string;
+  soldPath: string;
   compilerParams?: Array<string>;
   externalContracts: LockliftConfig["compiler"]["externalContracts"];
   externalContractsArtifacts: LockliftConfig["compiler"]["externalContractsArtifacts"];
+  mode: "solc" | "sold";
 };
 type Option = {
   build: string;
@@ -45,6 +40,9 @@ export class Builder {
   private docRegex = /(?<doc>^{(\s|.)*?^})/gm;
 
   constructor(private readonly config: BuilderConfig, options: Option, private readonly compilerVersion: string) {
+    if (semver.lte(compilerVersion, "0.72.0")) {
+      logger.printWarn("You are using an unstable version of the compiler. Please, do not use 0.72.0");
+    }
     this.options = options;
   }
 
@@ -52,8 +50,7 @@ export class Builder {
     const matchedCompilerVersion = execSync(config.compilerPath + " --version")
       .toString()
       .trim()
-      .match(/(?<=Version: )(.*)(?=\+commit)/);
-
+      .match(/(?<=Version: |sold)(.*)(?=\+commit)/);
     if (!matchedCompilerVersion) {
       throw new Error("Cannot get compiler version");
     }
@@ -69,7 +66,7 @@ export class Builder {
     );
     const totalContracts = [...contractsTree.map(el => el.path), ...externalContracts];
 
-    const buildCache = new BuildCache(totalContracts, this.options.force, this.options.build);
+    const buildCache = new BuildCache(totalContracts, this.options.force, this.options.build, this.config);
 
     const contractsToBuild = await buildCache.buildTree();
 
@@ -104,111 +101,35 @@ export class Builder {
     return true;
   }
   private compileContracts(contractsToBuild: Array<string>) {
-    return lastValueFrom(
-      from(contractsToBuild).pipe(
-        map(el => ({ path: resolve(el) })),
-        map(el => ({
-          ...el,
-          contractFileName: extractContractName(el.path),
-        })),
-
-        mergeMap(({ path, contractFileName }) => {
-          const nodeModules = tryToGetNodeModules();
-          return defer(async () => {
-            if (semver.lte(this.compilerVersion, "0.66.0")) {
-              const additionalIncludesPath = `--include-path ${resolve(process.cwd(), "node_modules")}  ${
-                nodeModules ? `--include-path ${nodeModules}` : ""
-              }`;
-              const includePath = `${additionalIncludesPath}`;
-              const execCommand = `cd ${this.options.build} && \
-          ${this.config.compilerPath} ${!this.options.disableIncludePath ? includePath : ""} ${path} ${(
-                this.config.compilerParams || []
-              ).join(" ")}`;
-              return promisify(exec)(execCommand);
-            }
-
-            if (semver.gte(this.compilerVersion, "0.68.0")) {
-              const additionalIncludesPath = `${nodeModules ? `--include-path ${nodeModules}` : ""}`;
-              const includePath = `${additionalIncludesPath} ${"--base-path"} . `;
-              const execCommand = ` ${this.config.compilerPath} ${
-                !this.options.disableIncludePath ? includePath : ""
-              } -o ${this.options.build}  ${path} ${(this.config.compilerParams || []).join(" ")}`;
-              return promisify(exec)(execCommand);
-            }
-            throw new Error("Unsupported compiler version");
-          }).pipe(
-            map(output => ({
-              output,
-              contractFileName: parse(contractFileName).name,
-              path,
-            })),
-            catchError(e => {
-              logger.printError(
-                `path: ${path}, contractFile: ${contractFileName} error: ${e?.stderr?.toString() || e}`,
-              );
-              return throwError(undefined);
-            }),
-          );
-        }),
-        //Warnings
-        tap(
-          output =>
-            isValidCompilerOutputLog(output.output.stderr.toString()) &&
-            logger.printBuilderLog(output.output.stderr.toString()),
-        ),
-
-        filter(({ output }) => {
-          //Only contracts
-          return !!output?.stdout.toString();
-        }),
-        mergeMap(({ contractFileName }) => {
-          const lib = this.config.linkerLibPath ? ` --lib ${this.config.linkerLibPath} ` : "";
-          const resolvedPathCode = resolve(this.options.build, `${contractFileName}.code`);
-          const resolvedPathAbi = resolve(this.options.build, `${contractFileName}.abi.json`);
-          const resolvedPathMap = resolve(this.options.build, `${contractFileName}.map.json`);
-          return defer(async () => {
-            const command = `${
-              this.config.linkerPath
-            } compile "${resolvedPathCode}" -a "${resolvedPathAbi}" -o ${resolve(
-              this.options.build,
-              `${contractFileName}.tvc`,
-            )} ${lib} --debug-map ${resolvedPathMap}`;
-
-            return promisify(exec)(command);
-          }).pipe(
-            map(tvmLinkerLog => {
-              return tvmLinkerLog.stdout.toString().match(new RegExp("Saved to file (.*)."));
-            }),
-            catchError(e => {
-              logger.printError(`contractFileName: ${contractFileName} error:${e?.stderr?.toString()}`);
-              return throwError(undefined);
-            }),
-            map(matchResult => {
-              if (!matchResult) {
-                throw new Error("Linking error, noting linking");
-              }
-              return matchResult[1];
-            }),
-            mergeMap(tvcFile => {
-              return concat(
-                defer(() =>
-                  promisify(fs.writeFile)(
-                    resolve(this.options.build, `${contractFileName}.base64`),
-                    tvcToBase64(fs.readFileSync(tvcFile)),
-                  ),
-                ),
-              ).pipe(
-                catchError(e => {
-                  logger.printError(e?.stderr?.toString());
-                  return throwError(undefined);
-                }),
-              );
-            }),
-          );
-        }),
-        toArray(),
-      ),
-    );
+    const contracts = contractsToBuild
+      .map(el => ({ path: resolve(el) }))
+      .map(el => ({
+        ...el,
+        contractFileName: extractContractName(el.path),
+      }));
+    if (this.config.mode === "solc") {
+      return compileBySolC({
+        contracts,
+        compilerPath: this.config.compilerPath,
+        compilerParams: this.config.compilerParams,
+        compilerVersion: this.compilerVersion,
+        linkerPath: this.config.linkerPath,
+        disableIncludePath: this.options.disableIncludePath,
+        linkerLibPath: this.config.linkerLibPath,
+        buildFolder: this.options.build,
+      });
+    }
+    if (this.config.mode === "sold") {
+      return compileBySolD({
+        contracts,
+        compilerPath: this.config.compilerPath,
+        compilerParams: this.config.compilerParams,
+        compilerVersion: this.compilerVersion,
+        disableIncludePath: this.options.disableIncludePath,
+        buildFolder: this.options.build,
+        soldPath: this.config.soldPath,
+      });
+    }
   }
 
   buildDocs(): boolean {

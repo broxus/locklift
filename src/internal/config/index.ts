@@ -21,9 +21,10 @@ export interface LockliftConfig<T extends ConfigState = ConfigState.EXTERNAL> {
     externalContracts?: ExternalContracts;
     externalContractsArtifacts?: ExternalContracts;
     compilerParams?: Array<string>;
+    mode: "solc" | "sold";
   } & ({ path: string } | { version: string });
 
-  linker:
+  linker?:
     | {
         path: string;
         lib: string;
@@ -91,18 +92,25 @@ export const JoiConfig = Joi.object<LockliftConfig>({
       externalContracts: Joi.object().pattern(Joi.string(), Joi.array().items(Joi.string())),
       externalContractsArtifacts: Joi.object().pattern(Joi.string(), Joi.array().items(Joi.string())),
 
-      version: Joi.string(),
+      version: Joi.string().required(),
+      mode: Joi.valid("solc", "sold").required(),
     }),
   ]),
-  linker: Joi.alternatives([
-    Joi.object({
-      path: Joi.string(),
-      lib: Joi.string(),
+  linker: Joi.when("compiler.mode", {
+    is: Joi.valid("solc"),
+    then: Joi.alternatives([
+      Joi.object({
+        path: Joi.string(),
+        lib: Joi.string(),
+      }),
+      Joi.object({
+        version: Joi.string(),
+      }),
+    ]).required(),
+    otherwise: Joi.forbidden().messages({
+      "any.unknown": "Linker should be omitted for sold mode",
     }),
-    Joi.object({
-      version: Joi.string(),
-    }),
-  ]),
+  }),
   networks: Joi.object().pattern(
     Joi.string(),
 
@@ -189,7 +197,10 @@ export function loadConfig(configPath: string): LockliftConfig<ConfigState.INTER
 
   const validationResult = JoiConfig.validate(configFile.default);
   if (validationResult.error) {
-    throw new Error(validationResult.error.annotate());
+    if (validationResult.error instanceof Joi.ValidationError) {
+      throw new Error(validationResult.error.annotate());
+    }
+    throw validationResult.error;
   }
   const config = { ...validationResult.value } as unknown as LockliftConfig<ConfigState.INTERNAL>;
 

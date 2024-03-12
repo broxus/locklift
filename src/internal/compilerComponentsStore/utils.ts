@@ -13,6 +13,9 @@ const getLinkerUrl = ({ version }: { version: string }) =>
   `https://binaries.tonlabs.io/${getGzFileName(getLinkerFileName({ version }))}`;
 const getCompilerUrl = ({ version }: { version: string }) =>
   `https://binaries.tonlabs.io/${getGzFileName(getCompilerFileName({ version }))}`;
+
+const getSoldUrl = ({ version }: { version: string }) =>
+  `https://github.com/tonlabs/TVM-Solidity-Compiler/releases/download/${version}/sold_${replaceDots(version)}_win32.gz`;
 const getLibUrl = ({ version }: { version: string }) =>
   `http://sdkbinaries.tonlabs.io/${getGzFileName(getLibFileName({ version }))}`;
 
@@ -25,15 +28,19 @@ const getCompilerFileName = ({ version }: { version: string }) => `solc_${replac
 
 const getLibFileName = ({ version }: { version: string }) => `stdlib_sol_${replaceDots(version)}.tvm`;
 
+const getSoldFileName = ({ version }: { version: string }) => `sold_${replaceDots(version)}_${process.platform}`;
+
 export const downloadLinks: Record<ComponentType, (arg: { version: string }) => string> = {
   [ComponentType.COMPILER]: getCompilerUrl,
   [ComponentType.LINKER]: getLinkerUrl,
   [ComponentType.LIB]: getLibUrl,
+  [ComponentType.SOLD_COMPILER]: getSoldUrl,
 };
 export const fileNames: Record<ComponentType, (arg: { version: string }) => string> = {
   [ComponentType.COMPILER]: getCompilerFileName,
   [ComponentType.LINKER]: getLinkerFileName,
   [ComponentType.LIB]: getLibFileName,
+  [ComponentType.SOLD_COMPILER]: getSoldFileName,
 };
 
 const getExecutableCompilerName = ({ version }: { version: string }): string => {
@@ -53,10 +60,19 @@ const getExecutableLinkerName = ({ version }: { version: string }): string => {
 const getExecutableLibName = ({ version }: { version: string }): string => {
   return fileNames[ComponentType.LIB]({ version });
 };
+
+const getExecutableSoldName = ({ version }: { version: string }): string => {
+  const fileName = fileNames[ComponentType.SOLD_COMPILER]({ version });
+  if (platforms.isWin32) {
+    return fileName + ".exe";
+  }
+  return fileName;
+};
 export const executableFileName: Record<ComponentType, (arg: { version: string }) => string> = {
   [ComponentType.COMPILER]: getExecutableCompilerName,
   [ComponentType.LINKER]: getExecutableLinkerName,
   [ComponentType.LIB]: getExecutableLibName,
+  [ComponentType.SOLD_COMPILER]: getExecutableSoldName,
 };
 
 export const getSupportedVersions = ({ component }: { component: ComponentType }): Promise<Array<string>> => {
@@ -73,5 +89,7 @@ export const getSupportedVersions = ({ component }: { component: ComponentType }
       return httpService
         .get<{ solc: Array<string> }>("https://binaries.tonlabs.io/solc.json")
         .then(res => res.data.solc);
+    case ComponentType.SOLD_COMPILER:
+      return Promise.resolve(["0.72.0", "0.73.0"]);
   }
 };

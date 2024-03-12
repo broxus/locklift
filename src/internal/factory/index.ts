@@ -115,7 +115,9 @@ export class Factory<T extends FactoryType> {
     }
 
     const abi = utils.loadJSONFromFile(path.resolve(resolvedPath, (name as string) + ".abi.json"));
-    let map = utils.loadJSONFromFile(path.resolve(resolvedPath, (name as string) + ".map.json"));
+    let map =
+      utils.loadJSONFromFile(path.resolve(resolvedPath, (name as string) + ".map.json")) ||
+      utils.loadJSONFromFile(path.resolve(resolvedPath, (name as string) + ".debug.json"));
 
     if ("map" in map) {
       map = map.map;
@@ -189,8 +191,10 @@ export class Factory<T extends FactoryType> {
     const contractsNestedTree = dirTree(resolvedBuildPath, {
       extensions: /\.json/,
     });
-    const contractNames = flatDirTree(contractsNestedTree)?.map(el => el.name.slice(0, -9)) as Array<keyof T>;
-
+    const contractNames = flatDirTree(contractsNestedTree)
+      ?.filter(el => el.name.endsWith(".abi.json"))
+      .map(el => el.name.slice(0, -9)) as Array<keyof T>;
+    console.log({ contractNames });
     return await Promise.all(
       [...contractNames].map(async contractName => ({
         artifacts: await this.initializeContract(contractName, resolvedBuildPath),

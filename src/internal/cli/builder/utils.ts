@@ -7,14 +7,17 @@ import { getComponent } from "../../compilerComponentsStore";
 import * as Buffer from "buffer";
 import { ExecErrorOutput } from "./types";
 import {
+  exec,
   execSync,
   ExecSyncOptions,
   ExecSyncOptionsWithBufferEncoding,
   ExecSyncOptionsWithStringEncoding,
 } from "child_process";
-import path, { resolve } from "path";
+import path, { parse, resolve } from "path";
 import { promisify } from "util";
 import { logger } from "../../logger";
+import { catchError, concat, defer, filter, from, lastValueFrom, map, mergeMap, tap, throwError, toArray } from "rxjs";
+import semver from "semver/preload";
 
 export function checkDirEmpty(dir: fs.PathLike): fs.PathLike | boolean {
   if (!fs.existsSync(dir)) {
@@ -46,21 +49,30 @@ export const compilerConfigResolver = async ({
     externalContracts: compiler.externalContracts,
     compilerParams: compiler.compilerParams,
     externalContractsArtifacts: compiler.externalContractsArtifacts,
+    mode: compiler.mode,
   } as BuilderConfig;
   if ("path" in compiler) {
     builderConfig.compilerPath = compiler.path;
   }
   if ("version" in compiler) {
-    builderConfig.compilerPath = await getComponent({
-      component: ComponentType.COMPILER,
-      version: compiler.version,
-    });
+    if (compiler.mode === "solc") {
+      builderConfig.compilerPath = await getComponent({
+        component: ComponentType.COMPILER,
+        version: compiler.version,
+      });
+    }
+    if (compiler.mode === "sold") {
+      builderConfig.compilerPath = await getComponent({
+        component: ComponentType.SOLD_COMPILER,
+        version: compiler.version,
+      });
+    }
   }
-  if ("path" in linker) {
+  if (linker && "path" in linker) {
     builderConfig.linkerPath = linker.path;
     builderConfig.linkerLibPath = linker.lib;
   }
-  if ("version" in linker) {
+  if (linker && "version" in linker) {
     if (!("version" in compiler)) {
       throw new Error("You can't provide linker version without compiler version!");
     }
@@ -138,6 +150,174 @@ export const resolveExternalContracts = async (externalContracts?: ExternalContr
         };
       },
       { contractArtifacts: [] as string[], contractsToBuild: [] as string[] },
+    ),
+  );
+};
+
+export const compileBySolC = async ({
+  contracts,
+  compilerVersion,
+  buildFolder,
+  disableIncludePath,
+  compilerPath,
+  compilerParams,
+  linkerLibPath,
+  linkerPath,
+}: {
+  contracts: Array<{ path: string; contractFileName: string }>;
+  compilerVersion: string;
+  buildFolder: string;
+  disableIncludePath: boolean;
+  compilerPath: string;
+  compilerParams?: string[];
+  linkerLibPath: string;
+  linkerPath: string;
+}) => {
+  await lastValueFrom(
+    from(contracts).pipe(
+      mergeMap(({ path, contractFileName }) => {
+        const nodeModules = tryToGetNodeModules();
+        return defer(async () => {
+          if (semver.lte(compilerVersion, "0.66.0")) {
+            const additionalIncludesPath = `--include-path ${resolve(process.cwd(), "node_modules")}  ${
+              nodeModules ? `--include-path ${nodeModules}` : ""
+            }`;
+            const includePath = `${additionalIncludesPath}`;
+            const execCommand = `cd ${buildFolder} && \
+          ${compilerPath} ${!disableIncludePath ? includePath : ""} ${path} ${(compilerParams || []).join(" ")}`;
+            return promisify(exec)(execCommand);
+          }
+
+          if (semver.gte(compilerVersion, "0.68.0")) {
+            const additionalIncludesPath = `${nodeModules ? `--include-path ${nodeModules}` : ""}`;
+            const includePath = `${additionalIncludesPath} ${"--base-path"} . `;
+            const execCommand = ` ${compilerPath} ${
+              !disableIncludePath ? includePath : ""
+            } -o ${buildFolder}  ${path} ${(compilerParams || []).join(" ")}`;
+            return promisify(exec)(execCommand);
+          }
+          throw new Error("Unsupported compiler version");
+        }).pipe(
+          map(output => ({
+            output,
+            contractFileName: parse(contractFileName).name,
+            path,
+          })),
+          catchError(e => {
+            logger.printError(`path: ${path}, contractFile: ${contractFileName} error: ${e?.stderr?.toString() || e}`);
+            return throwError(undefined);
+          }),
+        );
+      }),
+      //Warnings
+      tap(
+        output =>
+          isValidCompilerOutputLog(output.output.stderr.toString()) &&
+          logger.printBuilderLog(output.output.stderr.toString()),
+      ),
+
+      filter(({ output }) => {
+        //Only contracts
+        return !!output?.stdout.toString();
+      }),
+      mergeMap(({ contractFileName }) => {
+        const lib = linkerLibPath ? ` --lib ${linkerLibPath} ` : "";
+        const resolvedPathCode = resolve(buildFolder, `${contractFileName}.code`);
+        const resolvedPathAbi = resolve(buildFolder, `${contractFileName}.abi.json`);
+        const resolvedPathMap = resolve(buildFolder, `${contractFileName}.map.json`);
+        return defer(async () => {
+          const command = `${linkerPath} compile "${resolvedPathCode}" -a "${resolvedPathAbi}" -o ${resolve(
+            buildFolder,
+            `${contractFileName}.tvc`,
+          )} ${lib} --debug-map ${resolvedPathMap}`;
+
+          return promisify(exec)(command);
+        }).pipe(
+          map(tvmLinkerLog => {
+            return tvmLinkerLog.stdout.toString().match(new RegExp("Saved to file (.*)."));
+          }),
+          catchError(e => {
+            logger.printError(`contractFileName: ${contractFileName} error:${e?.stderr?.toString()}`);
+            return throwError(undefined);
+          }),
+          map(matchResult => {
+            if (!matchResult) {
+              throw new Error("Linking error, noting linking");
+            }
+            return matchResult[1];
+          }),
+          mergeMap(tvcFile => {
+            return concat(
+              defer(() =>
+                promisify(fs.writeFile)(
+                  resolve(buildFolder, `${contractFileName}.base64`),
+                  tvcToBase64(fs.readFileSync(tvcFile)),
+                ),
+              ),
+            ).pipe(
+              catchError(e => {
+                logger.printError(e?.stderr?.toString());
+                return throwError(undefined);
+              }),
+            );
+          }),
+        );
+      }),
+      toArray(),
+    ),
+  );
+};
+
+export const compileBySolD = async ({
+  contracts,
+  compilerVersion,
+  buildFolder,
+  disableIncludePath,
+  compilerPath,
+  compilerParams,
+}: {
+  contracts: Array<{ path: string; contractFileName: string }>;
+  compilerVersion: string;
+  buildFolder: string;
+  disableIncludePath: boolean;
+  compilerPath: string;
+  compilerParams?: string[];
+  soldPath: string;
+}) => {
+  await lastValueFrom(
+    from(contracts).pipe(
+      mergeMap(({ path, contractFileName }) => {
+        const nodeModules = tryToGetNodeModules();
+        return defer(async () => {
+          if (semver.gte(compilerVersion, "0.72.0")) {
+            const additionalIncludesPath = `${nodeModules ? `--include-path ${nodeModules}` : ""}`;
+            const includePath = `${additionalIncludesPath} ${"--base-path"} . `;
+            const execCommand = ` ${compilerPath} ${
+              !disableIncludePath ? includePath : ""
+            } -o ${buildFolder}  ${path} ${(compilerParams || []).join(" ")}`;
+            return promisify(exec)(execCommand);
+          }
+
+          throw new Error("Unsupported compiler version");
+        }).pipe(
+          map(output => ({
+            output,
+            contractFileName: parse(contractFileName).name,
+            path,
+          })),
+          catchError(e => {
+            logger.printError(`path: ${path}, contractFile: ${contractFileName} error: ${e?.stderr?.toString() || e}`);
+            return throwError(undefined);
+          }),
+        );
+      }),
+      //Warnings
+      tap(
+        output =>
+          isValidCompilerOutputLog(output.output.stderr.toString()) &&
+          logger.printBuilderLog(output.output.stderr.toString()),
+      ),
+      toArray(),
     ),
   );
 };
