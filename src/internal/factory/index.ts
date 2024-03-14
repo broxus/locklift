@@ -119,7 +119,7 @@ export class Factory<T extends FactoryType> {
       utils.loadJSONFromFile(path.resolve(resolvedPath, (name as string) + ".map.json")) ||
       utils.loadJSONFromFile(path.resolve(resolvedPath, (name as string) + ".debug.json"));
 
-    if ("map" in map) {
+    if (map && "map" in map) {
       map = map.map;
     }
 

@@ -39,10 +39,10 @@ export class Builder {
 
   constructor(private readonly config: BuilderConfig, options: Option, private readonly compilerVersion: string) {
     if (semver.gte(compilerVersion, "0.72.0") && config.linkerPath) {
-      logger.printWarn("Linker are deprecated in version 0.72.0 and higher, you can remove it from config");
+      logger.printWarn("Linker is no longer used as of version 72+ and can be removed from the configuration");
     }
     if (semver.eq(compilerVersion, "0.72.0")) {
-      logger.printWarn("You are using an unstable version of the compiler. Please, do not use 0.72.0");
+      logger.printWarn("0.72.0 compiler is considered unsafe and is not recommended. Use at your own risk!");
     }
     this.options = options;
   }
