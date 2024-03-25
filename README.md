@@ -225,7 +225,7 @@ npx locklift test --network local
 You can print to console in contracts with special library:
 
 ```solidity
-import "locklift/src/console.sol";
+import "locklift/src/console.tsol";
 
 contract Sample {
   function testFunc(uint input) external {
