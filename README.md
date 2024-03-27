@@ -1058,8 +1058,8 @@ This module provides some utility functions for more convenient work with Ever o
 ````typescript
 import { toNano, fromNano, getRandomNonce, convertAmount, isValidEverAddress, stringToBytesArray } from "locklift";
 
-toNano(10); // 10000000000
-fromNano(10000000000); // 10```
+toNano(10); // 10000000000 nano evers
+fromNano(10000000000); // 10 evers```
 ````
 
 ## Plugins
