@@ -69,7 +69,7 @@ export class Builder {
     );
     const totalContracts = [...contractsTree.map(el => el.path), ...externalContracts];
 
-    const buildCache = new BuildCache(totalContracts, this.options.force, this.options.build);
+    const buildCache = new BuildCache(totalContracts, this.options.force, this.options.build, this.config);
 
     const contractsToBuild = await buildCache.buildTree();
 

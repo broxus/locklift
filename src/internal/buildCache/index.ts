@@ -6,16 +6,25 @@ import chalk from "chalk";
 import { defer, from, lastValueFrom, map, mergeMap, tap, toArray } from "rxjs";
 import { CacheRecord } from "./types";
 import _ from "lodash";
+import { BuilderConfig } from "../cli/builder";
 const cacheFolder = path.join(".cache/build.json");
 const importMatcher = /^\s*import\s*(?:{[^}]+}\s*from\s*)?["']([^"']+\.t?sol)["']\s*;/gm;
 const artifactsExtensions = [".tvc", ".abi.json", ".code"];
 export class BuildCache {
-  private readonly prevCache: CacheRecord;
+  private prevCache: CacheRecord;
   private currentCache: CacheRecord = {};
 
-  constructor(private readonly contracts: string[], isForce: boolean, private readonly buildFolder: string) {
+  constructor(
+    private readonly contracts: string[],
+    isForce: boolean,
+    private readonly buildFolder: string,
+    private readonly compilerConfig: BuilderConfig,
+  ) {
     fs.ensureFileSync(cacheFolder);
     this.prevCache = isForce ? [] : fs.readJSONSync(cacheFolder, { throws: false }) || [];
+    if (JSON.stringify(this.prevCache.compilerSettings) !== JSON.stringify(this.compilerConfig)) {
+      this.clearCache();
+    }
   }
   getBuiltContracts() {
     const files = fs.readdirSync(this.buildFolder);
@@ -132,9 +141,13 @@ export class BuildCache {
     }, {} as CacheRecord);
   }
   applyCurrentCache() {
-    fs.writeJSONSync(cacheFolder, this.currentCache, {
-      spaces: 4,
-    });
+    fs.writeJSONSync(
+      cacheFolder,
+      { ...this.currentCache, compilerSettings: this.compilerConfig },
+      {
+        spaces: 4,
+      },
+    );
   }
   applyOldCache() {
     fs.writeJSONSync(cacheFolder, this.prevCache, {
@@ -145,6 +158,7 @@ export class BuildCache {
     fs.writeJSONSync(cacheFolder, [], {
       spaces: 4,
     });
+    this.prevCache = {};
   }
   removeRecordFromCache(filePath: string) {
     delete this.prevCache[filePath];
