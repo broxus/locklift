@@ -11,7 +11,7 @@ import { flatDirTree, tryToGetNodeModules } from "../cli/builder/utils";
 import { AccountFactory2 } from "./account2";
 import { SimpleAccountsStorage } from "everscale-standalone-client/nodejs";
 import { isT } from "../tracing/utils";
-import {logger} from "../logger";
+import { logger } from "../logger";
 
 export * from "./giver";
 export * from "./deployer";
