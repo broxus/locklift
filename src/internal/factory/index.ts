@@ -10,6 +10,8 @@ import { emptyContractAbi, tryToDetectContract } from "./utils";
 import { flatDirTree, tryToGetNodeModules } from "../cli/builder/utils";
 import { AccountFactory2 } from "./account2";
 import { SimpleAccountsStorage } from "everscale-standalone-client/nodejs";
+import { isT } from "../tracing/utils";
+import { logger } from "../logger";
 
 export * from "./giver";
 export * from "./deployer";
@@ -196,19 +198,28 @@ export class Factory<T extends FactoryType> {
       .map(el => el.name.slice(0, -9)) as Array<keyof T>;
     console.log({ contractNames });
     return await Promise.all(
-      [...contractNames].map(async contractName => ({
-        artifacts: await this.initializeContract(contractName, resolvedBuildPath),
-        contractName,
-      })),
-    ).then(async res => {
-      res.push({
-        artifacts: await this.initializeContract(
-          "LockliftWallet",
-          path.resolve(tryToGetNodeModules()!, "locklift/src/lockliftWalletSources"),
-        ),
-        contractName: "LockliftWallet",
+      [...contractNames].map(async contractName => {
+        try {
+          return {
+            artifacts: await this.initializeContract(contractName, resolvedBuildPath),
+            contractName,
+          };
+        } catch (e) {
+          logger.printWarn(e);
+          return undefined;
+        }
+      }),
+    )
+      .then(res => res.filter(isT))
+      .then(async res => {
+        res.push({
+          artifacts: await this.initializeContract(
+            "LockliftWallet",
+            path.resolve(tryToGetNodeModules()!, "locklift/src/lockliftWalletSources"),
+          ),
+          contractName: "LockliftWallet",
+        });
+        return res;
       });
-      return res;
-    });
   }
 }

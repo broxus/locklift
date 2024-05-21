@@ -30,7 +30,7 @@ type CreateAccountParams<T extends FactoryType> =
 
 type AddExistingAccountParams =
   | { type: WalletTypes.HighLoadWalletV2 | WalletTypes.WalletV3; publicKey: string }
-  | { type: WalletTypes.EverWallet; address: Address }
+  | ({ type: WalletTypes.EverWallet } & ({ address: Address } | { publicKey: string; nonce?: number }))
   | { type: WalletTypes.MsigAccount; publicKey?: string; address: Address; mSigType: MSigType };
 
 /*
@@ -111,8 +111,12 @@ export class AccountFactory2<T extends FactoryType> {
         return WalletV3Account.fromPubkey({ publicKey: params.publicKey });
       case WalletTypes.MsigAccount:
         return new MsigAccount({ publicKey: params.publicKey, address: params.address, type: params.mSigType });
-      case WalletTypes.EverWallet:
+      case WalletTypes.EverWallet: {
+        if ("publicKey" in params) {
+          return EverWalletAccount.fromPubkey({ publicKey: params.publicKey, nonce: params.nonce });
+        }
         return new EverWalletAccount(params.address);
+      }
     }
   };
 
