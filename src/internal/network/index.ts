@@ -7,12 +7,17 @@ import { AccountFetcherResponse } from "@broxus/locklift-network/types";
 import { zeroAddress } from "../../constants";
 
 export class Network {
+  private readonly proxyNetwork: LockliftNetwork = {} as LockliftNetwork;
+
   constructor(
-    private readonly proxyNetwork: LockliftNetwork,
+    proxyNetwork: LockliftNetwork,
+
     private readonly signer: Signer,
     private readonly accountStorage: SimpleAccountsStorage,
     private readonly provider: ProviderRpcClient,
-  ) {}
+  ) {
+    this.proxyNetwork = proxyNetwork;
+  }
 
   insertWallet = (address: Address): Account => {
     this.proxyNetwork.setAccount(address, LOCKLIFT_WALLET_BOC, "accountStuffBoc");
@@ -50,6 +55,14 @@ export class Network {
       return this.getWallet(i);
     });
   };
+
+  snapshots: Pick<LockliftNetwork, "saveSnapshot" | "clearSnapshots" | "loadSnapshot"> = {
+    saveSnapshot: this.proxyNetwork.saveSnapshot.bind(this.proxyNetwork),
+    clearSnapshots: this.proxyNetwork.clearSnapshots.bind(this.proxyNetwork),
+    loadSnapshot: this.proxyNetwork.loadSnapshot.bind(this.proxyNetwork),
+  };
+
+  clearBlockchainState = this.proxyNetwork.clearSnapshots.bind(this.proxyNetwork);
 }
 
 const getLockliftWalletAddress = (id = "0") => {

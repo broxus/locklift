@@ -539,9 +539,45 @@ In this paragraph we age going to explain some features of locklift network.
 
 1. It supports fork mode (see below)
 2. It supports inserting any accounts to the network
+3. Also blockchain can be erased and restored from snapshots (see below)
 
 - `locklift.network.insertWallet(address)` - insert wallet with provided address to the network
 - `locklift.network.insertAccount()` - insert account with provided address,boc,abi to the network
+
+### Snapshots
+
+Locklift network supports snapshots. It allows you to save the current state of the network and restore it later.
+
+```typescript
+const firstSnapshotId = locklift.network.snapshots.saveSnapshot(); // in this moment our blockchain is empty
+
+// deploy new contract
+const myContract = await locklift.factory.deployContract(); // params were omitted for simplicity
+
+const secondSnapshotId = locklift.network.snapshots.saveSnapshot(); // in this moment our blockchain has one contract
+
+// apply the first snapshot
+locklift.network.snapshots.loadSnapshot(firstSnapshotId); // now our blockchain is empty again
+
+// try to get the contract state
+const contarctState = await myContract.getFullState().then(res => res.state);
+expect(contarctState).to.be.undefined;
+
+// apply the second snapshot and check the contract state
+{
+  locklift.network.snapshots.loadSnapshot(secondSnapshotId); // now our blockchain has one contract again
+  const contarctState = await myContract.getFullState().then(res => res.state);
+  expect(contarctState).not.to.be.undefined;
+}
+```
+
+### Clear network
+
+For more precise testing, you can clear the network state. This will remove all contracts and accounts from the network.
+
+```typescript
+locklift.network.clearBlockchainState();
+```
 
 ## Fork
 
