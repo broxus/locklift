@@ -185,6 +185,23 @@ Let's look at `networks.giver` this is giver settings filed. All known wallets a
 But if you want to use something custom you will need to provide `giverFactory`
 callback for `networks.giver.giverFactory` that callback should return something that implements `Giver` interface
 
+## Getting code of contract
+
+This command will show you the contract code
+
+
+```bash
+npx locklift code -c <contract name>
+```
+
+## Getting storage fee of contract
+
+This command will show you storage fee for the given period of time
+
+
+```bash
+npx locklift fee -a <contract address> -n main
+```
 ## Build contracts
 
 This command uses the specified TON Solidity compiler and TVM linker to build all project contracts.

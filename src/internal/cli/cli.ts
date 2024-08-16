@@ -10,6 +10,7 @@ import build from "./commands/build";
 import test from "./commands/test";
 import run from "./commands/run";
 import code from "./commands/getContractCode";
+import fee from "./commands/getStoraeFee";
 
 import { commandInjector } from "../../plugins/utils";
 import { tryToAttachEntryFile } from "./utils";
@@ -26,6 +27,7 @@ const main = async () => {
   program.addCommand(build);
   program.addCommand(run);
   program.addCommand(code);
+  program.addCommand(fee);
 
   // program.addCommand(gendoc);
 

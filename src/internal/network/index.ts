@@ -8,15 +8,21 @@ import { zeroAddress } from "../../constants";
 
 export class Network {
   private readonly proxyNetwork: LockliftNetwork = {} as LockliftNetwork;
-
+  readonly snapshots: Pick<LockliftNetwork, "saveSnapshot" | "clearSnapshots" | "loadSnapshot">;
+  clearBlockchainState: Pick<LockliftNetwork, "resetBlockchainState">["resetBlockchainState"];
   constructor(
     proxyNetwork: LockliftNetwork,
-
     private readonly signer: Signer,
     private readonly accountStorage: SimpleAccountsStorage,
     private readonly provider: ProviderRpcClient,
   ) {
     this.proxyNetwork = proxyNetwork;
+    this.snapshots = {
+      saveSnapshot: proxyNetwork.saveSnapshot.bind(proxyNetwork),
+      loadSnapshot: proxyNetwork.loadSnapshot.bind(proxyNetwork),
+      clearSnapshots: proxyNetwork.clearSnapshots.bind(proxyNetwork),
+    };
+    this.clearBlockchainState = this.proxyNetwork.resetBlockchainState.bind(proxyNetwork);
   }
 
   insertWallet = (address: Address): Account => {
@@ -56,13 +62,7 @@ export class Network {
     });
   };
 
-  snapshots: Pick<LockliftNetwork, "saveSnapshot" | "clearSnapshots" | "loadSnapshot"> = {
-    saveSnapshot: this.proxyNetwork.saveSnapshot.bind(this.proxyNetwork),
-    clearSnapshots: this.proxyNetwork.clearSnapshots.bind(this.proxyNetwork),
-    loadSnapshot: this.proxyNetwork.loadSnapshot.bind(this.proxyNetwork),
-  };
-
-  clearBlockchainState = this.proxyNetwork.clearSnapshots.bind(this.proxyNetwork);
+  getBlockchainConfig = () => this.proxyNetwork.getBlockchainConfig();
 }
 
 const getLockliftWalletAddress = (id = "0") => {
