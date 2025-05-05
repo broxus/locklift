@@ -67,7 +67,7 @@ export interface NetworkValue<T extends ConfigState = ConfigState.EXTERNAL, P ex
   };
   clientConfig?: {
     message?: MessageProperties;
-    initInput?: nt.InitInput | Promise<nt.InitInput>;
+    initInput?: any | Promise<any>;
   };
 }
 

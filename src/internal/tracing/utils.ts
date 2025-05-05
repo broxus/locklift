@@ -209,7 +209,7 @@ export const throwErrorInConsole = <Abi>(revertedBranch: Array<RevertedBranch<Ab
     if (traceLog.msg.dstTransaction) {
       const tx = traceLog.msg.dstTransaction;
       if (tx.storage) {
-        logger.printTracingLog(`Storage fees: ${convert(tx.storage.storageFeesCollected)}`);
+        logger.printTracingLog(`Storage fees: ${convert(Number(tx.storage.storageFeesCollected))}`);
       }
       if (tx.compute) {
         const gasFees = tx.compute.status === "vm" ? tx.compute.gasFees : 0;
@@ -221,7 +221,7 @@ export const throwErrorInConsole = <Abi>(revertedBranch: Array<RevertedBranch<Ab
       logger.printTracingLog(chalk.bold("Total fees:"), `${convert(Number(tx.totalFees))}`);
       if (tx.compute.status === "vm") {
         const gasLimit = Number(tx.compute.gasLimit) === 0 ? 1000000 : Number(tx.compute.gasLimit);
-        const percentage = ((tx.compute.gasUsed / gasLimit) * 100).toPrecision(2);
+        const percentage = ((Number(tx.compute.gasUsed) / gasLimit) * 100).toPrecision(2);
         logger.printTracingLog(
           chalk.bold("Gas used:"),
           `${Number(tx.compute.gasUsed).toLocaleString()}/${gasLimit.toLocaleString()} (${percentage}%)`,

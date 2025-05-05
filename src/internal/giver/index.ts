@@ -1,5 +1,4 @@
 import { GiverConfig } from "../config";
-import { Address, ProviderRpcClient } from "everscale-inpage-provider";
 import { Giver } from "../factory";
 import {
   Account,
@@ -16,6 +15,7 @@ import { GiverFromAccount, TestnetGiver } from "./giverOptions";
 import { GiverTypes } from "./constants";
 import { fromNano } from "../../utils";
 import { logger } from "../logger";
+import { Address, ProviderRpcClient } from "everscale-inpage-provider";
 const logGiverFactory = (giverBalance: string) => (walletName: string) =>
   logger.printInfo(`${walletName} is used as a giver, the giver balance is: ${giverBalance} ever`);
 export const getGiver = async (
