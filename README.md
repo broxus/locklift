@@ -189,7 +189,6 @@ callback for `networks.giver.giverFactory` that callback should return something
 
 This command will show you the contract code
 
-
 ```bash
 npx locklift code -c <contract name>
 ```
@@ -198,10 +197,10 @@ npx locklift code -c <contract name>
 
 This command will show you storage fee for the given period of time
 
-
 ```bash
 npx locklift fee -a <contract address> -n main
 ```
+
 ## Build contracts
 
 This command uses the specified TON Solidity compiler and TVM linker to build all project contracts.
