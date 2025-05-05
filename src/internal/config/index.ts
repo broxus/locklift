@@ -65,6 +65,7 @@ export interface NetworkValue<T extends ConfigState = ConfigState.EXTERNAL, P ex
     source: ForkSource;
     contracts: ForkContractsConfig;
   };
+  blockchainConfig?: "EVER" | "TON" | { custom: string } | undefined;
   clientConfig?: {
     message?: MessageProperties;
     initInput?: any | Promise<any>;

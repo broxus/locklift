@@ -153,6 +153,7 @@ export class Locklift<FactorySource extends FactoryType> {
 
     const proxyNetwork = new LockliftNetwork({
       accountFetcher: networkConfig?.fork && forkService?.accountFetcher,
+      networkConfig: networkConfig?.blockchainConfig,
     });
     await proxyNetwork.initialize();
 

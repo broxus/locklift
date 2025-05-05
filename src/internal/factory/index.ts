@@ -196,7 +196,6 @@ export class Factory<T extends FactoryType> {
     const contractNames = flatDirTree(contractsNestedTree)
       ?.filter(el => el.name.endsWith(".abi.json"))
       .map(el => el.name.slice(0, -9)) as Array<keyof T>;
-    console.log({ contractNames });
     return await Promise.all(
       [...contractNames].map(async contractName => {
         try {

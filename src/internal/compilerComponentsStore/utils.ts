@@ -1,6 +1,7 @@
 import { ComponentType } from "./constants";
 import { httpService } from "../httpService";
 import semver from "semver/preload";
+import * as process from "process";
 
 const platforms = {
   isWin32: process.platform === "win32",
@@ -16,7 +17,9 @@ const getCompilerUrl = ({ version }: { version: string }) =>
   `https://binaries.tonlabs.io/${getGzFileName(getCompilerFileName({ version }))}`;
 
 const getSoldUrl = ({ version }: { version: string }) =>
-  `https://github.com/tonlabs/TVM-Solidity-Compiler/releases/download/${version}/sold_${replaceDots(version)}_win32.gz`;
+  `https://github.com/everx-labs/TVM-Solidity-Compiler/releases/download/${version}/sold_${replaceDots(version)}_${
+    process.platform
+  }.gz`;
 const getLibUrl = ({ version }: { version: string }) =>
   `http://sdkbinaries.tonlabs.io/${getGzFileName(getLibFileName({ version }))}`;
 
