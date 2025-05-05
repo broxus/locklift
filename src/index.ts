@@ -168,20 +168,19 @@ export class Locklift<FactorySource extends FactoryType> {
     const accountsStorage = new SimpleAccountsStorage();
     const clock = new Clock();
     const provider = new ProviderRpcClient({
-      fallback: () =>
-        EverscaleStandaloneClient.create({
-          connection: networkConfig?.connection,
-          keystore,
-          clock,
-          accountsStorage,
-          message: networkConfig?.clientConfig?.message,
-          initInput: networkConfig?.clientConfig?.initInput,
-        }).then(client => {
-          if (isProxyConnection(networkConfig?.connection)) {
-            client.setPollingInterval(5);
-          }
-          return client;
-        }),
+      provider: EverscaleStandaloneClient.create({
+        connection: networkConfig?.connection,
+        keystore,
+        clock,
+        accountsStorage,
+        message: networkConfig?.clientConfig?.message,
+        initInput: networkConfig?.clientConfig?.initInput,
+      }).then(client => {
+        if (isProxyConnection(networkConfig?.connection)) {
+          client.setPollingInterval(5);
+        }
+        return client;
+      }),
     });
     try {
       await provider.ensureInitialized();

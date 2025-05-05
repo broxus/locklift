@@ -14,10 +14,9 @@ export class LiveFetcher implements SourceFetcher {
 
   static init = async (connectionConfig: ConnectionProperties) => {
     const provider = new ProviderRpcClient({
-      fallback: () =>
-        EverscaleStandaloneClient.create({
-          connection: connectionConfig,
-        }),
+      provider: EverscaleStandaloneClient.create({
+        connection: connectionConfig,
+      }),
     });
     await provider.ensureInitialized();
     return new LiveFetcher(provider);
