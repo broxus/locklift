@@ -35,7 +35,9 @@ export class Trace<Abi = any> {
     this.setMsgType();
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const { codeHash, address } = contractInformation({ msg: this.msg, type: this.type!, ctx: this.context });
-    const contract = this.tracing.factory.getContractByCodeHashOrDefault(codeHash || "", new Address(address));
+    const contract =
+      this.tracing.getSavedContract(address) ||
+      this.tracing.factory.getContractByCodeHashOrDefault(codeHash || "", new Address(address));
 
     this.checkForErrors(allowedCodes);
     if (this.error && !this.error.ignored && this.msg.dstTransaction) {

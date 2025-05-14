@@ -16,10 +16,11 @@ export class Tracing {
     private readonly network: LockliftNetwork,
   ) {
     this.setContractLabels = tracingInternal.setContractLabels;
+    this.saveContract = tracingInternal.saveContract;
   }
 
   public setContractLabels: TracingInternal["setContractLabels"];
-
+  public saveContract: TracingInternal["saveContract"];
   public trace = async <T extends TransactionParameter>(
     transactionProm: Promise<T> | T,
     config?: Omit<TraceParams<T>, "finalizedTx">,

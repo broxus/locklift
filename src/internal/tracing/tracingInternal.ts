@@ -22,9 +22,11 @@ import { extractTransactionFromParams } from "../../utils";
 import { TracingTransport } from "./transport";
 import { decodeRawTransaction, JsRawMessage } from "nekoton-wasm";
 import { LockliftNetwork } from "@broxus/locklift-network";
+import { ContractWithArtifacts } from "../../types";
 
 export class TracingInternal {
   private labelsMap = new Map<string, string>();
+  private savedContracts = new Map<string, ContractWithArtifacts>();
 
   private readonly consoleContract: Contract<ConsoleAbi>;
   private _allowedCodes: Required<AllowedCodes> = {
@@ -43,6 +45,19 @@ export class TracingInternal {
   ) {
     this.consoleContract = new ever.Contract(consoleAbi, new Address(CONSOLE_ADDRESS));
   }
+
+  saveContract = (address: Addressable, contract: ContractWithArtifacts) => {
+    const stringAddress = extractStringAddress(address);
+    if (this.savedContracts.has(stringAddress)) {
+      throw new Error(`Contract with address ${stringAddress} already saved`);
+    }
+    this.savedContracts.set(stringAddress, contract);
+  };
+
+  getSavedContract = (address: Addressable): ContractWithArtifacts | undefined => {
+    const stringAddress = extractStringAddress(address);
+    return this.savedContracts.get(stringAddress);
+  };
 
   get allowedCodes(): AllowedCodes {
     return this._allowedCodes;
