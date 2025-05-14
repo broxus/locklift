@@ -1,7 +1,7 @@
 ![locklift logo](https://user-images.githubusercontent.com/15921290/183642554-6372baf5-bac5-4477-888b-870a6993f666.png)
 
 <p align="center">
-    <p align="center">Development environment for Everscale blockchain.</p>
+    <p align="center">Development environment for TVM blockchain.</p>
     <p align="center">
         <a href="/LICENSE">
             <img alt="GitHub" src="https://img.shields.io/badge/license-Apache--2.0-orange" />
@@ -12,17 +12,11 @@
     </p>
 </p>
 
-<p align="center">
-  <a href="https://github.com/venom-blockchain/developer-program">
-    <img src="https://raw.githubusercontent.com/venom-blockchain/developer-program/main/vf-dev-program.png" alt="Logo" width="366.8" height="146.4">
-  </a>
-</p>
-
-Locklift is a development environment aiming to help you with Everscale contracts development. With Locklift, you get:
+Locklift is a development environment aiming to help you with TVM contracts development. With Locklift, you get:
 
 - Network management for working with any networks (main, test, local, ...)
 - Automated contract testing with Mocha
-- Handy wrapper around Everscale smart contract
+- Handy wrapper around TVM smart contract
 - Custom givers support
 - Keys management
 - External script runner that executes scripts within a specified environment
@@ -112,6 +106,7 @@ const config: LockliftConfig = {
   },
   networks: {
     locklift: {
+      blockchainConfig: "TON", // or other presets, or we can provide our custom config by {cunstom: "MY BLOCKCHAIN CONFIG"}
       connection: {
         id: 1001,
         // @ts-ignore
@@ -177,6 +172,15 @@ const config: LockliftConfig = {
   },
 };
 ```
+### Note about `networks.locklift.blockchainConfig`
+This field is used to specify the blockchain config. It can be one of the following: 
+```
+blockchainConfig: "EVER" | "TON" | { custom: string } | undefined;
+```
+For example we can get our blockchain config from explorers. Lets see an example of tycho config
+
+- [Open tycho-testnet explorer (config contract)](https://testnet.tychoprotocol.com/accounts/-1:5555555555555555555555555555555555555555555555555555555555555555)
+- Just coppy Data of this contract and paste it to `networks.locklift.blockchainConfig.custom`
 
 ### Note about Giver settings:
 
@@ -489,7 +493,7 @@ import chai from "chai";
 chai.use(lockliftChai);
 ```
 
-This plugin is providing useful things for testing everscale contract
+This plugin is providing useful things for testing TVM contract
 
 1. `.emit`
 
