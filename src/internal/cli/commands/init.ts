@@ -41,7 +41,7 @@ program
       author: "",
       license: "ISC",
       overrides: {
-        "nekoton-wasm": "npm:nekoton-wasm-locklift@1.20.2",
+        "nekoton-wasm": "npm:nekoton-wasm-locklift@^1.21.2",
       },
     };
     fs.writeFileSync(path.join(options.path, "./package.json"), JSON.stringify(packageJson, null, 2));

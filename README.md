@@ -172,11 +172,15 @@ const config: LockliftConfig = {
   },
 };
 ```
+
 ### Note about `networks.locklift.blockchainConfig`
-This field is used to specify the blockchain config. It can be one of the following: 
+
+This field is used to specify the blockchain config. It can be one of the following:
+
 ```
 blockchainConfig: "EVER" | "TON" | { custom: string } | undefined;
 ```
+
 For example we can get our blockchain config from explorers. Lets see an example of tycho config
 
 - [Open tycho-testnet explorer (config contract)](https://testnet.tychoprotocol.com/accounts/-1:5555555555555555555555555555555555555555555555555555555555555555)
