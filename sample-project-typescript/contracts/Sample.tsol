@@ -23,6 +23,10 @@ contract Sample {
         emit StateChange(_state);
     }
 
+    function fail() public {
+        require( 1 < 0, 101); // 100 is default error code, it is good to set non-default codes beforehand
+    }
+
     function getDetails()
         external
         view
