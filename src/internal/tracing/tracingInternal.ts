@@ -48,9 +48,7 @@ export class TracingInternal {
 
   saveContract = (address: Addressable, contract: ContractWithArtifacts) => {
     const stringAddress = extractStringAddress(address);
-    if (this.savedContracts.has(stringAddress)) {
-      throw new Error(`Contract with address ${stringAddress} already saved`);
-    }
+
     this.savedContracts.set(stringAddress, contract);
   };
 
