@@ -8,6 +8,11 @@ const platforms = {
   isLinux: process.platform === "linux",
   isDarwin: process.platform === "darwin",
 };
+export const platformToSoldTychoPlatform: Record<"win32" | "linux" | "darwin", string> = {
+  win32: "Windows",
+  linux: "Linux",
+  darwin: "macOS",
+};
 
 export const getGzFileName = (fileName: string) => `${fileName}.gz`;
 
@@ -20,6 +25,12 @@ const getSoldUrl = ({ version }: { version: string }) =>
   `https://github.com/everx-labs/TVM-Solidity-Compiler/releases/download/${version}/sold_${replaceDots(version)}_${
     process.platform
   }.gz`;
+
+const getTychoSoldUrl = ({ version }: { version: string }) => {
+  return `https://github.com/broxus/TVM-Solidity-Compiler/releases/download/v${version}/sold-v${version}-${
+    platformToSoldTychoPlatform[process.platform as "win32" | "linux" | "darwin"]
+  }.gz`;
+};
 const getLibUrl = ({ version }: { version: string }) =>
   `http://sdkbinaries.tonlabs.io/${getGzFileName(getLibFileName({ version }))}`;
 
@@ -32,19 +43,26 @@ const getCompilerFileName = ({ version }: { version: string }) => `solc_${replac
 
 const getLibFileName = ({ version }: { version: string }) => `stdlib_sol_${replaceDots(version)}.tvm`;
 
-const getSoldFileName = ({ version }: { version: string }) => `sold_${replaceDots(version)}_${process.platform}`;
+const getSoldFileName = ({ version }: { version: string }) => {
+  return `sold_${replaceDots(version)}_${process.platform}`;
+};
+const getTychoSoldFileName = ({ version }: { version: string }) => {
+  return `sold-v${version}-${platformToSoldTychoPlatform[process.platform as "win32" | "linux" | "darwin"]}`;
+};
 
 export const downloadLinks: Record<ComponentType, (arg: { version: string }) => string> = {
   [ComponentType.COMPILER]: getCompilerUrl,
   [ComponentType.LINKER]: getLinkerUrl,
   [ComponentType.LIB]: getLibUrl,
   [ComponentType.SOLD_COMPILER]: getSoldUrl,
+  [ComponentType.SOLD_COMPILER_TYCHO]: getTychoSoldUrl,
 };
 export const fileNames: Record<ComponentType, (arg: { version: string }) => string> = {
   [ComponentType.COMPILER]: getCompilerFileName,
   [ComponentType.LINKER]: getLinkerFileName,
   [ComponentType.LIB]: getLibFileName,
   [ComponentType.SOLD_COMPILER]: getSoldFileName,
+  [ComponentType.SOLD_COMPILER_TYCHO]: getTychoSoldFileName,
 };
 
 const getExecutableCompilerName = ({ version }: { version: string }): string => {
@@ -72,11 +90,19 @@ const getExecutableSoldName = ({ version }: { version: string }): string => {
   }
   return fileName;
 };
+const getExecutableTychoSoldName = ({ version }: { version: string }): string => {
+  const fileName = fileNames[ComponentType.SOLD_COMPILER_TYCHO]({ version });
+  if (platforms.isWin32) {
+    return fileName + ".exe";
+  }
+  return fileName;
+};
 export const executableFileName: Record<ComponentType, (arg: { version: string }) => string> = {
   [ComponentType.COMPILER]: getExecutableCompilerName,
   [ComponentType.LINKER]: getExecutableLinkerName,
   [ComponentType.LIB]: getExecutableLibName,
   [ComponentType.SOLD_COMPILER]: getExecutableSoldName,
+  [ComponentType.SOLD_COMPILER_TYCHO]: getExecutableTychoSoldName,
 };
 
 export const getSupportedVersions = ({ component }: { component: ComponentType }): Promise<Array<string>> => {
@@ -97,5 +123,9 @@ export const getSupportedVersions = ({ component }: { component: ComponentType }
       return httpService
         .get<{ tag_name: string }[]>("https://api.github.com/repos/tonlabs/TVM-Solidity-Compiler/releases")
         .then(res => res.data.filter(el => semver.gte(el.tag_name, "0.72.0")).map(el => el.tag_name));
+    case ComponentType.SOLD_COMPILER_TYCHO:
+      return httpService
+        .get<{ tag_name: string }[]>("https://api.github.com/repos/broxus/TVM-Solidity-Compiler/releases")
+        .then(res => res.data.map(el => el.tag_name));
   }
 };

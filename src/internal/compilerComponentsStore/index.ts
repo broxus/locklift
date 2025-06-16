@@ -3,10 +3,17 @@ import fs from "fs-extra";
 import { ungzip } from "node-gzip";
 
 import { getPathToVersion, isComponentVersionExists } from "./dirUtils";
-import { downloadLinks, executableFileName, fileNames, getGzFileName, getSupportedVersions } from "./utils";
+import {
+  downloadLinks,
+  executableFileName,
+  fileNames,
+  getGzFileName,
+  getSupportedVersions,
+} from "./utils";
 import { ComponentType } from "./constants";
 import { logger } from "../logger";
 import { httpService } from "../httpService";
+import semver from "semver/preload";
 
 export const getComponent = async ({
   version,
@@ -26,6 +33,10 @@ export const getComponent = async ({
   const downloadLink = downloadLinks[component]({ version });
 
   await fs.ensureDir(tempFileBaseDir);
+  const semVer = semver.parse(version);
+  if (!semVer) {
+    throw new Error(`Invalid version format: ${version}`);
+  }
   const gzFilePath = path.join(tempFileBaseDir, getGzFileName(fileNames[component]({ version })));
 
   await download(downloadLink, gzFilePath).catch(async () => {

@@ -61,9 +61,16 @@ export const compilerConfigResolver = async ({
       });
       builderConfig.mode = "solc";
     }
-    if (semver.gte(compiler.version, "0.72.0")) {
+    if (semver.gte(compiler.version, "0.72.0") && semver.lt(compiler.version, "0.77.0")) {
       builderConfig.compilerPath = await getComponent({
         component: ComponentType.SOLD_COMPILER,
+        version: compiler.version,
+      });
+      builderConfig.mode = "sold";
+    }
+    if (semver.gte(compiler.version, "0.77.0")) {
+      builderConfig.compilerPath = await getComponent({
+        component: ComponentType.SOLD_COMPILER_TYCHO,
         version: compiler.version,
       });
       builderConfig.mode = "sold";

@@ -76,8 +76,6 @@ This command initializes new Locklift project, filled with samples:
 By default, the configuration file is called `locklift.config.ts`. Here's the basic layout:
 
 ```typescript
-const LOCAL_NETWORK_ENDPOINT = "http://localhost/graphql";
-
 const config: LockliftConfig = {
   compiler: {
     // Specify path to your TON-Solidity-Compiler
@@ -113,33 +111,6 @@ const config: LockliftConfig = {
         type: "proxy",
         // @ts-ignore
         data: {},
-      },
-      keys: {
-        // Use everdev to generate your phrase
-        // !!! Never commit it in your repos !!!
-        // phrase: "action inject penalty envelope rabbit element slim tornado dinner pizza off blood",
-        amount: 20,
-      },
-    },
-    local: {
-      // Specify connection settings for https://github.com/broxus/everscale-standalone-client/
-      connection: {
-        group: "localnet",
-        type: "graphql",
-        data: {
-          endpoints: [LOCAL_NETWORK_ENDPOINT],
-          local: true,
-        },
-      },
-      // This giver is the default local-node giverV2
-      giver: {
-        // Check if you need to provide a custom giver
-        // giverFactory: (ever, keyPair, address) => new SimpleGiver(ever, keyPair, address),
-        address: "0:ece57bcc6c530283becbbd8a3b24d3c5987cdddc3c8b7b33be6e4a6312490415",
-        key: "172af540e43a524763dd53b26a066d472a97c4de37d5498170564510608250c3",
-      },
-      tracing: {
-        endpoint: LOCAL_NETWORK_ENDPOINT,
       },
       keys: {
         // Use everdev to generate your phrase
@@ -559,7 +530,28 @@ expect(traceTree)
 
 ## Network
 
-In this paragraph we age going to explain some features of locklift network.
+### Note (BETA)
+
+Locklift network was migrated to the new tycho executor and will be used by  default in the next version. But the previous network will be available.
+If we need to use previous vm, we just need to modify project package.json.
+
+```json
+{
+  "name": "my-locklift-project",
+  /* existing code */
+  "devDependencies": {
+    /* existing code */
+  },
+  "overrides": {
+    /* existing code */
+    "@broxus/locklift-network": "^1.0.8" // or "@broxus/locklift-network": "^2.0.0-beta-rc1" 
+  }
+}
+```
+
+**But for new projects, we recommend using the new(default) network.**
+
+In this paragraph we are going to explain some features of locklift network.
 
 1. It supports fork mode (see below)
 2. It supports inserting any accounts to the network
@@ -708,9 +700,9 @@ await traceTree.beautyPrint();
 ```
 
 Also, you can add any contracts and used it as like it was deployed in your network.
-Some words about algorithm of searching contract in fork mode:
+Some words about the algorithm of searching contract in fork mode:
 
-1. If you or your contract is trying to interact with contract that wasn't deployed in your network, locklift will try to find it in fork
+1. If you or your contract is trying to interact with a contract that wasn't deployed in your network, locklift will try to find it in fork
 2. If contract wasn't found in fork, it will show a warning
 3. If contract was found in fork locklift will try to apply ABI to this contract
 
