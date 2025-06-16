@@ -532,7 +532,7 @@ expect(traceTree)
 
 ### Note (BETA)
 
-Locklift network was migrated to the new tycho executor and will be used by  default in the next version. But the previous network will be available.
+Locklift network was migrated to the new tycho executor and will be used by default in the next version. But the previous network will be available.
 If we need to use previous vm, we just need to modify project package.json.
 
 ```json
@@ -544,7 +544,7 @@ If we need to use previous vm, we just need to modify project package.json.
   },
   "overrides": {
     /* existing code */
-    "@broxus/locklift-network": "^1.0.8" // or "@broxus/locklift-network": "^2.0.0-beta-rc1" 
+    "@broxus/locklift-network": "^1.0.8" // or "@broxus/locklift-network": "^2.0.0-beta-rc1"
   }
 }
 ```

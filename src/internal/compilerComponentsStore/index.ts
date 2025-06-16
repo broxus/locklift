@@ -3,13 +3,7 @@ import fs from "fs-extra";
 import { ungzip } from "node-gzip";
 
 import { getPathToVersion, isComponentVersionExists } from "./dirUtils";
-import {
-  downloadLinks,
-  executableFileName,
-  fileNames,
-  getGzFileName,
-  getSupportedVersions,
-} from "./utils";
+import { downloadLinks, executableFileName, fileNames, getGzFileName, getSupportedVersions } from "./utils";
 import { ComponentType } from "./constants";
 import { logger } from "../logger";
 import { httpService } from "../httpService";
