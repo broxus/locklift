@@ -122,7 +122,17 @@ export const getSupportedVersions = ({ component }: { component: ComponentType }
     case ComponentType.SOLD_COMPILER:
       return httpService
         .get<{ tag_name: string }[]>("https://api.github.com/repos/tonlabs/TVM-Solidity-Compiler/releases")
-        .then(res => res.data.filter(el => semver.gte(el.tag_name, "0.72.0")).map(el => el.tag_name));
+        .then(res =>
+          res.data
+            .filter(el => {
+              try {
+                return semver.gte(el.tag_name, "0.72.0");
+              } catch (e) {
+                return false;
+              }
+            })
+            .map(el => el.tag_name),
+        );
     case ComponentType.SOLD_COMPILER_TYCHO:
       return httpService
         .get<{ tag_name: string }[]>("https://api.github.com/repos/broxus/TVM-Solidity-Compiler/releases")
