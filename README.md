@@ -658,7 +658,7 @@ const config: LockliftConfig = {
 
 Now we can use external contracts as like it was deployed in our network.
 Let's imagine we added `Staking` project to our config
- 
+
 ```typescript
 {
   /// ...
