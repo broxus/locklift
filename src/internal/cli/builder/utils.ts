@@ -84,6 +84,10 @@ export const compilerConfigResolver = async ({
     if (!("version" in compiler)) {
       throw new Error("You can't provide linker version without compiler version!");
     }
+    if (semver.gte(compiler.version, "0.77.0")) {
+      logger.printWarn("Linker for version 0.77.0 and grater is deprecated.");
+      return builderConfig;
+    }
     builderConfig.linkerPath = await getComponent({
       version: linker.version,
       component: ComponentType.LINKER,

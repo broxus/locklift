@@ -36,7 +36,6 @@ program
 
       process.exit(1);
     }
-
     if (!options.disableBuild) {
       await buildStep(config, options, options.force);
     }

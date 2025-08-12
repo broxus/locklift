@@ -25,7 +25,6 @@ export const getComponent = async ({
 
   logger.printInfo(`Start downloading ${component} version ${version}`);
   const downloadLink = downloadLinks[component]({ version });
-
   await fs.ensureDir(tempFileBaseDir);
   const semVer = semver.parse(version);
   if (!semVer) {

@@ -36,7 +36,7 @@ program
       version: "1.0.0",
       description: "",
       scripts: {
-        test: "npx locklift test --network local",
+        test: "npx locklift test",
       },
       author: "",
       license: "ISC",

@@ -16,7 +16,6 @@ export const buildStep = async (
 ) => {
   fs.ensureDirSync(options.build);
   const forkSettings = config.networks[options.network as string]?.fork;
-
   const builder = Builder.create(await compilerConfigResolver(config), {
     build: options.build,
 

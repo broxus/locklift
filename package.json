@@ -1,6 +1,6 @@
 {
   "name": "locklift",
-  "version": "2.9.8",
+  "version": "2.9.9",
   "description": "Node JS framework for working with Ever contracts. Inspired by Truffle and Hardhat. Helps you to build, test, run and maintain your smart contracts.",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -93,9 +93,9 @@
   },
   "homepage": "https://github.com/broxus/locklift#readme",
   "dependencies": {
-    "@types/commander": "^2.12.2",
+    "@broxus/locklift-network": "1.0.8",
     "@types/yargs": "^17.0.13",
-    "axios": "^0.27.2",
+    "axios": "^1.11.0",
     "bignumber.js": "^9.0.1",
     "chalk": "^4.1.2",
     "commander": "^9.4.1",
@@ -103,7 +103,6 @@
     "ejs": "^3.1.6",
     "env-paths": "^2.2.1",
     "everscale-crypto": "^0.1.1",
-    "@broxus/locklift-network": "^1.0.8",
     "everscale-inpage-provider": "0.6.1",
     "everscale-standalone-client": "2.2.1",
     "find-node-modules": "^2.1.3",
