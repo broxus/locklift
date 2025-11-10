@@ -1,6 +1,9 @@
 import { expect } from "chai";
 import { Contract, Signer } from "locklift";
 import { FactorySource } from "../build/factorySource";
+import { lockliftChai } from "locklift";
+import chai from "chai";
+chai.use(lockliftChai);
 
 let sample: Contract<FactorySource["Sample"]>;
 let signer: Signer;
@@ -29,7 +32,7 @@ describe("Test Sample contract", async function () {
         constructorParams: {
           _state: INIT_STATE,
         },
-        value: locklift.utils.toNano(2),
+        value: locklift.utils.toNano(2), // converts 2 evers to nanos
       });
       sample = contract;
 
@@ -44,6 +47,14 @@ describe("Test Sample contract", async function () {
       const response = await sample.methods.getDetails({}).call();
 
       expect(Number(response._state)).to.be.equal(NEW_STATE, "Wrong state");
+    });
+
+    it("Test error tracing", async function () {
+      const { traceTree } = await locklift.tracing.trace(
+        await sample.methods.fail({}).sendExternal({ publicKey: signer.publicKey }),
+        {rise: false}
+      );
+      expect(traceTree).to.have.error(101);
     });
   });
 });
