@@ -14,6 +14,8 @@ const LOCAL_NETWORK_ENDPOINT = process.env.NETWORK_ENDPOINT || "http://localhost
 
 const VENOM_TESTNET_ENDPOINT = process.env.VENOM_TESTNET_ENDPOINT || "https://jrpc-devnet.venom.foundation/";
 
+const MIRASMANDA_NETWORK_ENDPOINT = process.env.MIRASMANDA_NETWORK_ENDPOINT || "https://rpc.tvm.mirasmanda.uz";
+
 // Create your own link on https://dashboard.evercloud.dev/
 
 const config: LockliftConfig = {
@@ -107,6 +109,26 @@ const config: LockliftConfig = {
       giver: {
         address: "0:0000000000000000000000000000000000000000000000000000000000000000",
         key: "secret key",
+      },
+      keys: {
+        // Use everdev to generate your phrase
+        // !!! Never commit it in your repos !!!
+        // phrase: "action inject penalty envelope rabbit element slim tornado dinner pizza off blood",
+        amount: 20,
+      },
+    },
+    mirasmanda: {
+      connection: {
+        id: 100860,
+        type: "jrpc",
+        data: {
+          endpoint: MIRASMANDA_NETWORK_ENDPOINT,
+        },
+      },
+      giver: {
+        address: "0:0000000000000000000000000000000000000000000000000000000000000000",
+        phrase: "phrase",
+        accountId: 0,
       },
       keys: {
         // Use everdev to generate your phrase
