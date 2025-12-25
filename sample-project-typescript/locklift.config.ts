@@ -12,7 +12,7 @@ declare global {
 
 const LOCAL_NETWORK_ENDPOINT = process.env.NETWORK_ENDPOINT || "http://localhost/graphql";
 
-const VENOM_TESTNET_ENDPOINT = process.env.VENOM_TESTNET_ENDPOINT || "https://jrpc-devnet.venom.foundation/";
+const VENOM_TESTNET_ENDPOINT = process.env.VENOM_TESTNET_ENDPOINT || "https://jrpc-testnet.venom.foundation/rpc";
 
 const MIRASMANDA_NETWORK_ENDPOINT = process.env.MIRASMANDA_NETWORK_ENDPOINT || "https://rpc.tvm.mirasmanda.uz";
 
