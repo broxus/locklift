@@ -109,7 +109,7 @@ export const contractInformation = ({
     //TODO
     [TraceType.FUNCTION_RETURN]: getCodeAndAddress(msg, TargetType.SRC, ctx),
     [TraceType.TRANSFER]: getCodeAndAddress(msg, TargetType.DST, ctx),
-  }[type]);
+  })[type];
 
 export const isErrorExistsInAllowedArr = (
   allowedArr: Array<AllowErrorCodes> | undefined,

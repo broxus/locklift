@@ -70,10 +70,13 @@ export class ViewTracingTree {
     contracts: T[] | T,
   ): T extends T[] ? Record<string, string> : string => {
     if (Array.isArray(contracts)) {
-      return contracts.reduce((acc, contract) => {
-        const address = extractStringAddress(contract);
-        return { ...acc, [address as string]: this.balanceChangeInfo[address.toString()]?.balanceDiff.toString() };
-      }, {} as Record<string, string>) as T extends T[] ? Record<string, string> : string;
+      return contracts.reduce(
+        (acc, contract) => {
+          const address = extractStringAddress(contract);
+          return { ...acc, [address as string]: this.balanceChangeInfo[address.toString()]?.balanceDiff.toString() };
+        },
+        {} as Record<string, string>,
+      ) as T extends T[] ? Record<string, string> : string;
     }
     const address = extractStringAddress(contracts);
     return this.balanceChangeInfo[address].balanceDiff.toString() as T extends T[] ? Record<string, string> : string;

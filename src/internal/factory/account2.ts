@@ -8,7 +8,7 @@ import {
   MsigAccount,
   SimpleAccountsStorage,
   WalletV3Account,
-} from "everscale-standalone-client/nodejs";
+} from "everscale-standalone-client";
 
 type MSigType = ConstructorParameters<typeof MsigAccount>[0]["type"];
 

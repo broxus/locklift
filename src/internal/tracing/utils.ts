@@ -8,8 +8,7 @@ import * as process from "process";
 import chalk from "chalk";
 import { EngineTraceInfo } from "nekoton-wasm";
 import { ActionCodeHints, ComputeCodesHints, CONSOLE_ADDRESS } from "./constants";
-
-const fs = require("fs");
+import fs from "fs";
 
 export const extractAccountsFromMsgTree = (msgTree: MessageTree): Address[] => {
   const extractAccounts = (msgTree: MessageTree): Address[] => {
@@ -246,7 +245,7 @@ export const extractStringAddress = (contract: Addressable) =>
   typeof contract === "string"
     ? contract
     : contract instanceof Address
-    ? contract.toString()
-    : contract.address.toString();
+      ? contract.toString()
+      : contract.address.toString();
 
 export const extractAddress = (contract: Addressable): Address => new Address(extractStringAddress(contract));

@@ -8,7 +8,7 @@ import {
   MsigAccount,
   SimpleAccountsStorage,
   WalletV3Account,
-} from "everscale-standalone-client/nodejs";
+} from "everscale-standalone-client";
 import BigNumber from "bignumber.js";
 import { getGiverKeyPair } from "./utils";
 import { GiverFromAccount, TestnetGiver } from "./giverOptions";

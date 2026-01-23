@@ -5,7 +5,10 @@ import { TracingProxyConnection } from "./proxy";
 import { TracingJrpcConnection } from "./jrpc";
 
 export class TracingTransport {
-  constructor(private readonly provider: ProviderRpcClient, private readonly connection: TracingTransportConnection) {}
+  constructor(
+    private readonly provider: ProviderRpcClient,
+    private readonly connection: TracingTransportConnection,
+  ) {}
 
   static fromGqlConnection(endpoint: string, provider: ProviderRpcClient): TracingTransport {
     const connection = new TracingGqlConnection(provider, endpoint);

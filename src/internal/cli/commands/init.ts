@@ -21,7 +21,7 @@ program
     const sampleProjectRelativePath = path.resolve(__dirname, "../../../sample-project-typescript");
     const sampleProjectPath = path.resolve(__dirname, sampleProjectRelativePath);
     await new Promise((res, rej) => {
-      fs.copy(sampleProjectPath, options.path, (err: Error) => {
+      fs.copy(sampleProjectPath, options.path, (err: NodeJS.ErrnoException | null | undefined) => {
         if (err) {
           logger.printError(err);
           return rej(err);

@@ -1,9 +1,4 @@
 import { Command } from "commander";
-import path from "path";
-import fs from "fs-extra";
-import * as utils from "../builder/utils";
-import { execSyncWrapper } from "../builder/utils";
-import { logger } from "../../logger";
 import { BuildCache } from "../../buildCache";
 import * as process from "process";
 

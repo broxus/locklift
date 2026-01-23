@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable no-use-before-define */
 /// <reference types="chai" />
 
 declare namespace Chai {

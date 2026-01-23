@@ -2,7 +2,6 @@ import fs from "fs-extra";
 import { Builder } from "../builder";
 import { compilerConfigResolver } from "../builder/utils";
 import { ConfigState, LockliftConfig } from "../../config";
-import path from "path";
 
 export const buildStep = async (
   config: LockliftConfig<ConfigState.INTERNAL>,

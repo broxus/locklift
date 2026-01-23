@@ -181,7 +181,6 @@ export class TracingInternal {
 
   private async printConsoleMsg(msg: MessageTree) {
     const decoded = await this.ever.rawApi.decodeEvent({
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       body: msg.body!,
       abi: JSON.stringify(consoleAbi),
       event: "Log",

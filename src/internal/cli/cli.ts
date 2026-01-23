@@ -31,6 +31,7 @@ const main = async () => {
 
   // program.addCommand(gendoc);
 
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   program.version(require("../../package.json").version);
 
   commandInjector(program);

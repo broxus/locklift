@@ -7,7 +7,9 @@ export const tryToAttachEntryFile = (): void => {
   const { config } = yargs(hideBin(process.argv)).argv as { config?: string };
   const pathToEntryFile = path.resolve(process.cwd(), config || DEFAULT_CONFIG_PATH);
   try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     require(pathToEntryFile);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e) {
     return;
   }

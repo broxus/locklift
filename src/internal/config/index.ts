@@ -3,11 +3,10 @@ import path from "path";
 import commander from "commander";
 import { ProviderRpcClient } from "everscale-inpage-provider";
 import type { ConnectionData, Ed25519KeyPair } from "everscale-standalone-client";
-import { ConnectionProperties, NETWORK_PRESETS } from "everscale-standalone-client/nodejs";
+import { ConnectionProperties, NETWORK_PRESETS } from "everscale-standalone-client";
 import { Giver } from "../factory";
 import Joi from "joi";
-import { MessageProperties } from "everscale-standalone-client/client";
-import * as nt from "nekoton-wasm";
+import { MessageProperties } from "everscale-standalone-client";
 import semver from "semver/preload";
 
 export enum ConfigState {
@@ -156,7 +155,7 @@ export const JoiConfig = Joi.object<LockliftConfig>({
                 endpoint: Joi.string(),
               }),
               otherwise: Joi.object({
-                connectionFactory: Joi.object().custom((value, helpers) => {
+                connectionFactory: Joi.object().custom(value => {
                   return value;
                   // if (value instanceof ConnectionFactory) {
                   //   return value;
@@ -196,6 +195,7 @@ export function loadConfig(configPath: string): LockliftConfig<ConfigState.INTER
     throw new commander.InvalidOptionArgumentError(`Config at ${configPath} not found!`);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const configFile = require(resolvedConfigPath);
 
   const validationResult = JoiConfig.validate(configFile.default);

@@ -103,7 +103,6 @@ export const compilerConfigResolver = async ({
 export const tvcToBase64 = (tvc: Buffer) => tvc.toString("base64");
 
 export const extractContractName = (pathToFile: string): string =>
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   pathToFile.match(new RegExp("contracts(.*).sol"))![1].slice(1);
 
 export function execSyncWrapper(command: string): Buffer;
@@ -118,10 +117,12 @@ export function execSyncWrapper(command: string, options?: ExecSyncOptions): str
   }
 }
 export const tryToGetNodeModules = (): string | undefined => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const findNodeModules = require("find-node-modules");
 
   try {
     return resolve(findNodeModules()[0]);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e) {
     return undefined;
   }

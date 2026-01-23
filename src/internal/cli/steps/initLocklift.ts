@@ -10,6 +10,7 @@ export const initLockliftStep = async (
   global.locklift = await Locklift.setup(config, options.network);
   global.__dirname = __dirname;
 
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   require("tsconfig-paths/register");
 
   //@ts-ignore

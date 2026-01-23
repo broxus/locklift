@@ -1,6 +1,6 @@
 import { ConfigState, NetworkValue } from "../config";
 import { logger } from "../logger";
-import { Clock } from "everscale-standalone-client/nodejs";
+import { Clock } from "everscale-standalone-client";
 import { SeService } from "./seService";
 
 export class TimeMovement {

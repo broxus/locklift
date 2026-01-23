@@ -1,5 +1,5 @@
 import { Address, ProviderRpcClient } from "everscale-inpage-provider";
-import { ConnectionProperties, EverscaleStandaloneClient } from "everscale-standalone-client/nodejs";
+import { ConnectionProperties, EverscaleStandaloneClient } from "everscale-standalone-client";
 import axios from "axios";
 import { ForkCacheService } from "./index";
 import { logger } from "../../logger";
@@ -36,7 +36,10 @@ export class LiveFetcher implements SourceFetcher {
 }
 
 export class BlockFetcher implements SourceFetcher {
-  constructor(private readonly cacheService: ForkCacheService, private readonly blockNumber: number) {}
+  constructor(
+    private readonly cacheService: ForkCacheService,
+    private readonly blockNumber: number,
+  ) {}
 
   private async _getBocAndCodeHash({ address }: { address: Address }): Promise<AccountFetcherResponse> {
     logger.printInfo(`Getting state for ${address.toString()}, it may take a while...`);

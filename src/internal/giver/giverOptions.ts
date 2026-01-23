@@ -3,7 +3,10 @@ import { Address, Contract, ProviderRpcClient, Transaction } from "everscale-inp
 import { Ed25519KeyPair } from "everscale-standalone-client";
 
 export class GiverFromAccount implements Giver {
-  constructor(private readonly ever: ProviderRpcClient, private readonly account: Address) {}
+  constructor(
+    private readonly ever: ProviderRpcClient,
+    private readonly account: Address,
+  ) {}
 
   sendTo(sendTo: Address, value: string): Promise<{ transaction: Transaction; output?: Record<string, unknown> }> {
     return this.ever.sendMessage({
@@ -18,7 +21,11 @@ export class GiverFromAccount implements Giver {
 export class TestnetGiver implements Giver {
   public giverContract: Contract<typeof testnetGiverAbi>;
 
-  constructor(ever: ProviderRpcClient, readonly keyPair: Ed25519KeyPair, address: Address) {
+  constructor(
+    ever: ProviderRpcClient,
+    readonly keyPair: Ed25519KeyPair,
+    address: Address,
+  ) {
     this.giverContract = new ever.Contract(testnetGiverAbi, address);
   }
 

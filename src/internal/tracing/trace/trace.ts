@@ -33,7 +33,6 @@ export class Trace<Abi = any> {
     allowedCodes: AllowedCodes = { compute: [], action: [], contracts: { any: { compute: [], action: [] } } },
   ) {
     this.setMsgType();
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const { codeHash, address } = contractInformation({ msg: this.msg, type: this.type!, ctx: this.context });
     const contract =
       this.tracing.getSavedContract(address) ||
@@ -153,7 +152,6 @@ export class Trace<Abi = any> {
   }
 
   async decode(contract: ContractWithArtifacts<Abi> | undefined) {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     this.contract = contract!;
     const decoded = await this.decodeMsg(contract);
     if (decoded) {

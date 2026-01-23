@@ -12,7 +12,7 @@ import { logger } from "../../logger";
 import semver from "semver/preload";
 import { getContractsTree } from "../../utils";
 import { BuildCache } from "../../buildCache";
-const tablemark = require("tablemark");
+import tablemark from "tablemark";
 
 export type BuilderConfig = {
   includesPath?: string;
@@ -37,7 +37,11 @@ export class Builder {
   private nameRegex = /======= (?<contract>.*) =======/g;
   private docRegex = /(?<doc>^{(\s|.)*?^})/gm;
 
-  constructor(private readonly config: BuilderConfig, options: Option, private readonly compilerVersion: string) {
+  constructor(
+    private readonly config: BuilderConfig,
+    options: Option,
+    private readonly compilerVersion: string,
+  ) {
     if (semver.gte(compilerVersion, "0.72.0") && config.linkerPath) {
       logger.printWarn("Linker is no longer used as of version 72+ and can be removed from the configuration");
     }
@@ -59,7 +63,6 @@ export class Builder {
   }
 
   async buildContracts(): Promise<boolean> {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const contractsTree = getContractsTree(this.options.contracts)!;
 
     const { contractArtifacts, contractsToBuild: externalContracts } = await resolveExternalContracts(
@@ -136,7 +139,6 @@ export class Builder {
   }
 
   buildDocs(): boolean {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const contractsTree = getContractsTree(this.options.contracts)!;
 
     try {
@@ -197,13 +199,12 @@ export class Builder {
 
   private parseDocs(output: string): ParsedDoc[] {
     const contracts = [...output.matchAll(this.nameRegex)]
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       .map(m => m.groups!.contract)
       // For the target contracts compiler returns relative path
       // and for dependency contracts paths are absolute
       // Make them all absolute
       .map(c => resolve(process.cwd(), this.options.build, c));
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
     const docs = [...output.matchAll(this.docRegex)].map(m =>
       //@ts-ignore
       JSON.parse(m.groups?.doc),

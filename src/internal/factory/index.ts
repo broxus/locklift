@@ -9,7 +9,7 @@ import { Deployer } from "./deployer";
 import { emptyContractAbi, tryToDetectContract } from "./utils";
 import { flatDirTree, tryToGetNodeModules } from "../cli/builder/utils";
 import { AccountFactory2 } from "./account2";
-import { SimpleAccountsStorage } from "everscale-standalone-client/nodejs";
+import { SimpleAccountsStorage } from "everscale-standalone-client";
 import { isT } from "../tracing/utils";
 import { logger } from "../logger";
 

@@ -10,6 +10,7 @@ import { TransactionWithAccountAndBoc, WaitFinalizedOutput } from "../internal/t
 export const loadJSONFromFile = (filePath: string): ReturnType<typeof JSON.parse> | undefined => {
   try {
     return JSON.parse(fs.readFileSync(filePath, "utf8"));
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e) {
     return undefined;
   }
@@ -18,6 +19,7 @@ export const loadJSONFromFile = (filePath: string): ReturnType<typeof JSON.parse
 export const loadBase64FromFile = (filePath: string): string | undefined => {
   try {
     return fs.readFileSync(filePath, "utf8").split("\n").join("");
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e) {
     return undefined;
   }
@@ -26,6 +28,7 @@ export const loadBase64FromFile = (filePath: string): string | undefined => {
 export const tryLoadTvcFromFile = (filePath: string): string | undefined => {
   try {
     return fs.readFileSync(filePath, "base64");
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e) {
     return;
   }

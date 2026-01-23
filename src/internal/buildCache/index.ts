@@ -2,7 +2,6 @@ import fs from "fs-extra";
 import path from "path";
 import { tryToGetNodeModules } from "../cli/builder/utils";
 import { tryToGetFileChangeTime } from "./utils";
-import chalk from "chalk";
 import { defer, from, lastValueFrom, map, mergeMap, tap, toArray } from "rxjs";
 import { CacheRecord } from "./types";
 import _ from "lodash";
@@ -51,12 +50,15 @@ export class BuildCache {
     this.currentCache = filesWithModTime;
     const updatedOrNewFiles = this.getUpdatedOrNewFiles(filesWithModTime, this.prevCache);
 
-    const importToImportersMap = contractsWithImports.reduce((acc, current) => {
-      current.imports.forEach(imp => {
-        acc[imp.path] = acc[imp.path] ? [...acc[imp.path], current.path] : [current.path];
-      });
-      return acc;
-    }, {} as Record<string, string[]>);
+    const importToImportersMap = contractsWithImports.reduce(
+      (acc, current) => {
+        current.imports.forEach(imp => {
+          acc[imp.path] = acc[imp.path] ? [...acc[imp.path], current.path] : [current.path];
+        });
+        return acc;
+      },
+      {} as Record<string, string[]>,
+    );
     const printArr = [] as Array<Print>;
 
     return findFilesForBuildRecursive(updatedOrNewFiles, importToImportersMap, contractsMap, printArr);
@@ -169,14 +171,14 @@ export class BuildCache {
   }
 }
 type Print = { filePath: string; subDep: Array<Print> };
-const recursivePrint = (printArr: Array<Print>, level = 0, selectedContracts: Array<string>) => {
-  printArr.forEach(el => {
-    console.log(
-      `${" ".repeat(level)}${selectedContracts.includes(el.filePath) ? chalk.blueBright(el.filePath) : el.filePath}`,
-    );
-    recursivePrint(el.subDep, level + 1, selectedContracts);
-  });
-};
+// const recursivePrint = (printArr: Array<Print>, level = 0, selectedContracts: Array<string>) => {
+//   printArr.forEach(el => {
+//     console.log(
+//       `${" ".repeat(level)}${selectedContracts.includes(el.filePath) ? chalk.blueBright(el.filePath) : el.filePath}`,
+//     );
+//     recursivePrint(el.subDep, level + 1, selectedContracts);
+//   });
+// };
 const findFilesForBuildRecursive = (
   updatedOrNewFiles: string[],
   importToFileMap: Record<string, Array<string>>,

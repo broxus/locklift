@@ -5,7 +5,10 @@ import { ConstructorParams, TransactionWithOutput } from "../../types";
 import { DeployParams } from "./index";
 
 export class Deployer {
-  constructor(private readonly ever: ProviderRpcClient, private readonly giver: Giver) {}
+  constructor(
+    private readonly ever: ProviderRpcClient,
+    private readonly giver: Giver,
+  ) {}
   deployContract = async <Abi>(
     abi: Abi,
     deployParams: DeployParams<Abi>,

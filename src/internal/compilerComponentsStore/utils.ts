@@ -127,6 +127,7 @@ export const getSupportedVersions = ({ component }: { component: ComponentType }
             .filter(el => {
               try {
                 return semver.gte(el.tag_name, "0.72.0");
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
               } catch (e) {
                 return false;
               }

@@ -4,7 +4,10 @@ import { AccountData, TracingTransportConnection } from "../types";
 import _ from "lodash";
 
 export class TracingGqlConnection implements TracingTransportConnection {
-  constructor(readonly provider: ProviderRpcClient, readonly gqlEndpoint: string) {}
+  constructor(
+    readonly provider: ProviderRpcClient,
+    readonly gqlEndpoint: string,
+  ) {}
 
   async getAccountData(account: Address): Promise<AccountData> {
     return (await this.getAccountsData([account]))[0];

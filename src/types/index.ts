@@ -1,5 +1,5 @@
 import { Address, Contract, Transaction } from "everscale-inpage-provider";
-import { Account } from "everscale-standalone-client/nodejs";
+import { Account } from "everscale-standalone-client";
 import { ContractData } from "../internal/factory";
 
 export type ValueOf<T> = T[keyof T];

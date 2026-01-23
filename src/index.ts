@@ -1,10 +1,5 @@
 import { ProviderRpcClient } from "everscale-inpage-provider";
-import {
-  Clock,
-  EverscaleStandaloneClient,
-  SimpleAccountsStorage,
-  SimpleKeystore,
-} from "everscale-standalone-client/nodejs";
+import { Clock, EverscaleStandaloneClient, SimpleAccountsStorage, SimpleKeystore } from "everscale-standalone-client";
 import chalk from "chalk";
 
 import { Keys } from "./internal/keys";

@@ -39,6 +39,7 @@ program
     }
     // Initialize Locklift
     await initLockliftStep(config, options);
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const scriptContent = require(path.resolve(process.cwd(), options.script));
     if (scriptContent.default) {
       await scriptContent
