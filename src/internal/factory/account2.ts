@@ -8,6 +8,7 @@ import {
   MsigAccount,
   SimpleAccountsStorage,
   WalletV3Account,
+  WalletV5R1Account,
 } from "everscale-standalone-client";
 
 type MSigType = ConstructorParameters<typeof MsigAccount>[0]["type"];
@@ -26,12 +27,19 @@ type CreateAccountParams<T extends FactoryType> =
     }
   | ({ type: WalletTypes.MsigAccount } & DeployContractParams<T, keyof T> & {
         mSigType: MSigType;
-      });
+      })
+  | {
+      type: WalletTypes.WalletV5R1;
+      publicKey: string;
+      value: string;
+      nonce?: number;
+    };
 
 type AddExistingAccountParams =
   | { type: WalletTypes.HighLoadWalletV2 | WalletTypes.WalletV3; publicKey: string }
   | ({ type: WalletTypes.EverWallet } & ({ address: Address } | { publicKey: string; nonce?: number }))
-  | { type: WalletTypes.MsigAccount; publicKey?: string; address: Address; mSigType: MSigType };
+  | { type: WalletTypes.MsigAccount; publicKey?: string; address: Address; mSigType: MSigType }
+  | ({ type: WalletTypes.WalletV5R1 } & ({ address: Address } | { publicKey: string; nonce?: number }));
 
 /*
 AccountFactory2 is service based on everscale-standalone-client SimpleAccountsStorage
@@ -92,6 +100,14 @@ export class AccountFactory2<T extends FactoryType> {
           tx: depositTransaction,
         };
       }
+      case WalletTypes.WalletV5R1: {
+        const account = await WalletV5R1Account.fromPubkey({ publicKey: params.publicKey, nonce: params.nonce });
+        const depositTransaction = await this.sender(account.address, params.value);
+        return {
+          account,
+          tx: depositTransaction,
+        };
+      }
     }
   };
   /*
@@ -116,6 +132,12 @@ export class AccountFactory2<T extends FactoryType> {
           return EverWalletAccount.fromPubkey({ publicKey: params.publicKey, nonce: params.nonce });
         }
         return new EverWalletAccount(params.address);
+      }
+      case WalletTypes.WalletV5R1: {
+        if ("publicKey" in params) {
+          return WalletV5R1Account.fromPubkey({ publicKey: params.publicKey, nonce: params.nonce });
+        }
+        return new WalletV5R1Account(params.address);
       }
     }
   };

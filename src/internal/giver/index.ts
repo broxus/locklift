@@ -8,6 +8,7 @@ import {
   MsigAccount,
   SimpleAccountsStorage,
   WalletV3Account,
+  WalletV5R1Account,
 } from "everscale-standalone-client";
 import BigNumber from "bignumber.js";
 import { getGiverKeyPair } from "./utils";
@@ -48,6 +49,7 @@ export const getGiver = async (
     }> = [
       { wallet: WalletV3Account, walletName: "WalletV3" },
       { wallet: EverWalletAccount, walletName: "EverWallet" },
+      { wallet: WalletV5R1Account, walletName: "WalletV5R1" },
       { wallet: HighloadWalletV2, walletName: "HighloadWalletV2" },
     ];
     for (const { wallet, walletName } of wallets) {
@@ -87,6 +89,11 @@ export const getGiver = async (
     case GiverTypes.EverWallet:
       logGiver("EverWallet");
       accountStorage.addAccount(new EverWalletAccount(giverAddress));
+      return new GiverFromAccount(provider, giverAddress);
+
+    case GiverTypes.WalletV5R1:
+      logGiver("WalletV5R1");
+      accountStorage.addAccount(new WalletV5R1Account(giverAddress));
       return new GiverFromAccount(provider, giverAddress);
 
     case GiverTypes.HighloadWalletV2:

@@ -11,4 +11,5 @@ export enum GiverTypes {
   GiverV2 = "ccbfc821853aa641af3813ebd477e26818b51e4ca23e5f6d34509215aa7123d9",
   GiverV3 = "57a1e5e4304f4db2beb23117e4d85df9cb5caec127531350e73219a8b8dc8afd",
   MainGiver = "ebe58215760b31ab4eecfece317a571260b4be53fe8b8f9caebfb93cd91a0d95",
+  WalletV5R1 = "20834b7b72b112147e1b2fb457b84e74d1a30f04f737d4f62a668e9552d2b72f",
 }

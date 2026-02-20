@@ -8,6 +8,8 @@ export const tryToDetectContract = (address: Address, codeHash: string) => {
       return "HighLoadWalletV2";
     case "3ba6528ab2694c118180aa3bd10dd19ff400b909ab4dcf58fc69925b2c7b12a6":
       return "EverWallet";
+    case "20834b7b72b112147e1b2fb457b84e74d1a30f04f737d4f62a668e9552d2b72f":
+      return "WalletV5R1";
     default:
       return address.toString();
   }

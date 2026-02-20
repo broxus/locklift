@@ -12,7 +12,6 @@ import { logger } from "../../logger";
 import semver from "semver/preload";
 import { getContractsTree } from "../../utils";
 import { BuildCache } from "../../buildCache";
-import tablemark from "tablemark";
 
 export type BuilderConfig = {
   includesPath?: string;
@@ -175,7 +174,6 @@ export class Builder {
         fs.readFileSync(resolve(__dirname, "./../templates/index.ejs")).toString(),
         {
           docs,
-          tablemark,
         },
         {
           rmWhitespace: true,

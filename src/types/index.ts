@@ -57,6 +57,11 @@ export enum WalletTypes {
    * EverWallet
    */
   EverWallet,
+
+  /**
+   * WalletV5R1
+   */
+  WalletV5R1,
 }
 export type CreateAccountOutput = {
   account: Account;
