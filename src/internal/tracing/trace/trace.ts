@@ -40,7 +40,7 @@ export class Trace<Abi = any> {
 
     this.checkForErrors(allowedCodes);
     if (this.error && !this.error.ignored && this.msg.dstTransaction) {
-      this.transactionTrace = this.tracing.network.getTxTrace(this.msg.dstTransaction.hash);
+      this.transactionTrace = this.tracing.network.getTxTrace(this.msg.dstTransaction.hash)?.parsed;
     }
 
     await this.decode(contract);

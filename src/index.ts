@@ -1,5 +1,11 @@
 import { ProviderRpcClient } from "everscale-inpage-provider";
-import { Clock, EverscaleStandaloneClient, SimpleAccountsStorage, SimpleKeystore } from "everscale-standalone-client";
+import {
+  Clock,
+  EverscaleStandaloneClient,
+  SimpleAccountsStorage,
+  SimpleKeystore,
+  // @ts-ignore
+} from "everscale-standalone-client/nodejs";
 import chalk from "chalk";
 
 import { Keys } from "./internal/keys";
@@ -170,7 +176,7 @@ export class Locklift<FactorySource extends FactoryType> {
         accountsStorage,
         message: networkConfig?.clientConfig?.message,
         initInput: networkConfig?.clientConfig?.initInput,
-      }).then(client => {
+      }).then((client: EverscaleStandaloneClient) => {
         if (isProxyConnection(networkConfig?.connection)) {
           client.setPollingInterval(5);
         }

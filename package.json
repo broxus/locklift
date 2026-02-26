@@ -93,7 +93,7 @@
   },
   "homepage": "https://github.com/broxus/locklift#readme",
   "dependencies": {
-    "@broxus/locklift-network": "2.0.0-beta-rc3",
+    "@broxus/locklift-network": "^2.0.0",
     "@types/yargs": "^17.0.35",
     "axios": "^1.13.2",
     "bignumber.js": "^9.3.1",
@@ -109,7 +109,7 @@
     "fs-extra": "^11.3.3",
     "joi": "^18.0.2",
     "lodash": "^4.17.23",
-    "mocha": "^11.3.0",
+    "mocha": "^11.7.5",
     "nekoton-wasm": "npm:nekoton-wasm-locklift@^1.28.0",
     "node-gzip": "^1.1.2",
     "rxjs": "^7.8.2",

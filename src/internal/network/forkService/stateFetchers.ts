@@ -1,5 +1,6 @@
 import { Address, ProviderRpcClient } from "everscale-inpage-provider";
-import { ConnectionProperties, EverscaleStandaloneClient } from "everscale-standalone-client";
+// @ts-ignore
+import { ConnectionProperties, EverscaleStandaloneClient } from "everscale-standalone-client/nodejs";
 import axios from "axios";
 import { ForkCacheService } from "./index";
 import { logger } from "../../logger";
