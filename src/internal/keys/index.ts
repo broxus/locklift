@@ -1,4 +1,4 @@
-import { deriveBip39Phrase, KeyPair } from "everscale-crypto";
+import { deriveBip39Phrase, KeyPair, deriveTonMnemonic } from "everscale-crypto";
 import { KeysConfig } from "../config";
 
 export class Keys {
@@ -10,7 +10,13 @@ export class Keys {
   public static async generate(config: Required<KeysConfig>): Promise<KeyPair[]> {
     return [...Array(config.amount).keys()].map(i => {
       const path = config.path.replace("INDEX", `${i}`);
-      return deriveBip39Phrase(config.phrase, path);
+
+      try {
+        return deriveBip39Phrase(config.phrase, path);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (e) {
+        return deriveTonMnemonic(config.phrase, path);
+      }
     });
   }
 }
