@@ -102,7 +102,7 @@
     "directory-tree": "^3.5.2",
     "ejs": "^4.0.1",
     "env-paths": "^3.0.0",
-    "everscale-crypto": "^0.1.1",
+    "everscale-crypto": "^0.1.3",
     "everscale-inpage-provider": "0.6.6",
     "everscale-standalone-client": "3.0.3",
     "find-node-modules": "^2.1.3",
@@ -121,10 +121,11 @@
     "typescript": "^5.9.3",
     "typescript-tuple": "^5.0.1",
     "underscore": "^1.13.7",
-    "yargs": "^18.0.0"
+    "yargs": "^17.7.2"
   },
   "overrides": {
-    "nekoton-wasm": "$nekoton-wasm"
+    "nekoton-wasm": "$nekoton-wasm",
+    "node-fetch": "^2.7.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.3",

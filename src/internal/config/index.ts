@@ -75,7 +75,7 @@ export type ExternalContracts = Record<string, Array<string>>;
 export type GiverConfig = {
   address: string;
   giverFactory?: (ever: ProviderRpcClient, keyPair: Ed25519KeyPair, address: string) => Giver;
-} & ({ key: string } | { phrase: string; accountId: number });
+} & ({ key: string } | { phrase: string; accountId: number } | { phrase: string; path: string });
 
 export const JoiConfig = Joi.object<LockliftConfig>({
   compiler: Joi.alternatives([
@@ -118,12 +118,20 @@ export const JoiConfig = Joi.object<LockliftConfig>({
 
     Joi.object({
       giver: Joi.alternatives().conditional(Joi.object({ phrase: Joi.string().required() }).unknown(), {
-        then: Joi.object({
-          address: Joi.string(),
-          giverFactory: Joi.any().optional(),
-          phrase: Joi.string(),
-          accountId: Joi.number(),
-        }),
+        then: Joi.alternatives([
+          Joi.object({
+            address: Joi.string(),
+            giverFactory: Joi.any().optional(),
+            phrase: Joi.string(),
+            accountId: Joi.number(),
+          }),
+          Joi.object({
+            address: Joi.string(),
+            giverFactory: Joi.any().optional(),
+            phrase: Joi.string(),
+            path: Joi.string().allow(""),
+          }),
+        ]),
         otherwise: Joi.object({
           address: Joi.string(),
           giverFactory: Joi.any().optional(),
