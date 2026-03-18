@@ -1,21 +1,21 @@
 include:
   - project: "infrastructure/gitlab-ci"
     ref: main
-    file: "/templates/cloudbuild-common.gitlab-ci.yaml"
+    file: "/templates/docker-dedicated-common.gitlab-ci.yaml"
   - project: "infrastructure/gitlab-ci"
     ref: main
-    file: "templates/deploy.gitlab-ci.yaml"
+    file: "templates/deploy-v2.gitlab-ci.yaml"
 
 stages:
-  - cloudbuild
+  - build
   - deploy
 
-cloudbuild:image:prod:
+build:
   only:
     - docs
   except:
     - tags
-  extends: .cloudbuild:common
+  extends: .build:common
 
 deploy:prod:
   only:
@@ -23,9 +23,13 @@ deploy:prod:
   except:
     - tags
   extends: .deploy
+  variables:
+    K8S_NAMESPACE: broxus
+    APP_CONFIG: ""
   environment:
     name: prod
     on_stop: stop:prod
+  tags: ["broxus-pve-main"]
 
 stop:prod:
   only:
@@ -33,5 +37,9 @@ stop:prod:
   except:
     - tags
   extends: .stop
+  variables:
+    K8S_NAMESPACE: broxus
+    APP_CONFIG: ""
   environment:
     name: prod
+  tags: ["broxus-pve-main"]
